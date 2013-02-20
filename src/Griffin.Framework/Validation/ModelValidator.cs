@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Griffin.Framework.Text;
 using Griffin.Framework.Validation.Rules;
 
 namespace Griffin.Framework.Validation
@@ -8,8 +10,22 @@ namespace Griffin.Framework.Validation
     /// </summary>
     public class ModelValidator
     {
+        private readonly Type _modelType;
         private readonly Dictionary<string, List<IRule>> _rules = new Dictionary<string, List<IRule>>();
+        private List<FastProperty> _properties = new List<FastProperty>();
 
+        public ModelValidator(Type modelType)
+        {
+            _modelType = modelType;
+            _properties = new List<FastProperty>();
+            foreach (var propertyInfo in _modelType.GetProperties())
+            {
+                if (!propertyInfo.CanWrite || !propertyInfo.CanRead || propertyInfo.GetIndexParameters().Length > 0)
+                    continue;
+
+                _properties.Add(new FastProperty(propertyInfo));
+            }
+        }
         /// <summary>
         /// Add a rule for a property.
         /// </summary>
@@ -34,23 +50,26 @@ namespace Griffin.Framework.Validation
         /// <returns>On or more errors if any rule failed; otherwise an empty collection.</returns>
         public ValidationErrors Validate(object model)
         {
+            if (model == null) throw new ArgumentNullException("model");
+
             var errors = new ValidationErrors(model.GetType());
 
-            foreach (var propertyInfo in model.GetType().GetProperties())
+            foreach (var prop in _properties)
             {
-                if (!propertyInfo.CanWrite && propertyInfo.GetIndexParameters().Length > 0)
-                    continue;
-
                 List<IRule> rules;
-                if (!_rules.TryGetValue(propertyInfo.Name, out rules))
+                if (!_rules.TryGetValue(prop.Property.Name, out rules))
                     continue;
 
-                var value = propertyInfo.GetValue(model, null);
+                var value = prop.Get(model);
                 foreach (var rule in rules)
                 {
-                    var context = new ValidationContext(model, propertyInfo.Name, value);
-                    if (!rule.Validate(context))
-                        errors.Add(propertyInfo.Name, rule);
+                    var context = new ValidationContext(model, prop.Property.Name, value);
+                    if (rule.Validate(context)) 
+                        continue;
+
+                    var field = Localize.A.Type(model.GetType(), prop.Property.Name);
+                    var msg = rule.Format(field, context);
+                    errors.Add(prop.Property.Name, rule, msg);
                 }
             }
 

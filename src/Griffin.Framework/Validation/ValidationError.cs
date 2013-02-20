@@ -13,14 +13,20 @@ namespace Griffin.Framework.Validation
         private readonly IRule _rule;
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="ValidationError" /> class.
         /// </summary>
         /// <param name="name">Property/Argument that validation failed for.</param>
         /// <param name="rule">A rule that failed.</param>
-        public ValidationError(string name, IRule rule)
+        /// <param name="errorMessage"></param>
+        public ValidationError(string name, IRule rule, string errorMessage)
         {
+            if (name == null) throw new ArgumentNullException("name");
+            if (errorMessage == null) throw new ArgumentNullException("errorMessage");
+
             _name = name;
             _rule = rule;
+            ErrorMessage = errorMessage;
+            RuleName = rule.GetType().Name;
         }
 
         /// <summary>
@@ -32,21 +38,13 @@ namespace Griffin.Framework.Validation
         }
 
         /// <summary>
-        /// Kind of validation that failed
+        /// Gets name of the rule which validation failed for
         /// </summary>
-        public IRule Rule
-        {
-            get { return _rule; }
-        }
-
-        /// <summary>
-        /// Gets or sets localized field name.
-        /// </summary>
-        public string LocalizedFieldName { get; internal set; }
+        public string RuleName { get; private set; }
 
         /// <summary>
         /// Gets or sets complete localized error message.
         /// </summary>
-        public string ErrorMessage { get; internal set; }
+        public string ErrorMessage { get; set; }
     }
 }

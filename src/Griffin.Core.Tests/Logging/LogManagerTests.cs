@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Framework.Logging;
 using NSubstitute;
 using Xunit;
 

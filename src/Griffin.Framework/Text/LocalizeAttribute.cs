@@ -5,7 +5,7 @@ namespace Griffin.Framework.Text
     /// <summary>
     /// Defines which localizable strings a type has.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class|AttributeTargets.Method, AllowMultiple = true)]
     public class LocalizeAttribute : Attribute
     {
         public string LanguageCode { get; set; }
@@ -14,6 +14,10 @@ namespace Griffin.Framework.Text
 
         public LocalizeAttribute(string languageCode, string metadataName, string text)
         {
+            if (languageCode == null) throw new ArgumentNullException("languageCode");
+            if (text == null) throw new ArgumentNullException("text");
+            if (metadataName == "")
+                metadataName = null;
             LanguageCode = languageCode;
             MetadataName = metadataName;
             Text = text;
@@ -21,6 +25,7 @@ namespace Griffin.Framework.Text
 
         public LocalizeAttribute(string languageCode, string text)
         {
+            if (text == null) throw new ArgumentNullException("text");
             LanguageCode = languageCode;
             Text = text;
         }

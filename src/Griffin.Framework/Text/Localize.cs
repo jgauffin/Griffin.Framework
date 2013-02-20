@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -25,6 +24,7 @@ namespace Griffin.Framework.Text
     {
         private static readonly Localize _instance = new Localize();
         private readonly ConcurrentDictionary<string, string> _typeCache = new ConcurrentDictionary<string, string>();
+        private ITextDataSource _dataSource = new StringTableProvider(StringResources.ResourceManager);
 
         public static Localize A
         {
@@ -54,15 +54,132 @@ namespace Griffin.Framework.Text
         /// <summary>
         ///     Gets or sets the data source.
         /// </summary>
-        public ITextDataSource DataSource { get; set; }
+        public ITextDataSource DataSource
+        {
+            get
+            {
+                if (_dataSource == null)
+                    throw new InvalidOperationException(
+                        "You must specify a source (Localize.DataSource = XXXX) before using the localize class.");
+                return _dataSource;
+            }
+            set { _dataSource = value; }
+        }
 
         /// <summary>
         ///     A text is missing for the current language
         /// </summary>
         public event EventHandler<TextMissingEventArgs> TextMissing = delegate { };
 
+        private string GetTypeString(Type type, string identifier, string metadataName)
+        {
+            var str = "";
+            var key = type.FullName + "/" + identifier + "/" + metadataName;
+
+            //TODO: Caches for different languages.
+            if (_typeCache.TryGetValue(key, out str))
+                return str;
+
+            string text = null;
+            if (identifier != "Class")
+            {
+                var members = type.GetMember(identifier);
+                foreach (var member in members)
+                {
+                    var attributes = member.GetCustomAttributes<LocalizeAttribute>();
+                    var attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
+                    if (attribute != null)
+                    {
+                        text = attribute.Text;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                var attributes = type.GetCustomAttributes<LocalizeAttribute>();
+                var attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
+                if (attribute != null)
+                {
+                    text = attribute.Text;
+                }
+            }
+
+            if (text != null)
+                _typeCache.AddOrUpdate(key, text, (k, v) => text);
+
+            return text;
+        }
+
+        public string Method(MethodBase methodBase, string metadataName)
+        {
+            var str = "";
+            var key = methodBase.ReflectedType.FullName + "." + methodBase.Name + "/" + metadataName;
+
+            var value = DataSource.Get(key);
+            if (!string.IsNullOrEmpty(value))
+                return value;
+
+            //TODO: Caches for different languages.
+            if (_typeCache.TryGetValue(key, out str))
+                return str;
+
+            var attributes = methodBase.GetCustomAttributes<LocalizeAttribute>();
+            var attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
+            if (attribute != null)
+            {
+                str = attribute.Text;
+            }
+
+            return str;
+        }
+
+        public string Method(MethodBase methodBase)
+        {
+            var str = "";
+            var key = methodBase.ReflectedType.FullName + "." + methodBase.Name;
+
+            var value = DataSource.Get(key);
+            if (!string.IsNullOrEmpty(value))
+                return value;
+
+            //TODO: Caches for different languages.
+            if (_typeCache.TryGetValue(key, out str))
+                return str;
+
+            var attributes = methodBase.GetCustomAttributes<LocalizeAttribute>();
+            var attribute = attributes.FirstOrDefault(x => x.MetadataName == null);
+            if (attribute != null)
+            {
+                str = attribute.Text;
+            }
+
+            return str;
+        }
+
+        private static string MissingField(string identifier)
+        {
+            return "-(" + identifier + ")-";
+        }
+
         /// <summary>
-        ///     Transate a text
+        ///     Translate a text
+        /// </summary>
+        /// <param name="identifier">The identifier.</param>
+        /// <param name="text">
+        ///     Text to translate. Should contain <c>{0}</c> etc.
+        /// </param>
+        /// <returns>Depends on the training mode</returns>
+        /// <remarks>
+        ///     Will use <c>"/"</c> as the path.
+        /// </remarks>
+        public string String(string identifier, string text)
+        {
+            return String("/", identifier, text);
+        }
+
+        /// <summary>
+        ///     Translate a text
         /// </summary>
         /// <param name="path">Path defines where the string being localized is located. It's used to make the administration easier, see remarks.</param>
         /// <param name="identifier">The identifier.</param>
@@ -81,7 +198,7 @@ namespace Griffin.Framework.Text
             if (DataSource == null)
                 throw new InvalidOperationException("You have to assign a source to the 'DataSource' property first.");
 
-            string value = DataSource.Get(identifier);
+            var value = DataSource.Get(identifier);
             if (!string.IsNullOrEmpty(value))
                 return value;
 
@@ -116,7 +233,7 @@ namespace Griffin.Framework.Text
             if (DataSource == null)
                 throw new InvalidOperationException("You have to assign a source to the 'DataSource' property first.");
 
-            string value = DataSource.Get(identifier, metadataName);
+            var value = DataSource.Get(identifier, metadataName);
             if (!string.IsNullOrEmpty(value))
                 return value;
 
@@ -132,11 +249,6 @@ namespace Griffin.Framework.Text
             return MissingField(identifier);
         }
 
-        private static string MissingField(string identifier)
-        {
-            return "-(" + identifier + ")-";
-        }
-
 
         /// <summary>
         ///     Translate a string from a type
@@ -146,12 +258,12 @@ namespace Griffin.Framework.Text
         /// <returns></returns>
         public string Type<T>(string name, string metadataName) where T : class
         {
-            string value = DataSource.Get(name, metadataName);
+            var value = DataSource.Get(name, metadataName);
             if (!string.IsNullOrEmpty(value))
                 return value;
 
 
-            string str = GetTypeString(typeof (T), name, metadataName);
+            var str = GetTypeString(typeof (T), name, metadataName);
             if (!TrainingMode)
                 return str ?? name + "." + metadataName;
 
@@ -184,7 +296,7 @@ namespace Griffin.Framework.Text
         /// <returns></returns>
         public string Type<T>() where T : class
         {
-            return Type(typeof(T), "Class");
+            return Type(typeof (T), "Class");
         }
 
         /// <summary>
@@ -195,12 +307,12 @@ namespace Griffin.Framework.Text
         /// <returns></returns>
         public string Type(Type type, string name)
         {
-            string value = DataSource.Get(name);
+            var value = DataSource.Get(name);
             if (!string.IsNullOrEmpty(value))
                 return value;
 
 
-            string str = GetTypeString(type, name, "");
+            var str = GetTypeString(type, name, "");
             if (!TrainingMode)
                 return str ?? name;
 
@@ -214,46 +326,6 @@ namespace Griffin.Framework.Text
             }
 
             return MissingField(name);
-        }
-
-        private string GetTypeString(Type type, string identifier, string metadataName)
-        {
-            string str = "";
-            string key = type.FullName + "/" + identifier + "/" + metadataName;
-
-            //TODO: Caches for different languages.
-            if (_typeCache.TryGetValue(key, out str))
-                return str;
-
-            string text = null;
-            if (identifier != "Class")
-            {
-                MemberInfo[] members = type.GetMember(identifier);
-                foreach (MemberInfo member in members)
-                {
-                    IEnumerable<LocalizeAttribute> attributes = member.GetCustomAttributes<LocalizeAttribute>();
-                    LocalizeAttribute attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
-                    if (attribute != null)
-                    {
-                        text = attribute.Text;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                IEnumerable<LocalizeAttribute> attributes = type.GetCustomAttributes<LocalizeAttribute>();
-                LocalizeAttribute attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
-                if (attribute != null)
-                {
-                    text = attribute.Text;
-                }
-            }
-
-            if (text != null)
-                _typeCache.AddOrUpdate(key, text, (k, v) => text);
-
-            return text;
         }
     }
 }

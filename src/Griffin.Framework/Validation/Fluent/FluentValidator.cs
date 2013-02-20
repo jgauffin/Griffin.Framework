@@ -16,7 +16,7 @@ namespace Griffin.Framework.Validation.Fluent
     {
         private readonly Dictionary<string, Property> _properties = new Dictionary<string, Property>();
         private readonly Type _type;
-        private readonly ModelValidator _validator = new ModelValidator();
+        private readonly ModelValidator _validator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentValidator" /> class.
@@ -27,6 +27,7 @@ namespace Griffin.Framework.Validation.Fluent
         {
             if (type == null) throw new ArgumentNullException("type");
             _type = type;
+            _validator = new ModelValidator(type);
         }
 
         internal ModelValidator GetValidator()

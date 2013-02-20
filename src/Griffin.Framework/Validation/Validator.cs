@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Griffin.Framework.Text;
 
 namespace Griffin.Framework.Validation
 {
@@ -41,42 +40,6 @@ namespace Griffin.Framework.Validation
             _providers.Add(provider);
         }
 
-
-        internal static void Translate(ValidationErrors errors)
-        {
-            foreach (var error in errors)
-            {
-                if (!string.IsNullOrEmpty(error.ErrorMessage) && !string.IsNullOrEmpty(error.LocalizedFieldName))
-                    continue; // do not translated fixed fields.
-
-                var fieldName = Localize.A.Property(error.FieldName);
-                error.ErrorMessage = error.Rule.Format(fieldName, ruleLanguage);
-                error.LocalizedFieldName = fieldName;
-            }
-        }
-
-        /// <summary>
-        /// Translate errors into current language
-        /// </summary>
-        /// <param name="errors">Errors to translate</param>
-        /// <param name="modelType">Model that have been validated</param>
-        public static void Translate(ValidationErrors errors, Type modelType)
-        {
-            // check if translation exists, else load prompts from attributes.
-            var ruleLanguage = new RuleLanguage(_language);
-
-            foreach (var error in errors)
-            {
-                if (!string.IsNullOrEmpty(error.ErrorMessage) && !string.IsNullOrEmpty(error.LocalizedFieldName))
-                    continue; // do not translate fixed fields.
-
-                ruleLanguage.Rule = error.Rule;
-                var fieldName = _language[modelType.Name, error.FieldName];
-                error.ErrorMessage = error.Rule.Format(fieldName, ruleLanguage);
-                error.LocalizedFieldName = fieldName;
-            }
-        }
-
         /// <summary>
         /// Validate a model.
         /// </summary>
@@ -111,9 +74,7 @@ namespace Griffin.Framework.Validation
             if (validator == null)
                 throw new InvalidOperationException("Failed to find validator for type '" + typeToValidate.FullName +
                                                     "'.");
-            var errors = validator.Validate(model);
-            Translate(errors, typeToValidate);
-            return errors;
+            return validator.Validate(model);
         }
     }
 }

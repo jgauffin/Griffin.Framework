@@ -69,7 +69,7 @@ namespace Griffin.Framework.Validation
         /// Add a bunch of errors
         /// </summary>
         /// <param name="errors">Errors to add</param>
-        public void Add(ValidationErrors errors)
+        public void AddRange(ValidationErrors errors)
         {
             _errors.AddRange(errors._errors);
         }
@@ -79,9 +79,10 @@ namespace Griffin.Framework.Validation
         /// </summary>
         /// <param name="propertyName">Property name (not translated)</param>
         /// <param name="rule">Rule that didn't validate.</param>
-        public void Add(string propertyName, IRule rule)
+        /// <param name="errorMessage">The error message.</param>
+        public void Add(string propertyName, IRule rule, string errorMessage)
         {
-            _errors.Add(new ValidationError(propertyName, rule));
+            _errors.Add(new ValidationError(propertyName, rule, errorMessage));
         }
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Griffin.Framework.Validation
         /// </example>
         public void Add(string propertyName, string errorText)
         {
-            _errors.Add(new ValidationError(propertyName, new TranslationRule(errorText)));
+            _errors.Add(new ValidationError(propertyName, null, errorText));
         }
 
         /// <summary>

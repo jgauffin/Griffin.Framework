@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Framework.Exceptions;
 using NSubstitute;
 using Xunit;
 

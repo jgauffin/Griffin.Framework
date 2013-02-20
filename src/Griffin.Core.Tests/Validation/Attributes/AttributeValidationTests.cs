@@ -17,7 +17,7 @@ namespace Griffin.Framework.Tests.Validation.Attributes
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo(1053);
             Validator.Add(new AttributeProvider());
 
-            AttributeModel model = new AttributeModel();
+            var model = new AttributeModel();
             model.Age = 3;
             var errors = Validator.Validate(model);
 

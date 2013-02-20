@@ -1,4 +1,6 @@
-﻿namespace Griffin.Framework.Tests.Validation
+﻿using Griffin.Framework.Validation.Fluent;
+
+namespace Griffin.Framework.Tests.Validation
 {
     class Model3Validator : FluentValidator<Model3>
     {

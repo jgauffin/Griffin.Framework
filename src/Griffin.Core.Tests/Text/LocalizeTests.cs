@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
+using Griffin.Framework.Text;
 using NSubstitute;
 using Xunit;
 
 namespace Griffin.Framework.Tests.Text
 {
+    [Localize("sv-se", "Tjenna världen!")]
+    [Localize("sv-se", "Strict", "Hej världen!")]
+    [Localize("en-us", "Hello world!")]
     public class LocalizeTests
     {
         [Fact]
@@ -13,7 +18,7 @@ namespace Griffin.Framework.Tests.Text
         {
             Localize.A.DataSource = null;
 
-            Assert.Throws<InvalidOperationException>(() => Localize.A.String("MyId", "Hello"));
+            Assert.Throws<InvalidOperationException>(() => Localize.A.String("/", "MyId", "Hello"));
         }
 
 
@@ -71,29 +76,55 @@ namespace Griffin.Framework.Tests.Text
         }
 
         [Fact]
+        [Localize("en-us", "Hello world")]
         public void Training_Method_Found()
         {
             Localize.A.TrainingMode = true;
             Localize.A.SourceCulture = Thread.CurrentThread.CurrentCulture;
             Localize.A.DataSource = Substitute.For<ITextDataSource>();
-            Localize.A.DataSource.Get("Griffin.Tests.Text.LocalizeTests.Training_Method_Found").Returns("Mamma");
+            Localize.A.DataSource.Get(GetType().FullName +  ".Training_Method_Found").Returns("Mamma");
 
-            var text = Localize.A.Method(MethodBase.GetCurrentMethod(), "Hello");
+            var text = Localize.A.Method(MethodBase.GetCurrentMethod());
 
             Assert.Equal("Mamma", text);
         }
 
         [Fact]
-        public void Training_Method_Found_MetaData()
+        [Localize("en-us", "Hello world")]
+        public void Training_Method_Found_Default()
+        {
+            Localize.A.TrainingMode = true;
+            Localize.A.SourceCulture = new CultureInfo("en-us");
+
+            var text = Localize.A.Method(MethodBase.GetCurrentMethod());
+
+            Assert.Equal("Hello world", text);
+        }
+
+        [Fact]
+        [Localize("en-us", "Key", "Hello world")]
+        public void Training_Method_FoundMeta()
         {
             Localize.A.TrainingMode = true;
             Localize.A.SourceCulture = Thread.CurrentThread.CurrentCulture;
             Localize.A.DataSource = Substitute.For<ITextDataSource>();
-            Localize.A.DataSource.Get("Griffin.Tests.Text.LocalizeTests.Training_Method_Found_MetaData", "Failed").Returns("Mamma");
+            Localize.A.DataSource.Get(GetType().FullName + ".Training_Method_FoundMeta/Key").Returns("Mamma");
 
-            var text = Localize.A.Method(MethodBase.GetCurrentMethod(), "Failed", "Hello");
+            var text = Localize.A.Method(MethodBase.GetCurrentMethod(), "Key");
 
             Assert.Equal("Mamma", text);
+        }
+
+        [Fact]
+        [Localize("en-us", "Key", "Hello world2")]
+        public void Training_Method_FoundMeta_Default()
+        {
+            Localize.A.TrainingMode = true;
+            Localize.A.SourceCulture = new CultureInfo("en-us");
+
+            var text = Localize.A.Method(MethodBase.GetCurrentMethod(), "Key");
+
+            Assert.Equal("Hello world2", text);
         }
 
         [Fact]
@@ -121,6 +152,29 @@ namespace Griffin.Framework.Tests.Text
 
             Assert.Equal("-(MyId)-", text);
             ((ITextRepository) Localize.A.DataSource).Received().Create("MyId", "");
+        }
+
+        [Fact]
+        public void Type()
+        {
+            Localize.A.TrainingMode = false;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("sv-se");
+
+            var text = Localize.A.Type<LocalizeTests>();
+
+            Assert.Equal("Tjenna världen!", text);
+        }
+
+
+        [Fact]
+        public void Type_Meta()
+        {
+            Localize.A.TrainingMode = false;
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("sv-se");
+
+            var text = Localize.A.Type<LocalizeTests>("Strict");
+
+            Assert.Equal("Hej världen!", text);
         }
     }
 }

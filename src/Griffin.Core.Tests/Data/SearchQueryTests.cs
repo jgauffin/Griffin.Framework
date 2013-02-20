@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Framework.Data;
 using Xunit;
 
 namespace Griffin.Framework.Tests.Data

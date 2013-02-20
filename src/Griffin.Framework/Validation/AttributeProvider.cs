@@ -44,7 +44,7 @@ namespace Griffin.Framework.Validation
             if (!Contains(type))
                 return null;
 
-            var validator = new ModelValidator();
+            var validator = new ModelValidator(type);
             var attributeType = typeof (ValidateAttribute);
 
 
