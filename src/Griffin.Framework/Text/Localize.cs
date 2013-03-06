@@ -1,11 +1,107 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
 namespace Griffin.Framework.Text
 {
+
+    public class StringLocalizer
+    {
+        private readonly ITextDataSource _dataSource;
+
+        public StringLocalizer(ITextDataSource dataSource, bool autoInsert)
+        {
+            _dataSource = dataSource;
+        }
+
+/// <summary>
+        ///     Translate a text
+        /// </summary>
+        /// <param name="identifier">The identifier.</param>
+        /// <param name="text">
+        ///     Text to translate. Should contain <c>{0}</c> etc.
+        /// </param>
+        /// <returns>Depends on the training mode</returns>
+        /// <remarks>
+        ///     Will use <c>"/"</c> as the path.
+        /// </remarks>
+        public string String(string identifier, string text)
+        {
+            return String("/", identifier, text);
+        }
+
+        /// <summary>
+        ///     Translate a text
+        /// </summary>
+        /// <param name="path">Path defines where the string being localized is located. It's used to make the administration easier, see remarks.</param>
+        /// <param name="identifier">The identifier.</param>
+        /// <param name="text">
+        ///     Text to translate. Should contain <c>{0}</c> etc.
+        /// </param>
+        /// <returns>Depends on the training mode</returns>
+        /// <remarks>
+        ///     Path can vary. For types it might be the Namespace + TypeName (<c>Some.NameSpace.TypeName</c>) while
+        ///     for HTML views it might be the view uri (<c>/Views/ModelName/SomeViewName</c>).
+        /// </remarks>
+        public string String(string path, string identifier, string text)
+        {
+            if (path == null) throw new ArgumentNullException("path");
+            if (identifier == null) throw new ArgumentNullException("identifier");
+
+            var value = _dataSource.Get(identifier);
+            if (!string.IsNullOrEmpty(value))
+                return value;
+
+            if (!TrainingMode)
+                return text;
+
+            var repository = DataSource as ITextRepository;
+            if (repository != null)
+            {
+                repository.Create(identifier, "");
+            }
+
+            return "-(" + identifier + ")-";
+        }
+
+        /// <summary>
+        ///     Transate a text
+        /// </summary>
+        /// <param name="path">Path defines where the string being localized is located. It's used to make the administration easier, see remarks.</param>
+        /// <param name="identifier">The identifier.</param>
+        /// <param name="metadataName"></param>
+        /// <param name="text">
+        ///     Text to translate. Should contain <c>{0}</c> etc.
+        /// </param>
+        /// <returns>Depends on the training mode</returns>
+        /// <remarks>
+        ///     Path can vary. For types it might be the Namespace + TypeName (<c>Some.NameSpace.TypeName</c>) while
+        ///     for HTML views it might be the view uri (<c>/Views/ModelName/SomeViewName</c>).
+        /// </remarks>
+        public string String(string path, string identifier, string metadataName, string text)
+        {
+            if (DataSource == null)
+                throw new InvalidOperationException("You have to assign a source to the 'DataSource' property first.");
+
+            var value = DataSource.Get(identifier, metadataName);
+            if (!string.IsNullOrEmpty(value))
+                return value;
+
+            if (!TrainingMode)
+                return text;
+
+            var repository = DataSource as ITextRepository;
+            if (repository != null)
+            {
+                repository.Create(identifier, "");
+            }
+
+            return MissingField(identifier);
+        }
+    }
+
     /// <summary>
     ///     Text provider allows you to get easier localization.
     /// </summary>
@@ -23,13 +119,20 @@ namespace Griffin.Framework.Text
     public class Localize
     {
         private static readonly Localize _instance = new Localize();
-        private readonly ConcurrentDictionary<string, string> _typeCache = new ConcurrentDictionary<string, string>();
+    ();
         private ITextDataSource _dataSource = new StringTableProvider(StringResources.ResourceManager);
+        private TypeLocalization _typeLocalization;
+
+        private Localize()
+        {
+            _typeLocalization = new TypeLocalization(_dataSource);
+        }
 
         public static Localize A
         {
             get { return _instance; }
         }
+
 
         /// <summary>
         ///     Gets or sets if we should report missing prompts
@@ -63,7 +166,14 @@ namespace Griffin.Framework.Text
                         "You must specify a source (Localize.DataSource = XXXX) before using the localize class.");
                 return _dataSource;
             }
-            set { _dataSource = value; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentException("value");
+
+                _dataSource = value;
+                _typeLocalization = new TypeLocalization(_dataSource);
+            }
         }
 
         /// <summary>
@@ -71,45 +181,6 @@ namespace Griffin.Framework.Text
         /// </summary>
         public event EventHandler<TextMissingEventArgs> TextMissing = delegate { };
 
-        private string GetTypeString(Type type, string identifier, string metadataName)
-        {
-            var str = "";
-            var key = type.FullName + "/" + identifier + "/" + metadataName;
-
-            //TODO: Caches for different languages.
-            if (_typeCache.TryGetValue(key, out str))
-                return str;
-
-            string text = null;
-            if (identifier != "Class")
-            {
-                var members = type.GetMember(identifier);
-                foreach (var member in members)
-                {
-                    var attributes = member.GetCustomAttributes<LocalizeAttribute>();
-                    var attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
-                    if (attribute != null)
-                    {
-                        text = attribute.Text;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                var attributes = type.GetCustomAttributes<LocalizeAttribute>();
-                var attribute = attributes.FirstOrDefault(x => x.MetadataName == metadataName);
-                if (attribute != null)
-                {
-                    text = attribute.Text;
-                }
-            }
-
-            if (text != null)
-                _typeCache.AddOrUpdate(key, text, (k, v) => text);
-
-            return text;
-        }
 
         public string Method(MethodBase methodBase, string metadataName)
         {
@@ -258,25 +329,11 @@ namespace Griffin.Framework.Text
         /// <returns></returns>
         public string Type<T>(string name, string metadataName) where T : class
         {
-            var value = DataSource.Get(name, metadataName);
-            if (!string.IsNullOrEmpty(value))
-                return value;
+            var text = _typeLocalization.Translate(typeof (T), name, metadataName);
+            if (text != null)
+                return text;
 
-
-            var str = GetTypeString(typeof (T), name, metadataName);
-            if (!TrainingMode)
-                return str ?? name + "." + metadataName;
-
-            if (str != null)
-            {
-                var repository = DataSource as ITextRepository;
-                if (repository != null)
-                {
-                    repository.Create(name, metadataName, str);
-                }
-            }
-
-            return MissingField(name + "." + metadataName);
+            return MissingField(TypeLocalization.CreateKey(typeof (T), name, metadataName));
         }
 
         /// <summary>
@@ -307,23 +364,9 @@ namespace Griffin.Framework.Text
         /// <returns></returns>
         public string Type(Type type, string name)
         {
-            var value = DataSource.Get(name);
-            if (!string.IsNullOrEmpty(value))
-                return value;
-
-
-            var str = GetTypeString(type, name, "");
+            var text = _typeLocalization.Translate(type, name);
             if (!TrainingMode)
-                return str ?? name;
-
-            if (str != null)
-            {
-                var repository = DataSource as ITextRepository;
-                if (repository != null)
-                {
-                    repository.Create(name, str);
-                }
-            }
+                return text ?? name;
 
             return MissingField(name);
         }

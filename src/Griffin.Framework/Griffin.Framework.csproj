@@ -114,13 +114,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>StringResources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Text\IDataSourceProvider.cs" />
+    <Compile Include="Text\ILanguageCache.cs" />
     <Compile Include="Text\ITextDataSource.cs" />
     <Compile Include="Text\ITextItem.cs" />
     <Compile Include="Text\ITextRepository.cs" />
     <Compile Include="Text\Localize.cs" />
     <Compile Include="Text\LocalizeAttribute.cs" />
+    <Compile Include="Text\MemoryLanguageCache.cs" />
     <Compile Include="Text\NoTextProvider.cs" />
     <Compile Include="Text\TextMissingEventArgs.cs" />
+    <Compile Include="Text\TypeLocalization.cs" />
     <Compile Include="Validation\AttributeProvider.cs" />
     <Compile Include="Validation\Attributes\AlphaNumericAttribute.cs" />
     <Compile Include="Validation\Attributes\BetweenAttribute.cs" />

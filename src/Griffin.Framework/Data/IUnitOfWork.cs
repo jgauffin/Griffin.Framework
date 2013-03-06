@@ -8,7 +8,7 @@ namespace Griffin.Framework.Data
     public interface IUnitOfWork : IDisposable
     {
         /// <summary>
-        /// Save all changes
+        /// Add all changes
         /// </summary>
         void SaveChanges();
     }

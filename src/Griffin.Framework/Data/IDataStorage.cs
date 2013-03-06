@@ -16,7 +16,7 @@
         TEntity Load(TKey id);
 
         /// <summary>
-        /// Save an entity
+        /// Add an entity
         /// </summary>
         /// <param name="entity">Entity to save</param>
         /// <remarks>New items will be created while existing items will be updated.</remarks>
