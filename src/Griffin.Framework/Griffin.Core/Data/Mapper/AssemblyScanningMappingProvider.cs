@@ -1,0 +1,194 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+namespace Griffin.Data.Mapper
+{
+    /// <summary>
+    ///     Scans all assemblies in the current <c>AppDomain</c> after types that implement <see cref="IEntityMapper" />.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         All mappers are added as created instances to an internal cache for fast access during mapping operations.
+    ///         Hence it's important
+    ///         that they are thread safe and considered as singletons when this class is used.
+    ///     </para>
+    ///     <para>
+    ///     </para>
+    /// </remarks>
+    public class AssemblyScanningMappingProvider : IMappingProvider
+    {
+        private readonly Dictionary<Type, object> _mappers = new Dictionary<Type, object>();
+        private readonly IList<Assembly> _scannedAssemblies = new List<Assembly>();
+
+        /// <summary>
+        ///     Ignore mapper classes which are invalid when locating all mappings in the loaded assemblies.
+        /// </summary>
+        /// <remarks>
+        ///     <para>The <c>Scan()</c> method </para>
+        /// </remarks>
+        public bool IgnoreInvalidMappers { get; set; }
+
+        /// <summary>
+        ///     If <c>true</c>, we'll replace the first mapper if we encounter a second mapper for the same entity.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <c>false</c> means that an exception will be thrown
+        ///     </para>
+        /// </remarks>
+        public bool ReplaceDuplicateMappers { get; set; }
+
+        /// <summary>
+        ///     Retrieve a mapper.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to retrieve a mapper for.</typeparam>
+        /// <returns>Mapper</returns>
+        /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
+        /// <remarks>
+        ///     <para>
+        ///         Do note that the mapper must implement <see cref="IEntityMapper{TEntity}" /> interface for this method to work.
+        ///     </para>
+        /// </remarks>
+        public IEntityMapper Get<TEntity>()
+        {
+            object mapper;
+            if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+            {
+                if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof (TEntity));
+            }
+
+            var genericMapper = mapper as IEntityMapper<TEntity>;
+            if (genericMapper == null)
+                throw new MappingException(typeof (TEntity),
+                    "The mapper for '" + typeof (TEntity).FullName +
+                    "' must implement the generic interface 'IEntityMapper<T>' for this method to work.");
+
+            return genericMapper;
+        }
+
+        /// <summary>
+        ///     Retrieve a mapper.
+        /// </summary>
+        /// <typeparam name="T">Type of entity to retrieve a mapper for.</typeparam>
+        /// <param name="entityType">Type of entity to get a mapper for</param>
+        /// <returns>Mapper</returns>
+        /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
+        public IEntityMapper Get(Type entityType)
+        {
+            if (entityType == null) throw new ArgumentNullException("entityType");
+
+            object mapper;
+            if (!_mappers.TryGetValue(entityType, out mapper))
+            {
+                if (!_mappers.TryGetValue(entityType, out mapper))
+                    throw new MappingNotFoundException(entityType);
+            }
+
+            return (IEntityMapper) mapper;
+        }
+
+        /// <summary>
+        ///     Scan all loaded assemblies in the current domain.
+        /// </summary>
+        public void Scan()
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies)
+            {
+                if (assembly == Assembly.GetExecutingAssembly())
+                    continue;
+                if (assembly.IsDynamic)
+                    continue;
+
+                Scan(assembly);
+            }
+        }
+
+        /// <summary>
+        ///     Scan all loaded assemblies in the current domain.
+        /// </summary>
+        /// <param name="assembly">Assembly to scan for types that implement <see cref="IEntityMapper" />.,</param>
+        public void Scan(Assembly assembly)
+        {
+            if (_scannedAssemblies.Contains(assembly))
+                return;
+
+            var types = assembly.GetTypes().Where(x => typeof (IEntityMapper).IsAssignableFrom(x));
+            foreach (var type in types)
+            {
+                if (type.IsAbstract || type.IsInterface)
+                    continue;
+
+                object instance;
+                Type entityType;
+                if (type.GetGenericArguments().Length > 0)
+                    continue;
+
+                if (type.BaseType != null && type.BaseType.GenericTypeArguments.Length == 1)
+                {
+                    entityType = type.BaseType.GenericTypeArguments[0];
+                    instance = CreateInstance(type);
+                }
+                else
+                {
+                    var attr = type.GetCustomAttribute<MappingForAttribute>();
+                    if (attr != null)
+                    {
+                        instance = CreateInstance(type);
+                        entityType = attr.EntityType;
+                    }
+                    else
+                    {
+                        var genericInterface = type.GetInterface("IEntityMapper`1");
+                        if (genericInterface == null)
+                        {
+                            if (IgnoreInvalidMappers)
+                                continue;
+
+                            throw new MappingException(type,
+                                "Entity mappers must either implement IEntityMapper<T> or be decorated with the [MappingFor(typeof(YourEntity))] attribute. Adjust '" +
+                                type.FullName + "' accordingly.");
+                        }
+
+
+                        entityType = genericInterface.GenericTypeArguments[0];
+                        instance = CreateInstance(type);
+                    }
+                }
+
+
+                if (_mappers.ContainsKey(entityType) && !ReplaceDuplicateMappers)
+                    throw new MappingException(entityType,
+                        string.Format("Two mappers found for entity '{0}'. '{1}' and '{2}'. Remove one of them.",
+                            entityType.FullName, type.FullName, _mappers[entityType].GetType().FullName));
+
+                ((IEntityMapper) instance).Freeze();
+                _mappers[entityType] = instance;
+            }
+        }
+
+        private static object CreateInstance(Type type)
+        {
+            object instance;
+            try
+            {
+                instance = Activator.CreateInstance(type);
+            }
+            catch (MissingMethodException exception)
+            {
+                throw new MappingException(type, "All mappers must have a default constructor (can be non public).",
+                    exception);
+            }
+            catch (Exception exception)
+            {
+                throw new MappingException(type,
+                    "Failed to initialize mapper class. Is the mappings correct? Check inner exception for more information.",
+                    exception);
+            }
+            return instance;
+        }
+    }
+}

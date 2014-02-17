@@ -1,0 +1,7 @@
+﻿makecert -sv GriffinNetworking.pvk -r -n "CN=GriffinNetworking" GriffinNetworking.cer
+makecert -ic GriffinNetworking.cer -iv GriffinNetworking.pvk -n "CN=localhost" -sv GriffinNetworkingTemp.pvk -pe -sky exchange GriffinNetworkingTemp.cer
+cert2spc GriffinNetworkingTemp.cer GriffinNetworkingTemp.spc
+pvkimprt -pfx GriffinNetworkingTemp.spc GriffinNetworkingTemp.pvk
+
+http://stackoverflow.com/questions/9982865/sslstream-example-how-do-i-get-certificates-that-work
+http://www.microsoft.com/en-us/download/details.aspx?id=6563

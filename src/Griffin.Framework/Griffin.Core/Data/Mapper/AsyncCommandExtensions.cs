@@ -1,0 +1,353 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Threading.Tasks;
+
+namespace Griffin.Data.Mapper
+{
+    /// <summary>
+    ///     Asynchronous extensions for <see cref="DbCommand" />.
+    /// </summary>
+    public static class AsyncCommandExtensions
+    {
+        public static async Task InsertAsync<TEntity>(this DbCommand cmd, TEntity entity)
+        {
+            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            mapper.CommandBuilder.InsertCommand(cmd, entity);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public static async Task UpdateAsync<TEntity>(this DbCommand cmd, TEntity entity)
+        {
+            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            mapper.CommandBuilder.UpdateCommand(cmd, entity);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public static async Task DeleteAsync<TEntity>(this DbCommand cmd, TEntity entity)
+        {
+            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            mapper.CommandBuilder.DeleteCommand(cmd, entity);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+
+        /// <summary>
+        ///     Fetches the first found entity asynchronously
+        /// </summary>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <returns>
+        ///     entity
+        /// </returns>
+        /// <exception cref="EntityNotFoundException">Failed to find entity</exception>
+        /// <remarks>
+        ///     <para>Use this method when an entity is expected to be returned.</para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// public async Task<User> GetUser(int userId)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
+        ///         cmd.AddParameter("id", userId);
+        ///         return await cmd.FirstAsync<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd)
+        {
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return FirstAsync(cmd, mapping);
+        }
+
+        /// <summary>
+        ///     Fetches the first found entity asynchronously
+        /// </summary>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="mapper"></param>
+        /// <returns>
+        ///     entity
+        /// </returns>
+        /// <exception cref="EntityNotFoundException">Failed to find entity</exception>
+        /// <remarks>
+        ///     <para>Use this method when an entity is expected to be returned.</para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// public async Task<User> GetUser(int userId)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
+        ///         cmd.AddParameter("id", userId);
+        ///         return await cmd.FirstAsync<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        {
+            var result = await cmd.FirstOrDefaultAsync(mapper);
+            if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
+            {
+                throw new EntityNotFoundException("Failed to find entity of type '" + typeof (TEntity).FullName + "'.",
+                    cmd);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///     Fetches the first found entity asynchronously
+        /// </summary>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <returns>
+        ///     Entity if found; otherwise <c>null</c>.
+        /// </returns>
+        /// <remarks>
+        ///     <para>Use this method when an entity is expected to be returned.</para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// public async Task<User> GetUser(int userId)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
+        ///         cmd.AddParameter("id", userId);
+        ///         return await cmd.FirstAsync<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return FirstOrDefaultAsync(cmd, mapping);
+        }
+
+        /// <summary>
+        ///     Fetches the first found entity asynchronously
+        /// </summary>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="mapper">Mapper used to convert rows to entities</param>
+        /// <returns>
+        ///     Entity if found; otherwise <c>null</c>.
+        /// </returns>
+        /// <remarks>
+        ///     <para>Use this method when an entity is expected to be returned.</para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// public async Task<User> GetUser(int userId)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
+        ///         cmd.AddParameter("id", userId);
+        ///         return await cmd.FirstAsync<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+            if (mapper == null) throw new ArgumentNullException("mapper");
+
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                    return default(TEntity);
+
+                var entity = (TEntity) mapper.Create(reader);
+                mapper.Map(reader, entity);
+                return entity;
+            }
+        }
+
+        /// <summary>
+        ///     Return an enumerable which uses lazy loading of each row.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <returns>Lazy loaded enumerator</returns>
+        /// <remarks>
+        ///     <para>
+        ///         The command is executed asynchronously.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        ///     <para>
+        ///         As the returned item is a custom lazy loaded enumerable it's quite fast as nothing is mapped if you do like:
+        ///     </para>
+        ///     <example>
+        ///         <code>
+        /// <![CDATA[
+        /// using (var cmd = connection.CreateCommand())
+        /// {
+        ///     cmd.CommandText = "SELECT * FROM Users";
+        ///     var users = await cmd.ToEnumerable<User>();
+        ///     return users.Skip(1000).Take(50).ToList();
+        /// }
+        /// ]]>
+        /// </code>
+        ///     </example>
+        ///     <para>
+        ///         Do note that it will still read all rows and is therefore slower than paging in the SQL server. It will however
+        ///         use a lot less
+        ///         allocations than building a complete list first.
+        ///     </para>
+        ///     <para>
+        ///         If the result returnd from the query is all records that you want it's probably more effecient to use
+        ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
+        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        /// </remarks>
+        public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            return ToEnumerableAsync<TEntity>(cmd, false);
+        }
+
+        /// <summary>
+        ///     Return an enumerable which uses lazy loading of each row.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="ownsConnection">
+        ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
+        ///     remarks.
+        /// </param>
+        /// <returns>Lazy loaded enumerator</returns>
+        /// <remarks>
+        ///     <para>
+        ///         The command is executed asynchronously.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        /// </remarks>
+        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
+            bool ownsConnection)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            var reader = await cmd.ExecuteReaderAsync();
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+        }
+
+
+        /// <summary>
+        ///     Return an enumerable which uses lazy loading of each row.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="ownsConnection">
+        ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
+        ///     remarks.
+        /// </param>
+        /// <param name="mapper">Mapper used to convert rows to entities</param>
+        /// <returns>Lazy loaded enumerator</returns>
+        /// <remarks>
+        ///     <para>
+        ///         The command is executed asynchronously.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        /// </remarks>
+        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
+            bool ownsConnection, IEntityMapper<TEntity> mapper)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+            if (mapper == null) throw new ArgumentNullException("mapper");
+
+            var reader = await cmd.ExecuteReaderAsync();
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+        }
+
+
+        /// <summary>
+        ///     Generate a complete list before returning.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <returns>A list which is generated asynchronously.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         Uses the <see cref="EntityMappingProvider" /> to find the correct mapper.
+        ///     </para>
+        ///     <para>
+        ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
+        ///     </para>
+        /// </remarks>
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return await ToListAsync(cmd, mapping);
+        }
+
+        /// <summary>
+        ///     Generate a complete list before returning.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="mapper">Mapper to use when converting rows to entities</param>
+        /// <returns>A list which is generated asynchronously.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
+        ///     </para>
+        /// </remarks>
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        {
+            if (cmd == null) throw new ArgumentNullException("cmd");
+            if (mapper == null) throw new ArgumentNullException("mapper");
+
+            var items = new List<TEntity>();
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var entity = mapper.Create(reader);
+                    mapper.Map(reader, entity);
+                    items.Add((TEntity) entity);
+                }
+            }
+            return items;
+        }
+    }
+}

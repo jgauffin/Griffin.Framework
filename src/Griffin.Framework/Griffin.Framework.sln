@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core", "Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite", "Griffin.Data.Sqlite\Griffin.Data.Sqlite.csproj", "{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Tests", "Griffin.Core.Tests\Griffin.Core.Tests.csproj", "{CBFF69B2-8340-412B-96E1-330131663F98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite.IntegrationTests", "Griffin.Data.Sqlite.IntegrationTests\Griffin.Data.Sqlite.IntegrationTests.csproj", "{069652A2-F059-4E8B-8161-B22262F8CC24}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBFF69B2-8340-412B-96E1-330131663F98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBFF69B2-8340-412B-96E1-330131663F98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBFF69B2-8340-412B-96E1-330131663F98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBFF69B2-8340-412B-96E1-330131663F98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{069652A2-F059-4E8B-8161-B22262F8CC24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{069652A2-F059-4E8B-8161-B22262F8CC24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{069652A2-F059-4E8B-8161-B22262F8CC24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{069652A2-F059-4E8B-8161-B22262F8CC24}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
