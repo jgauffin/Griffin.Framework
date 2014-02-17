@@ -1,3 +1,0 @@
-﻿FirstName: Förnamn
-LastName: Efternamn
-Age: Ålder
