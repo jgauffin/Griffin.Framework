@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using FluentAssertions;
 using Griffin.Data;
-using Griffin.Data.Mapper;
 using Xunit;
 
 namespace Griffin.Core.Tests.Data

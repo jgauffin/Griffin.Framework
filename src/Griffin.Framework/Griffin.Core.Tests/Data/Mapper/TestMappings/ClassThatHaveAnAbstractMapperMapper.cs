@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mapper;
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {
@@ -11,5 +10,6 @@ namespace Griffin.Core.Tests.Data.Mapper.TestMappings
         {
         }
 
+       
     }
 }

@@ -23,8 +23,8 @@ namespace Griffin.Data.Mapper
         private readonly bool _ownsConnection;
         private IDbCommand _command;
         private TEntity _current;
-        private bool _hasRead = false;
         private IDataReader _reader;
+        private bool _hasRead = false;
 
         public AdoNetEntityEnumerator(IDbCommand command, IDataReader reader, IEntityMapper mapper, bool ownsConnection)
         {

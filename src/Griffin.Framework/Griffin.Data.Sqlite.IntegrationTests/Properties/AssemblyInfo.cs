@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Griffin.Data.Sqlite.IntegrationTests")]
+[assembly: AssemblyTitle("Griffin.Data.IntegrationTests.Sqlite")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Griffin.Data.Sqlite.IntegrationTests")]
+[assembly: AssemblyProduct("Griffin.Data.IntegrationTests.Sqlite")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7460bd6d-5aa6-417f-8bc5-71e2ca6ee4d3")]
+[assembly: Guid("b47f0a26-5a6a-4e26-9a8a-f692fbfd3cff")]
 
 // Version information for an assembly consists of the following four values:
 //

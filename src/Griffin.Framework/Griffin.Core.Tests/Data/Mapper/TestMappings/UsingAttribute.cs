@@ -85,6 +85,40 @@ namespace Griffin.Core.Tests.Data.Mapper.TestMappings
         public IDictionary<string, IPropertyMapping> Properties { get; private set; }
 
         /// <summary>
+        /// Get the primary key 
+        /// </summary>
+        /// <param name="entity">Entity to fetch key values from</param>
+        /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key</returns>
+        /// <example>
+        /// <para>If you have a single primary key (like an auto incremented column)</para>
+        /// <code>
+        /// <![CDATA[
+        /// var user = new User { Id = 24, Name = "Jonas" };
+        /// var mapping = new EntityMapping<User>();
+        /// var pk = mapping.GetKeys(user);
+        /// 
+        /// Console.WriteLine(pk[0].Name + " = " + pk[0].Value); // prints "Id = 24"
+        /// ]]>
+        /// </code>
+        /// <para>
+        /// A composite key:
+        /// </para>
+        /// <code>
+        /// <![CDATA[
+        /// var address = new UserAddress{ UserId = 24, ZipCode  = "1234", City = "Falun" };
+        /// var mapping = new EntityMapping<UserAddress>();
+        /// var pk = mapping.GetKeys(address);
+        /// 
+        /// Console.WriteLine(pk[0].Value + ", " + pk[1].Value); // prints "24, 1234"
+        /// ]]>
+        /// </code>
+        /// </example>
+        public KeyValuePair<string, object>[] GetKeys(object entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Used to create SQL commands which is specific for this entity.
         /// </summary>
         /// <remarks>

@@ -1,9 +1,8 @@
 ﻿using System;
 using Griffin.Net.Buffers;
-using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 
-namespace Griffin.Net
+namespace Griffin.Net.Channels
 {
     /// <summary>
     /// Used to create secure channels for our library.

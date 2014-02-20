@@ -1,36 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Mapper.CommandBuilders;
 
 namespace Griffin.Data.Mapper
 {
     /// <summary>
     ///     Asynchronous extensions for <see cref="DbCommand" />.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// All methods which do not take a mapper class uses the <see cref="EntityMappingProvider"/> to identify the mapper to use when converting to/from rows in the database. SQL commands
+    /// for CRUD operations are provided by a <see cref="ICommandBuilder"/> implementation (specific for each database engine).
+    /// </para>
+    /// <para>
+    /// CRUD operations are typically performed on the <see cref="IAdoNetUnitOfWork"/> or <see cref="IDbConnection"/> instead as you do not have to create your own command then.
+    /// </para>
+    /// </remarks>
     public static class AsyncCommandExtensions
     {
-        public static async Task InsertAsync<TEntity>(this DbCommand cmd, TEntity entity)
-        {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.InsertCommand(cmd, entity);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public static async Task UpdateAsync<TEntity>(this DbCommand cmd, TEntity entity)
-        {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.UpdateCommand(cmd, entity);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public static async Task DeleteAsync<TEntity>(this DbCommand cmd, TEntity entity)
-        {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.DeleteCommand(cmd, entity);
-            await cmd.ExecuteNonQueryAsync();
-        }
-
+        
 
         /// <summary>
         ///     Fetches the first found entity asynchronously
@@ -39,7 +30,7 @@ namespace Griffin.Data.Mapper
         /// <returns>
         ///     entity
         /// </returns>
-        /// <exception cref="EntityNotFoundException">Failed to find entity</exception>
+        /// <exception cref="EntityNotFoundException">Failed to find specified entity.</exception>
         /// <remarks>
         ///     <para>Use this method when an entity is expected to be returned.</para>
         /// </remarks>
@@ -85,12 +76,13 @@ namespace Griffin.Data.Mapper
         ///     {
         ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
         ///         cmd.AddParameter("id", userId);
-        ///         return await cmd.FirstAsync<User>();
+        ///         return await cmd.FirstAsync<User>(new MyCustomMapper());
         ///     }
         /// }
         /// ]]>
         /// </code>
         /// </example>
+        /// <seealso cref="EntityMapper{TEntity}"/>
         public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             var result = await cmd.FirstOrDefaultAsync(mapper);
@@ -104,7 +96,7 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
-        ///     Fetches the first found entity asynchronously
+        ///     Fetches the first row if found.
         /// </summary>
         /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
         /// <returns>
@@ -123,7 +115,7 @@ namespace Griffin.Data.Mapper
         ///     {
         ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
         ///         cmd.AddParameter("id", userId);
-        ///         return await cmd.FirstAsync<User>();
+        ///         return await cmd.FirstOrDefaultAsync<User>();
         ///     }
         /// }
         /// ]]>
@@ -137,8 +129,9 @@ namespace Griffin.Data.Mapper
             return FirstOrDefaultAsync(cmd, mapping);
         }
 
+
         /// <summary>
-        ///     Fetches the first found entity asynchronously
+        ///     Fetches the first row if found.
         /// </summary>
         /// <param name="cmd">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
         /// <param name="mapper">Mapper used to convert rows to entities</param>
@@ -157,12 +150,13 @@ namespace Griffin.Data.Mapper
         ///     {
         ///         cmd.CommandText = "SELECT * FROM Users WHERE Id = @id";
         ///         cmd.AddParameter("id", userId);
-        ///         return await cmd.FirstAsync<User>();
+        ///         return await cmd.FirstOrDefaultAsync<User>(new MyCustomMapping());
         ///     }
         /// }
         /// ]]>
         /// </code>
         /// </example>
+        /// <seealso cref="EntityMapper{TEntity}"/>
         public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
@@ -178,6 +172,7 @@ namespace Griffin.Data.Mapper
                 return entity;
             }
         }
+
 
         /// <summary>
         ///     Return an enumerable which uses lazy loading of each row.
@@ -349,5 +344,6 @@ namespace Griffin.Data.Mapper
             }
             return items;
         }
+
     }
 }

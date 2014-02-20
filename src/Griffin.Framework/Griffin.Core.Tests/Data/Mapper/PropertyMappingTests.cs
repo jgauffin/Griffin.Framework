@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data;
 using FluentAssertions;
-using Griffin.Data.Mapper;
 using Griffin.Core.Tests.Data.Mapper.TestMappings;
+using Griffin.Data.Mapper;
 using NSubstitute;
 using Xunit;
 
@@ -73,6 +73,30 @@ namespace Griffin.Core.Tests.Data.Mapper
             sut.Map(record, actual);
 
             actual.Id.Should().BeNull();
+        }
+
+        [Fact]
+        public void set_Value_db_null()
+        {
+            var record = Substitute.For<IDataRecord>();
+            var actual = new Ok();
+
+            var sut = new PropertyMapping<Ok>("FirstName", (o, o1) => o.FirstName = (string)o1, ok => ok.FirstName);
+            sut.SetColumnValue(actual, DBNull.Value);
+
+            actual.FirstName.Should().Be(null);
+        }
+
+        [Fact]
+        public void set_Value_something()
+        {
+            var record = Substitute.For<IDataRecord>();
+            var actual = new Ok();
+
+            var sut = new PropertyMapping<Ok>("FirstName", (o, o1) => o.FirstName = (string)o1, ok => ok.FirstName);
+            sut.SetColumnValue(actual, "Hello");
+
+            actual.FirstName.Should().Be("Hello");
         }
     }
 }

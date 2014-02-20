@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace Griffin.Data.Mapper
 {
     /// <summary>
-    ///     We did not have a mapping configured for an entity type.
+    /// We did not have a mapping configured for an entity type.
     /// </summary>
     [Serializable]
     public class MappingNotFoundException : MappingException

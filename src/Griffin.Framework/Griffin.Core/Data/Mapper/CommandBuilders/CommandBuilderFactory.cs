@@ -3,12 +3,11 @@
 namespace Griffin.Data.Mapper.CommandBuilders
 {
     /// <summary>
-    ///     Used to produce factories of the correct
+    /// Used to produce factories of the correct 
     /// </summary>
     public class CommandBuilderFactory
     {
-        private static Func<IEntityMapper, ICommandBuilder> _commandBuilder =
-            mapper => new SqlServerCommandBuilder(mapper);
+        private static Func<IEntityMapper, ICommandBuilder> _commandBuilder = mapper => new SqlServerCommandBuilder(mapper);
 
         public static void Assign(Func<IEntityMapper, ICommandBuilder> commandBuilder)
         {
@@ -21,4 +20,5 @@ namespace Griffin.Data.Mapper.CommandBuilders
             return _commandBuilder(mapper);
         }
     }
+
 }

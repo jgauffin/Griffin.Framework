@@ -33,6 +33,10 @@ namespace Griffin.Data
     {
         private static Func<IUnitOfWork> _factoryMethod;
 
+        /// <summary>
+        /// Create a new unit of work.
+        /// </summary>
+        /// <returns>Created UOW</returns>
         public static IUnitOfWork Create()
         {
             if (_factoryMethod == null)

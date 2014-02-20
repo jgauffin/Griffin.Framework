@@ -3,7 +3,7 @@
 namespace Griffin.Data.Mapper.CommandBuilders
 {
     /// <summary>
-    ///     Specializations for Sql Server.
+    /// Specializations for Sql Server.
     /// </summary>
     public class SqlServerCommandBuilder : CommandBuilder
     {
@@ -19,7 +19,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        ///     Uses TRUNCATE TABLE
+        /// Uses TRUNCATE TABLE
         /// </summary>
         /// <param name="command"></param>
         public override void TruncateCommand(IDbCommand command)

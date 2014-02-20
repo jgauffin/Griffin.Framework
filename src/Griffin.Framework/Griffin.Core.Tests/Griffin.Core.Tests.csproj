@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Data\AdoNetUnitOfWorkTests.cs" />
     <Compile Include="Data\CommandExtensionsTests.cs" />
+    <Compile Include="Data\DateTimeExtensionsTests.cs" />
     <Compile Include="Data\EntityNotFoundExceptionTests.cs" />
     <Compile Include="Data\Mapper\AdoNetEntityEnumerableTests.cs" />
     <Compile Include="Data\Mapper\AdoNetEntityEnumeratorTests.cs" />
@@ -90,6 +91,8 @@
     <Compile Include="Data\Mapper\TestMappings\WithInterfaceMapping.cs" />
     <Compile Include="Data\MappingProviderTests.cs" />
     <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
+    <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
+    <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerWrapper.cs" />
     <Compile Include="Logging\Loggers\ConsoleLoggerTests.cs" />

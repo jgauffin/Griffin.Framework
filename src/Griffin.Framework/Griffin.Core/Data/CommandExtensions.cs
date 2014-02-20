@@ -3,6 +3,9 @@ using System.Data;
 
 namespace Griffin.Data
 {
+    /// <summary>
+    /// Extensions for IDbCommand
+    /// </summary>
     public static class CommandExtensions
     {
         /// <summary>
@@ -33,5 +36,6 @@ namespace Griffin.Data
             command.Parameters.Add(p);
             return p;
         }
+
     }
 }

@@ -5,10 +5,10 @@ using System.Data;
 namespace Griffin.Data.Mapper.CommandBuilders
 {
     /// <summary>
-    ///     Base class for command builders
+    /// Base class for command builders
     /// </summary>
     /// <remarks>
-    ///     Creates SQL commands per the SQL92 standard. Inherit this class to customize different commands.
+    /// Creates SQL commands per the SQL92 standard. Inherit this class to customize different commands.
     /// </remarks>
     public class CommandBuilder : ICommandBuilder
     {
@@ -38,6 +38,11 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
 
+        /// <summary>
+        /// Gets prefix to use for data parameters (typically '@' or ':')
+        /// </summary>
+        public virtual char ParameterPrefix { get { return '@'; }}
+
         public virtual void InsertCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
@@ -48,7 +53,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
             foreach (var key in _keys)
             {
                 var value = key.GetValue(entity);
-                if (value == null)
+                if (value == null || value.Equals(0))
                     continue;
                 columns += string.Format("{0}, ", key.ColumnName);
                 values += string.Format("@{0}, ", key.PropertyName);
@@ -90,9 +95,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(
-                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
-                            property.PropertyName));
+                    throw new DataException(string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity, property.PropertyName));
                 where += property.ColumnName + "=" + "@" + property.PropertyName + " AND ";
                 command.AddParameter(property.PropertyName, value);
             }
@@ -113,9 +116,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(
-                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
-                            property.PropertyName));
+                    throw new DataException(string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity, property.PropertyName));
 
                 where += string.Format("{0}=" + "@{1} AND ", property.ColumnName, property.PropertyName);
                 command.AddParameter(property.PropertyName, value);

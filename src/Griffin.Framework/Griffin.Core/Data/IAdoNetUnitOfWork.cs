@@ -18,7 +18,7 @@ namespace Griffin.Data
         IDbCommand CreateCommand();
 
         /// <summary>
-        ///     Execute a SQL query within the transaction
+        /// Execute a SQL query within the transaction
         /// </summary>
         /// <param name="sql"></param>
         /// <param name="parameters"></param>

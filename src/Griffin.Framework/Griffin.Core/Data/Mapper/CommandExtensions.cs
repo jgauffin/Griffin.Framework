@@ -9,32 +9,47 @@ namespace Griffin.Data.Mapper
     /// </summary>
     public static class CommandExtensions
     {
-        public static void Insert<TEntity>(this IDbCommand cmd, TEntity entity)
+        /// <summary>
+        /// Takes an anonymous/dynamic objects and converts it into a WHERE clause using the supplied mapping.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
+        /// <param name="cmd">Command to add parameters to (should end with " WHERE " so that this method can add the constraints properly)</param>
+        /// <param name="mapper">Mapper to use to convert properties to columns</param>
+        /// <param name="constraints">properties in an anonymous object</param>
+        internal static void ApplyConstraints<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper, object constraints)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.InsertCommand(cmd, entity);
-            cmd.ExecuteNonQuery();
-        }
+            string tmp = "";
+            foreach (var kvp in constraints.ToDictionary())
+            {
+                IPropertyMapping propertyMapping;
+                if (!mapper.Properties.TryGetValue(kvp.Key, out propertyMapping))
+                    throw new DataException(typeof(TEntity).FullName + " does not have a property named " + kvp.Key + ".");
 
-        public static void Update<TEntity>(this IDbCommand cmd, TEntity entity)
-        {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.UpdateCommand(cmd, entity);
-            cmd.ExecuteNonQuery();
-        }
 
-        public static void Delete<TEntity>(this IDbCommand cmd, TEntity entity)
-        {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
-            mapper.CommandBuilder.DeleteCommand(cmd, entity);
-            cmd.ExecuteNonQuery();
-        }
+                tmp += string.Format("{0} = {1}{2} AND ",
+                    propertyMapping.ColumnName,
+                    mapper.CommandBuilder.ParameterPrefix,
+                    propertyMapping.PropertyName);
 
+                object value;
+                try
+                {
+                   value= propertyMapping.PropertyToColumnAdapter(kvp.Value);
+                }
+                catch (InvalidCastException exception)
+                {
+                    throw new MappingException(typeof(TEntity), "Failed to cast '" + kvp.Key + "' from '" + kvp.Value.GetType() + "'.", exception);
+                }
+                cmd.AddParameter(propertyMapping.PropertyName, value);
+            }
+
+            cmd.CommandText += tmp.Remove(tmp.Length - 5, 5);
+        }
 
         /// <summary>
         ///     Fetches the first row from a query, but mapped as an entity.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to fetch</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <returns>Entity</returns>
         /// <exception cref="EntityNotFoundException">Failed to find entity</exception>
@@ -63,7 +78,7 @@ namespace Griffin.Data.Mapper
             var result = cmd.FirstOrDefault<TEntity>();
             if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
             {
-                throw new EntityNotFoundException("Failed to find entity of type '" + typeof (TEntity).FullName + "'.",
+                throw new EntityNotFoundException("Failed to find entity of type '" + typeof(TEntity).FullName + "'.",
                     cmd);
             }
 
@@ -73,7 +88,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Fetches the first row from a query, but mapped as an entity.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to fetch</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <param name="mapper">Mapper which can convert the db row to an entity.</param>
         /// <returns>Entity</returns>
@@ -104,7 +119,7 @@ namespace Griffin.Data.Mapper
             var result = cmd.FirstOrDefault(mapper);
             if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
             {
-                throw new EntityNotFoundException("Failed to find entity of type '" + typeof (TEntity).FullName + "'.",
+                throw new EntityNotFoundException("Failed to find entity of type '" + typeof(TEntity).FullName + "'.",
                     cmd);
             }
 
@@ -114,7 +129,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Fetches the first row and maps it as an entity (if found).
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to fetch</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <returns>Entity if found; otherwise <c>null</c>.</returns>
         /// <example>
@@ -143,7 +158,7 @@ namespace Griffin.Data.Mapper
 
 
                 var mapping = EntityMappingProvider.GetMapper<TEntity>();
-                var entity = (TEntity) mapping.Create(reader);
+                var entity = (TEntity)mapping.Create(reader);
                 mapping.Map(reader, entity);
                 return entity;
             }
@@ -152,7 +167,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Fetches the first row and maps it as an entity (if found).
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to fetch</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <param name="mapper">Mapper which can convert the db row to an entity.</param>
         /// <returns>Entity if found; otherwise <c>null</c>.</returns>
@@ -183,14 +198,14 @@ namespace Griffin.Data.Mapper
 
                 var entity = mapper.Create(reader);
                 mapper.Map(reader, entity);
-                return (TEntity) entity;
+                return (TEntity)entity;
             }
         }
 
         /// <summary>
         ///     Return an enumerable which uses lazy loading of each row.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <returns>Lazy loaded enumerator</returns>
         /// <remarks>
@@ -202,7 +217,7 @@ namespace Griffin.Data.Mapper
         ///         done with it.
         ///     </para>
         ///     <para>
-        ///         Hence the different between this method and the <see cref="ToList{TEntity}(System.Data.Common.DbCommand)" />
+        ///         Hence the different between this method and the <see cref="ToList{TEntity}(IDbCommand)" />
         ///         method is
         ///         that this one do not create a list in the memory with all entities. It's therefore perfect if you want to
         ///         process a large amount
@@ -248,7 +263,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Return an enumerable which uses lazy loading of each row.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <param name="ownsConnection">
         ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
@@ -284,7 +299,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         If the result returnd from the query is all records that you want it's probably more effecient to use
-        ///         <see cref="ToList{TEntity}" />.
+        ///         <see cref="ToList{TEntity}(IDbCommand)" />.
         ///     </para>
         /// </remarks>
         /// <example>
@@ -329,7 +344,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Return an enumerable which uses lazy loading of each row.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <param name="ownsConnection">
         ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
@@ -366,7 +381,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         If the result returnd from the query is all records that you want it's probably more effecient to use
-        ///         <see cref="ToList{TEntity}" />.
+        ///         <see cref="ToList{TEntity}(IDbCommand)" />.
         ///     </para>
         /// </remarks>
         /// <example>
@@ -410,10 +425,11 @@ namespace Griffin.Data.Mapper
         }
 
 
+
         /// <summary>
         ///     Generate a complete list before returning.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <returns>A collection of entities, or an empty collection if no entities are found.</returns>
         /// <example>
@@ -453,7 +469,7 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Generate a complete list before returning.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to invoke <c>ExecuteReader()</c> on.</param>
         /// <param name="mapper">Mapper to use when converting the rows to entities</param>
         /// <returns>A collection of entities, or an empty collection if no entities are found.</returns>
@@ -495,7 +511,7 @@ namespace Griffin.Data.Mapper
                 {
                     var entity = mapper.Create(reader);
                     mapper.Map(reader, entity);
-                    items.Add((TEntity) entity);
+                    items.Add((TEntity)entity);
                 }
             }
             return items;

@@ -3,15 +3,15 @@
 namespace Griffin.Data
 {
     /// <summary>
-    ///     Unit of work contract
+    /// Unit of work contract
     /// </summary>
     /// <remarks>
-    ///     <para>
-    ///         Disposing without <c>SaveChanges()</c> being called means that the transaction should be aborted.
-    ///     </para>
+    /// <para>
+    /// Disposing without <c>SaveChanges()</c> being called means that the transaction should be aborted.
+    /// </para>
     /// </remarks>
     /// <example>
-    ///     <code>
+    /// <code>
     /// using (var uow = UnitOfWorkFactory.Create())
     /// {
     ///     var repos = new UserRepository(uow);
@@ -24,7 +24,7 @@ namespace Griffin.Data
     public interface IUnitOfWork : IDisposable
     {
         /// <summary>
-        ///     Commit changes.
+        /// Commit changes.
         /// </summary>
         /// <exception cref="TransactionAlreadyClosedException">UoW have already been saved.</exception>
         void SaveChanges();

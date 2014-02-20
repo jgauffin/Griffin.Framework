@@ -1,16 +1,12 @@
 ﻿using Griffin.Net.Buffers;
-using Griffin.Net.Channels;
+using Griffin.Net.Protocols;
 
-namespace Griffin.Net.Protocols
+namespace Griffin.Net.Channels
 {
     /// <summary>
-    /// Used to create channels.
+    /// Creates a <see cref="TcpChannel"/>.
     /// </summary>
-    /// <remarks>
-    /// <para>Can be used to adjust how all lower level functions should work, like protecting everything with SSL</para>
-    /// <para></para>
-    /// </remarks>
-    public interface ITcpChannelFactory
+    public class TcpChannelFactory : ITcpChannelFactory
     {
         /// <summary>
         /// Create a new channel
@@ -19,6 +15,9 @@ namespace Griffin.Net.Protocols
         /// <param name="encoder">Used to encode outgoing data</param>
         /// <param name="decoder">Used to decode incoming data</param>
         /// <returns>Created channel</returns>
-        ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder);
+        public ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
+        {
+            return new TcpChannel(readBuffer, encoder, decoder);
+        }
     }
 }

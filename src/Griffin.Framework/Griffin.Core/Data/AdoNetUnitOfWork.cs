@@ -124,7 +124,7 @@ namespace Griffin.Data
         }
 
         /// <summary>
-        ///     Execute a SQL query within the transaction
+        /// Execute a SQL query within the transaction
         /// </summary>
         /// <param name="sql"></param>
         /// <param name="parameters"></param>
@@ -143,7 +143,7 @@ namespace Griffin.Data
         }
 
         /// <summary>
-        ///     Execute a SQL query within the transaction
+        /// Execute a SQL query within the transaction
         /// </summary>
         /// <param name="sql"></param>
         public void Execute(string sql)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
@@ -11,13 +10,13 @@ using Xunit;
 
 namespace Griffin.Data.Sqlite.IntegrationTests
 {
-    public class AsyncCommandExtensionsTests : IDisposable
+    public class CommandExtensionsTests : IDisposable
     {
         private readonly SQLiteConnection _connection;
         private readonly string _dbFile;
         private readonly UserTable _userTable = new UserTable();
 
-        public AsyncCommandExtensionsTests()
+        public CommandExtensionsTests()
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
 
@@ -41,14 +40,14 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task First_with_rows_should_succeed()
+        public void First_with_rows_should_succeed()
         {
             _userTable.Insert(_connection, 50);
 
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                var user = await cmd.FirstAsync<User>();
+                var user = cmd.First<User>();
 
                 user.FirstName.Should().Be(_userTable.Users[0].FirstName);
                 user.LastName.Should().Be(_userTable.Users[0].LastName);
@@ -57,31 +56,31 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task First_without_rows_should_throw_exception()
+        public void First_without_rows_should_throw_exception()
         {
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                Action actual = () => cmd.FirstAsync<User>().Wait();
+                Action actual = () => cmd.First<User>();
 
                 actual.ShouldThrow<EntityNotFoundException>();
             }
         }
 
         [Fact]
-        public async Task FirstOrDefault_without_rows_should_return_default()
+        public void FirstOrDefault_without_rows_should_return_default()
         {
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                var actual = await cmd.FirstOrDefaultAsync<User>();
+                var actual = cmd.FirstOrDefault<User>();
 
                 actual.Should().BeNull();
             }
         }
 
         [Fact]
-        public async Task FirstOrDefault_without_one_row_should_return_that_row()
+        public void FirstOrDefault_without_one_row_should_return_that_row()
         {
             _userTable.Insert(_connection, 50);
 
@@ -89,7 +88,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             {
                 cmd.CommandText = "SELECT * FROM Users WHERE FirstName = @firstName";
                 cmd.AddParameter("firstName", "First1");
-                var actual = await cmd.FirstOrDefaultAsync<User>();
+                var actual = cmd.FirstOrDefault<User>();
 
                 actual.Should().NotBeNull();
                 actual.LastName.Should().Be(_userTable.Users[1].LastName);
@@ -100,7 +99,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
        
 
         [Fact]
-        public async Task enumerate()
+        public void enumerate()
         {
             _userTable.Insert(_connection, 50);
             int counter = 0;
@@ -108,7 +107,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                var users = await cmd.ToEnumerableAsync<User>();
+                var users = cmd.ToEnumerable<User>();
                 foreach (var user in users)
                 {
                     Console.WriteLine(user.FirstName);
@@ -120,14 +119,14 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task enumerate_no_rows()
+        public void enumerate_no_rows()
         {
             int counter = 0;
 
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                var users = await cmd.ToEnumerableAsync<User>();
+                var users = cmd.ToEnumerable<User>();
                 foreach (var user in users)
                 {
                     Console.WriteLine(user.FirstName);
@@ -139,7 +138,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task tolist()
+        public void tolist()
         {
             _userTable.Insert(_connection, 50);
             IList<User> users;
@@ -147,21 +146,21 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                users = await cmd.ToListAsync<User>();
+                users = cmd.ToList<User>();
             }
 
             users.Count.Should().Be(50);
         }
 
         [Fact]
-        public async Task tolist_no_rows()
+        public void tolist_no_rows()
         {
             IList<User> users;
 
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT * FROM Users";
-                users = await cmd.ToListAsync<User>();
+                users = cmd.ToList<User>();
             }
 
             users.Count.Should().Be(0);

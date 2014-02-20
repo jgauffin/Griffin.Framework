@@ -36,10 +36,23 @@ namespace Griffin.Data.Mapper
         /// <param name="source">Database record</param>
         /// <param name="destination">Entity instance</param>
         /// <remarks>
-        ///     <para>Will exit the method without any assignment if the value is <c>DBNull.Value</c>.</para>
+        /// <para>Will exit the method without any assignment if the value is <c>DBNull.Value</c>.</para>
         /// </remarks>
         void Map(IDataRecord source, object destination);
 
+        /// <summary>
+        /// Get property value
+        /// </summary>
+        /// <param name="entity">Entity to retrieve value from</param>
+        /// <returns>Property value</returns>
         object GetValue(object entity);
+
+        /// <summary>
+        /// Set property value by specifying a column value (i.e. use the <c>ColumnToPropertyAdapter</c> when assigning the value)
+        /// </summary>
+        /// <param name="entity">Entity to retrieve value from</param>
+        /// <param name="value">Column value</param>
+        /// <returns>Property value</returns>
+        void SetColumnValue(object entity, object value);
     }
 }

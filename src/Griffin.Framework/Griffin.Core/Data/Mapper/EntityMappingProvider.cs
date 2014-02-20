@@ -53,7 +53,7 @@ namespace Griffin.Data.Mapper
                 ((AssemblyScanningMappingProvider) _provider).Scan();
             }
 
-            var mapper = (IEntityMapper<TEntity>) _provider.Get<TEntity>();
+            var mapper= (IEntityMapper<TEntity>) _provider.Get<TEntity>();
             return mapper;
         }
     }

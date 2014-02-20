@@ -6,8 +6,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Griffin.Data.Mapper;
 using Griffin.Core.Tests.Data.Mapper.PropertyMappings;
+using Griffin.Core.Tests.Data.Mapper.TestMappings;
+using Griffin.Data.Mapper;
 using NSubstitute;
 using Xunit;
 
@@ -51,7 +52,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var sut = new EntityMapper<PrivateProperty>("Entities");
             sut.Map(record, actual);
 
-            actual.GetType().GetProperty("Id",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(actual).Should().Be("1");
+            actual.GetType().GetProperty("Id", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(actual).Should().Be("1");
         }
 
         [Fact]
@@ -83,7 +84,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         [Fact]
         public void can_create_instance_no_specified_constructor()
         {
-            
+
             var actual = EntityMapper<PrivateSetterProperty>.CreateInstanceFactory()();
 
             actual.Should().NotBeNull();
@@ -116,6 +117,55 @@ namespace Griffin.Core.Tests.Data.Mapper
             Action actual = () => EntityMapper<NoDefaultConstructor>.CreateInstanceFactory()();
 
             actual.ShouldThrow<MappingException>().And.Message.Should().StartWith("Failed to find a default constructor ");
+        }
+
+        [Fact]
+        public void get_keys()
+        {
+            var expected = new Ok { FirstName = "Arne", Id = "22" };
+
+            var sut = new EntityMapper<Ok>("Users");
+            sut.Freeze();
+            var keys = sut.GetKeys(expected);
+
+            keys.Length.Should().Be(1);
+            keys[0].Value.Should().Be(expected.Id);
+        }
+
+        [Fact]
+        public void get_keys_none_is_mapped()
+        {
+            var expected = new Empty();
+
+            var sut = new EntityMapper<Empty>("Users");
+            var keys = sut.GetKeys(expected);
+
+            keys.Length.Should().Be(0);
+        }
+
+        [Fact]
+        public void only_a_setter_property()
+        {
+            var actual = new JustASetter();
+            var record = Substitute.For<IDataRecord>();
+            record["Prop"].Returns(10);
+
+            var sut = new EntityMapper<JustASetter>("Users");
+            sut.Map(record, actual);
+
+            actual.GetValue().Should().Be(10);
+        }
+
+        private class JustASetter
+        {
+            private int _prop;
+
+            public int Prop { set { _prop = value; } }
+
+            public int GetValue()
+            {
+                return _prop;
+            }
         }
     }
 }

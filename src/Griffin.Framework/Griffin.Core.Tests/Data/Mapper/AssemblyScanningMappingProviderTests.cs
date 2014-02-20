@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Griffin.Data.Mapper;
 using Griffin.Core.Tests.Data.Mapper.TestMappings;
+using Griffin.Data.Mapper;
 using Xunit;
 
 namespace Griffin.Core.Tests.Data.Mapper

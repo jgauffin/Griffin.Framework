@@ -28,6 +28,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Griffin.Core.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,6 +52,8 @@
     <Compile Include="Data\Mapper\AdoNetEntityEnumerator.cs" />
     <Compile Include="Data\Mapper\AssemblyScanningMappingProvider.cs" />
     <Compile Include="Data\Mapper\AsyncCommandExtensions.cs" />
+    <Compile Include="Data\Mapper\AsyncConnectionExtensions.cs" />
+    <Compile Include="Data\Mapper\AsyncUnitOfWorkExtensions.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderFactory.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\ICommandBuilder.cs" />
@@ -72,6 +75,7 @@
     <Compile Include="Data\Mapper\MappingNotFoundException.cs" />
     <Compile Include="Data\Mapper\NamespaceDoc.cs" />
     <Compile Include="Data\Mapper\PropertyMapping.cs" />
+    <Compile Include="Data\Mapper\ValueHandler.cs" />
     <Compile Include="Data\TransactionAlreadyClosedException.cs" />
     <Compile Include="Data\UnitOfWorkFactory.cs" />
     <Compile Include="External\Inflector.cs" />
@@ -141,7 +145,7 @@
     <Compile Include="Net\Protocols\IMessageDecoder.cs" />
     <Compile Include="Net\Protocols\IMessageEncoder.cs" />
     <Compile Include="Net\Protocols\IMessagingListener.cs" />
-    <Compile Include="Net\Protocols\ITcpChannelFactory.cs" />
+    <Compile Include="Net\Channels\ITcpChannelFactory.cs" />
     <Compile Include="Net\Protocols\MicroMsg\IMessageSerializer.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageClient.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoder.cs" />
@@ -193,8 +197,8 @@
     <Compile Include="Net\Protocols\Stomp\StompTcpListener.cs" />
     <Compile Include="Net\Protocols\Strings\StringDecoder.cs" />
     <Compile Include="Net\Protocols\Strings\StringEncoder.cs" />
-    <Compile Include="Net\Protocols\TcpChannelFactory.cs" />
-    <Compile Include="Net\SecureTcpChannelFactory.cs" />
+    <Compile Include="Net\Channels\TcpChannelFactory.cs" />
+    <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

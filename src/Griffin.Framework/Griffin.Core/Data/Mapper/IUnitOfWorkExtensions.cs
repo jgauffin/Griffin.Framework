@@ -4,6 +4,7 @@ namespace Griffin.Data.Mapper
 {
     public static class UnitOfWorkExtensions
     {
+
         public static void Truncate<TEntity>(this IAdoNetUnitOfWork unitOfWork)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
@@ -59,16 +60,16 @@ namespace Griffin.Data.Mapper
                 {
                     Data.CommandExtensions.AddParameter(cmd, parameter.Key, parameter.Value);
                     if (parameter.Value.Contains("%"))
-                        cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " LIKE @" + parameter.Key +
-                                           " AND ";
+                        cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " LIKE @" + parameter.Key + " AND ";
                     else
-                        cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " = @" + parameter.Key +
-                                           " AND ";
+                        cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " = @" + parameter.Key + " AND ";
                 }
                 cmd.CommandText = cmd.CommandText.Remove(cmd.CommandText.Length - 4, 4);
                 return cmd.ToList<TEntity>();
             }
         }
+
+
 
 
         public static void Insert<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
@@ -100,5 +101,8 @@ namespace Griffin.Data.Mapper
                 cmd.ExecuteNonQuery();
             }
         }
+
+
+
     }
 }

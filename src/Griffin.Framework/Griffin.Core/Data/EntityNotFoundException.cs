@@ -8,6 +8,9 @@ namespace Griffin.Data
     /// <summary>
     ///     Thrown when a method which expects to find an entity doesn't.
     /// </summary>
+    /// <remarks>
+    /// <para>this error message will always include information to be able to identify the missing entity.</para>
+    /// </remarks>
     [Serializable]
     public class EntityNotFoundException : DataException
     {
@@ -60,48 +63,21 @@ namespace Griffin.Data
         }
 
         /// <summary>
-        ///     Gets command that was executed
+        /// Gets command that was executed
         /// </summary>
-        public string CommandText
-        {
-            get { return _commandText; }
-        }
+        public string CommandText { get { return _commandText; }}
 
 
         /// <summary>
-        ///     The command parameter collection joined as a string
+        /// The command parameter collection joined as a string
         /// </summary>
-        public string CommandParameters
-        {
-            get { return _parameters; }
-        }
+        public string CommandParameters { get { return _parameters; } }
 
 
         /// <summary>
-        ///     When overridden in a derived class, sets the <see cref="T:System.Runtime.Serialization.SerializationInfo" /> with
-        ///     information about the exception.
+        /// When overridden in a derived class, sets the <see cref="T:System.Runtime.Serialization.SerializationInfo"/> with information about the exception.
         /// </summary>
-        /// <param name="info">
-        ///     The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object
-        ///     data about the exception being thrown.
-        /// </param>
-        /// <param name="context">
-        ///     The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual
-        ///     information about the source or destination.
-        /// </param>
-        /// <exception cref="T:System.ArgumentNullException">
-        ///     The <paramref name="info" /> parameter is a null reference (Nothing in
-        ///     Visual Basic).
-        /// </exception>
-        /// <filterpriority>2</filterpriority>
-        /// <PermissionSet>
-        ///     <IPermission
-        ///         class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-        ///         version="1" Read="*AllFiles*" PathDiscovery="*AllFiles*" />
-        ///     <IPermission
-        ///         class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-        ///         version="1" Flags="SerializationFormatter" />
-        /// </PermissionSet>
+        /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown. </param><param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination. </param><exception cref="T:System.ArgumentNullException">The <paramref name="info"/> parameter is a null reference (Nothing in Visual Basic). </exception><filterpriority>2</filterpriority><PermissionSet><IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Read="*AllFiles*" PathDiscovery="*AllFiles*"/><IPermission class="System.Security.Permissions.SecurityPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Flags="SerializationFormatter"/></PermissionSet>
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

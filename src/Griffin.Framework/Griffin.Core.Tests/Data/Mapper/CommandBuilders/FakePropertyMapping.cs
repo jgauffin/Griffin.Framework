@@ -56,5 +56,16 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         {
             return Value;
         }
+
+        /// <summary>
+        /// Set property value by specifying a column value (i.e. use the <c>ColumnToPropertyAdapter</c> when assigning the value)
+        /// </summary>
+        /// <param name="entity">Entity to retrieve value from</param>
+        /// <param name="value">Column value</param>
+        /// <returns>Property value</returns>
+        public void SetColumnValue(object entity, object value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

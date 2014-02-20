@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Griffin.AdoNetFakes;
 using Griffin.Data;
-using Griffin.Data.Mapper;
 using Xunit;
 using FluentAssertions;
 using CommandExtensions = Griffin.Data.CommandExtensions;

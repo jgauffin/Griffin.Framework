@@ -8,7 +8,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests.Entites
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public int MessageCount { get; set; }
+        public long MessageCount { get; set; }
 
     }
 }

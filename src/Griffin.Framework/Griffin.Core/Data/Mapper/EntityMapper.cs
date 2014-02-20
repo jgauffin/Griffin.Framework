@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -11,10 +12,27 @@ namespace Griffin.Data.Mapper
     /// <summary>
     ///     Uses reflection to map entities.
     /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TEntity">Type of entity (i.e. class that somewhat corresponds to a table)</typeparam>
     /// <remarks>
+    /// <para>
+    /// This mapper is konventional based. If there is a column named <c>"Id"</c> this mapper will assume that that is the primary key. If you do not have
+    /// an <c>"Id"</c> id column you need to inherit this class and overide the <c>Configure method:</c>
+    /// </para>
+    /// <code>
+    /// <![CDATA[
+    /// public class UserMapping : ReflectionBasedEntityMapper<User>
+    /// {
+    ///     public override void Configure(IDictionary<string, PropertyMapping> mappings)
+    ///     {
+    ///         base.Configure(mappings);
+    /// 
+    ///         mappings["YourCustomKey"].IsPrimaryKey = true;
+    ///     }
+    /// }
+    /// ]]>
+    /// </code>
     ///     <para>
-    ///         Requires a parameterless constructor, but it may be non-public if you do not want to expose
+    ///         All mappers must have a parameterless constructor, but you can set it as non-public if you do not want to expose
     ///         it.
     ///     </para>
     ///     <para>
@@ -22,7 +40,7 @@ namespace Griffin.Data.Mapper
     /// </remarks>
     /// <example>
     ///     <para>
-    ///         If there is an one-one mapping between the table and the class you can just create a new class. It will
+    ///         You can just create an empty class like below if there is an one-one mapping between the table and your entity class. It will
     ///         automatically be
     ///         picked up by the <see cref="AssemblyScanningMappingProvider" />.
     ///     </para>
@@ -42,8 +60,9 @@ namespace Griffin.Data.Mapper
     ///     {
     ///         base.Configure(mappings);
     /// 
-    ///         // Id is a uniqueidentifier in the DB and a string in our property.
+    ///         // Id is of the column type "uniqueidentifier" in the DB and of "string" type for our property.
     ///         mappings["Id"].ColumnToPropertyAdapter = value => value.ToString();
+    ///         mappings["Id"].PropertyToColumnAdapter = value => Guid.Parse(string)value);
     ///     }
     /// }
     /// ]]>
@@ -54,6 +73,7 @@ namespace Griffin.Data.Mapper
     {
         private readonly Func<TEntity> _factoryMethod;
         private readonly IDictionary<string, IPropertyMapping> _mappings = new Dictionary<string, IPropertyMapping>();
+        private readonly IDictionary<string, IPropertyMapping> _keys = new Dictionary<string, IPropertyMapping>();
         private ICommandBuilder _builder = null;
 
         public EntityMapper(string tableName)
@@ -88,7 +108,12 @@ namespace Griffin.Data.Mapper
         public void Freeze()
         {
             _builder = CommandBuilderFactory.Create(this);
+            foreach (var kvp in _mappings.Where(x => x.Value.IsPrimaryKey))
+            {
+                _keys.Add(kvp);
+            }
         }
+
 
         /// <summary>
         ///     Gets table name
@@ -101,6 +126,22 @@ namespace Griffin.Data.Mapper
         public IDictionary<string, IPropertyMapping> Properties
         {
             get { return _mappings; }
+        }
+
+        /// <summary>
+        /// Get the primary key 
+        /// </summary>
+        /// <param name="entity">entity to fetch key values from.</param>
+        /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key</returns>
+        public KeyValuePair<string, object>[] GetKeys(object entity)
+        {
+            var values = new KeyValuePair<string, object>[_keys.Count];
+            int index = 0;
+            foreach (var kvp in _keys)
+            {
+                values[index++] = new KeyValuePair<string, object>(kvp.Key, kvp.Value.GetValue(entity));
+            }
+            return values;
         }
 
         /// <summary>
@@ -125,9 +166,20 @@ namespace Griffin.Data.Mapper
         /// <param name="destination">Entity to fill with information</param>
         public void Map(IDataRecord source, TEntity destination)
         {
-            foreach (var mapping in _mappings)
+            string propertyName = null;
+            try
             {
-                mapping.Value.Map(source, destination);
+                foreach (var mapping in _mappings)
+                {
+                    propertyName = mapping.Key;
+                    mapping.Value.Map(source, destination);
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new MappingException(typeof (TEntity),
+                    string.Format("Failed to cast column value to property value for '{0}', property '{1}'.",
+                        typeof (TEntity).FullName, propertyName), exception);
             }
         }
 
@@ -312,7 +364,10 @@ namespace Griffin.Data.Mapper
 
                     //getter = field.GetValue;
                     var paramExpression = Expression.Parameter(typeof (TEntity), "instance");
-                    var fieldGetter = Expression.Field(paramExpression, field.Name);
+                    Expression fieldGetter = Expression.Field(paramExpression, field.Name);
+                    if (field.FieldType.IsPrimitive)
+                        fieldGetter = Expression.Convert(fieldGetter, typeof (object));
+
                     var result =
                         Expression.Lambda<Func<TEntity, object>>(fieldGetter, paramExpression).Compile();
                     getter = result;
@@ -333,5 +388,7 @@ namespace Griffin.Data.Mapper
                 _mappings.Add(property.Name, mapping);
             }
         }
+
+        
     }
 }

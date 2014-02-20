@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Griffin.Core")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Griffin.Framework")]
+[assembly: AssemblyDescription("An open source library containing many of the features required when developing applications.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Griffin.Core")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("Gauffin Interactive AB")]
+[assembly: AssemblyProduct("Griffin.Framework")]
+[assembly: AssemblyCopyright("Copyright ©  2014 Gauffin Interactive AB")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

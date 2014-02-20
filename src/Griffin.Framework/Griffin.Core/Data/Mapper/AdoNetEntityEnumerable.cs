@@ -6,16 +6,15 @@ using System.Data;
 namespace Griffin.Data.Mapper
 {
     /// <summary>
-    ///     Wrapper around the <see cref="AdoNetEntityEnumerator{T}" /> which does the actual work.
+    /// Wrapper around the <see cref="AdoNetEntityEnumerator{T}"/> which does the actual work.
     /// </summary>
     /// <typeparam name="TEntity">Type of entity to convert the rows to</typeparam>
     public class AdoNetEntityEnumerable<TEntity> : IEnumerable<TEntity>
     {
-        private readonly AdoNetEntityEnumerator<TEntity> _enumerator;
         private bool _handedOut;
+        private readonly AdoNetEntityEnumerator<TEntity> _enumerator;
 
-        public AdoNetEntityEnumerable(IDbCommand command, IDataReader reader, IEntityMapper<TEntity> mapper,
-            bool ownsConnection)
+        public AdoNetEntityEnumerable(IDbCommand command, IDataReader reader, IEntityMapper<TEntity> mapper, bool ownsConnection)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (reader == null) throw new ArgumentNullException("reader");
@@ -25,10 +24,10 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
-        ///     Returns an enumerator that iterates through the collection.
+        /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>
-        ///     A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         /// <exception cref="InvalidOperationException">May only traverse AdoNetEntityEnumerable once</exception>
         public IEnumerator<TEntity> GetEnumerator()
@@ -42,10 +41,10 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
-        ///     Returns an enumerator that iterates through a collection.
+        /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>
-        ///     An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {

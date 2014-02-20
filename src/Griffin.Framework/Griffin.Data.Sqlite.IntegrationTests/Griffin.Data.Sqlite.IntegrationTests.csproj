@@ -62,8 +62,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncCommandExtensionsTests.cs" />
+    <Compile Include="AsyncConnectionExtensionsTests.cs" />
+    <Compile Include="AsyncUnitOfWorkExtensionsTests.cs" />
+    <Compile Include="CommandExtensionsTests.cs" />
+    <Compile Include="ConnectionExtensionsTests.cs" />
+    <Compile Include="Entites\Message.cs" />
+    <Compile Include="Entites\MessageMapper.cs" />
+    <Compile Include="Entites\MessageTable.cs" />
     <Compile Include="Entites\User.cs" />
     <Compile Include="Entites\UserMapper.cs" />
+    <Compile Include="Entites\UserTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
