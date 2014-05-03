@@ -41,8 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationServices\IGuardedService.cs" />
     <Compile Include="BitConverter2.cs" />
     <Compile Include="ConstructorExtensions.cs" />
+    <Compile Include="Container\DependencyMissingException.cs" />
+    <Compile Include="Container\IContainer.cs" />
+    <Compile Include="Container\IContainerScope.cs" />
+    <Compile Include="Container\ServiceNotRegisteredException.cs" />
+    <Compile Include="ApplicationServices\IApplicationService.cs" />
     <Compile Include="Data\AdoNetUnitOfWork.cs" />
     <Compile Include="Data\CommandExtensions.cs" />
     <Compile Include="Data\EntityNotFoundException.cs" />
@@ -79,9 +85,12 @@
     <Compile Include="Data\TransactionAlreadyClosedException.cs" />
     <Compile Include="Data\UnitOfWorkFactory.cs" />
     <Compile Include="External\Inflector.cs" />
+    <Compile Include="IO\IQueue.cs" />
+    <Compile Include="IO\PersistentQueue.cs" />
     <Compile Include="GuidFactory.cs" />
     <Compile Include="InstanceFactory.cs" />
     <Compile Include="IO\PersistentQueue.cs" />
+    <Compile Include="ISerializer.cs" />
     <Compile Include="Logging\ILogEntryFilter.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\ILoggerFilter.cs" />
