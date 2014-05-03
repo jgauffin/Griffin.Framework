@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 

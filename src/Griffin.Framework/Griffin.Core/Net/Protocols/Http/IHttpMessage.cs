@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using Griffin.Net.Protocols.Http.Messages;
 
 namespace Griffin.Net.Protocols.Http
 {
@@ -58,24 +59,19 @@ namespace Griffin.Net.Protocols.Http
         int ContentLength { get; set; }
 
         /// <summary>
-        ///     Content type without encoding
+        ///     Content type without any parameters.
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         To set encoding you have to use <c>httpMessage.Headers["content-type"] = "text/html; charset=utf8"</c>.
+        ///         If you need to get the boundry etc, then use <c>request.Headers["Content-Type"]</c>.
         ///     </para>
         /// </remarks>
-        string ContentType { get; }
+        string ContentType { get; set; }
 
         /// <summary>
         ///     The encoding used in the document (if it's text of some sort)
         /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         To set encoding you have to use <c>httpMessage.Headers["content-type"] = "text/html; charset=utf8"</c>.
-        ///     </para>
-        /// </remarks>
-        Encoding ContentCharset { get; }
+        Encoding ContentCharset { get; set; }
 
         /// <summary>
         ///     Adds the specified name.

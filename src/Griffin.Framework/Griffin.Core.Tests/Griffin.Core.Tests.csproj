@@ -93,6 +93,7 @@
     <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
     <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
     <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
+    <Compile Include="IO\Tests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerWrapper.cs" />
     <Compile Include="Logging\Loggers\ConsoleLoggerTests.cs" />
@@ -113,9 +114,17 @@
     <Compile Include="Net\Channels\TcpChannelTests.cs" />
     <Compile Include="Net\Channels\TcpIntegrationTests.cs" />
     <Compile Include="Net\Class1.cs" />
+    <Compile Include="Net\Protocols\Http\Authentication\AuthenticationUserStub.cs" />
+    <Compile Include="Net\Protocols\Http\Authentication\DigestAuthenticatorTests.cs" />
+    <Compile Include="Net\Protocols\Http\Messages\HeaderParserTests.cs" />
+    <Compile Include="Net\Protocols\Http\Messages\HttpCookieParserTests.cs" />
+    <Compile Include="Net\Protocols\Http\Messages\HttpMessageDecoderTests.cs" />
+    <Compile Include="Net\Protocols\Http\BodyDecoders\UrlDecoderTests.cs" />
     <Compile Include="Net\Protocols\Http\HttpEncoderTests.cs" />
     <Compile Include="Net\Protocols\Http\HttpMessageDecoderTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HeaderCollectionTests.cs" />
+    <Compile Include="Net\Protocols\Http\Messages\ParameterCollectionTests.cs" />
+    <Compile Include="Net\Protocols\Http\Messages\TextReaderExtensionsTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\CodecTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoderTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoderTests.cs" />
@@ -145,7 +154,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
+    <Content Include="Net\cert\GriffinNetworkingTemp.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

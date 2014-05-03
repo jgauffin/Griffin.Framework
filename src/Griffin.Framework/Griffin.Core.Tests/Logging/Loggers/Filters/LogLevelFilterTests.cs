@@ -20,7 +20,7 @@ namespace Griffin.Core.Tests.Logging.Loggers.Filters
         {
             var sut = new LogLevelFilter();
 
-            sut.MinLevel.Should().Be(LogLevel.Error);
+            sut.MaxLevel.Should().Be(LogLevel.Error);
         }
 
         [Fact]

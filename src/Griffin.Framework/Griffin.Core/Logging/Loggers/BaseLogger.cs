@@ -158,7 +158,7 @@ namespace Griffin.Logging.Loggers
         protected virtual void Write(LogLevel logLevel, string msg, Exception exception)
         {
             var entry = new LogEntry(logLevel, msg, exception);
-            if (!LogFilter.IsSatisfiedBy(entry))
+            if (LogFilter != null && !LogFilter.IsSatisfiedBy(entry))
                 return;
 
             Write(entry);

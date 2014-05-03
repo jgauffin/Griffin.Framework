@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace Griffin.Net.Protocols.Http
 {
@@ -20,5 +21,16 @@ namespace Griffin.Net.Protocols.Http
         ///     <para>If no <c>server</c> header is included "127.0.0.1" will be used as server.</para>
         /// </remarks>
         Uri Uri { get; set; }
+
+        /// <summary>
+        /// Address to the remote end point
+        /// </summary>
+        EndPoint RemoteEndPoint { get; set; } 
+
+        /// <summary>
+        /// Create a response for this request.
+        /// </summary>
+        /// <returns>Response</returns>
+        IHttpResponse CreateResponse();
     }
 }

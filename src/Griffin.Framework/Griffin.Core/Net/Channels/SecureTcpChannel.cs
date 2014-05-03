@@ -51,6 +51,7 @@ namespace Griffin.Net.Channels
 
             _sendCompleteAction = (channel, message) => { };
             _disconnectAction = (channel, exception) => { };
+            DecoderFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
 
             RemoteEndpoint = EmptyEndpoint.Instance;
 
@@ -112,6 +113,16 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
+        /// Invoked if the decoder failes to handle an incoming message
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The handler MUST close the connection once a reply have been sent.
+        /// </para>
+        /// </remarks>
+        public DecoderFailureHandler DecoderFailure { get; set; }
+
+        /// <summary>
         ///     Gets address of the connected end point.
         /// </summary>
         public EndPoint RemoteEndpoint { get; private set; }
@@ -133,6 +144,10 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public void Assign(Socket socket)
         {
+            if (socket == null) throw new ArgumentNullException("socket");
+            if (MessageReceived == null)
+                throw new InvalidOperationException("Must handle the MessageReceived callback before invoking this method.");
+
             _stream = _sslStreamBuilder.Build(this, socket);
             _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
         }
@@ -236,7 +251,16 @@ namespace Griffin.Net.Channels
             _readBuffer.BytesTransferred = readBytes;
             _readBuffer.Offset = _readBuffer.BaseOffset;
             _readBuffer.Count = readBytes;
-            _decoder.ProcessReadBytes(_readBuffer);
+
+            try
+            {
+                _decoder.ProcessReadBytes(_readBuffer);
+            }
+            catch (Exception exception)
+            {
+                DecoderFailure(this, exception);
+                return;
+            }
 
             ReadAsync();
         }

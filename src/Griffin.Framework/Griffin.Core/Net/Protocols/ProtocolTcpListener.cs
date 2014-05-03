@@ -68,10 +68,7 @@ namespace Griffin.Net.Protocols
             get { return _messageReceived; }
             set
             {
-                if (value == null)
-                    throw new ArgumentException("There must be a MessageReceived delegate.");
-
-                _messageReceived = value;
+                _messageReceived = value ?? delegate {};
             }
         }
 
@@ -197,27 +194,37 @@ namespace Griffin.Net.Protocols
         {
             var socket = _listener.EndAcceptSocket(ar);
 
-            ITcpChannel channel;
-            if (!_channels.TryPop(out channel))
+            try
             {
-                var decoder = _configuration.DecoderFactory();
-                var encoder = _configuration.EncoderFactory();
-                channel = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
+                ITcpChannel channel;
+                if (!_channels.TryPop(out channel))
+                {
+                    var decoder = _configuration.DecoderFactory();
+                    var encoder = _configuration.EncoderFactory();
+                    channel = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
+                }
+
+                channel.Disconnected = OnChannelDisconnect;
+                channel.MessageReceived = OnMessage;
+
+                var args = OnClientConnected(channel);
+                if (!args.MayConnect)
+                {
+                    if (args.Response != null)
+                        channel.Send(args.Response);
+                    channel.Close();
+                    return;
+                }
+
+                channel.Assign(socket);
+            }
+            catch (Exception exception)
+            {
+                //TODO: Handle error
             }
 
-            channel.Disconnected = OnChannelDisconnect;
-            channel.MessageReceived = OnMessage;
 
-            var args = OnClientConnected(channel);
-            if (!args.MayConnect)
-            {
-                if (args.Response != null)
-                    channel.Send(args.Response);
-                channel.Close();
-                return;
-            }
-
-            channel.Assign(socket);
+            _listener.BeginAcceptSocket(OnSocket, null);
         }
     }
 }

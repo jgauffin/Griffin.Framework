@@ -9,6 +9,8 @@ namespace Griffin.Net.Protocols.Http
     {
         private HeaderCollection _headers;
         private Stream _body;
+        private HttpHeaderValue _contentType;
+        protected static Encoding Iso85591 = Encoding.GetEncoding("ISO-8859-1");
 
         /// <summary>
         /// 
@@ -91,8 +93,8 @@ namespace Griffin.Net.Protocols.Http
             set
             {
                 _body = value;
-                if (!_headers.Contains("content-length"))
-                    _headers["content-length"] = _body.Length.ToString();
+                if (!_headers.Contains("Content-Length"))
+                    _headers["Content-Length"] = _body.Length.ToString();
             }
         }
 
@@ -103,15 +105,15 @@ namespace Griffin.Net.Protocols.Http
         {
             get
             {
-                if (_headers.Contains("content-length"))
-                    return int.Parse(_headers["content-length"]);
+                if (_headers.Contains("Content-Length"))
+                    return int.Parse(_headers["Content-Length"]);
 
                 if (Body != null)
                     return (int)Body.Length;
 
                 return 0;
             }
-            set { _headers["content-length"] = value.ToString(); }
+            set { _headers["Content-Length"] = value.ToString(); }
         }
 
         /// <summary>
@@ -124,14 +126,32 @@ namespace Griffin.Net.Protocols.Http
         {
             get
             {
-                return _headers["content-type"];
+                var str = _headers["Content-Type"];
+                if (str == null)
+                {
+                    return "text/html";
+                }
+
+                var pos = str.IndexOf(';');
+                return pos == -1 ? str : str.Substring(0, pos);
             }
             set
             {
                 if (value == null)
                     throw new ArgumentNullException("value");
 
-                _headers["Content-Type"] = value;
+                var str = _headers["Content-Type"];
+                if (str == null)
+                {
+                    _headers["Content-Type"] = value;
+                    return;
+                }
+
+                var pos = str.IndexOf(';');
+                if (pos == -1)
+                    _headers["Content-Type"] = value;
+                else
+                    _headers["Content-Type"] = value + str.Substring(pos);
             }
         }
 
@@ -145,16 +165,26 @@ namespace Griffin.Net.Protocols.Http
         {
             get
             {
-                var header = _headers["content-type"];
+                var header = _headers["Content-Type"];
                 if (header == null)
-                    return null;
+                    return Iso85591;
 
-                var pos = header.IndexOf(";", System.StringComparison.Ordinal);
-                if (pos == -1)
-                    return Encoding.UTF8;
+                var value = new HttpHeaderValue(header);
+                var name= value.Parameters["charset"];
+                return name == null ? Iso85591 : Encoding.GetEncoding(name);
+            }
+            set
+            {
+                 var header = _headers["Content-Type"];
+                if (header == null)
+                {
+                    _headers["Content-Type"] = "text/html;charset=" + value.WebName;
+                    return;
+                }
 
-                var encoding = header.Substring(pos + 1).Trim();
-                return Encoding.GetEncoding(encoding);
+                var headerValue = new HttpHeaderValue(header);
+                headerValue.Parameters.Add("charset", value.WebName);
+                _headers["Content-Type"] = headerValue.ToString();
             }
         }
 

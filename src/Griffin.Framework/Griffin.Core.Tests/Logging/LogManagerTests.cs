@@ -13,7 +13,7 @@ namespace Griffin.Core.Tests.Logging
         [Fact, ExclusivelyUses("LogManager")]
         public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
         {
-
+            LogManager.Provider = null;
             var actual = LogManager.GetLogger<LogManagerTests>();
 
             actual.Should().BeOfType<NullLogger>();

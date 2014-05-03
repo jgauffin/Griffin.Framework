@@ -41,6 +41,13 @@ namespace Griffin.Net.Protocols.Http
             _message = (HttpMessage) message;
             if (_message.Body == null || _message.Body.Length == 0)
                 _message.Headers["Content-Length"] = "0";
+            else if (_message.ContentLength == 0)
+            {
+                _message.ContentLength = (int)_message.Body.Length;
+                if (_message.Body.Position == _message.Body.Length)
+                    _message.Body.Position = 0;
+            }
+
         }
 
         /// <summary>
@@ -86,6 +93,10 @@ namespace Griffin.Net.Protocols.Http
                 buffer.SetBuffer(_buffer, 0, (int) _stream.Length);
                 return;
             }
+            else
+            {
+                
+            }
 
             var bytesLeft = _buffer.Length - _stream.Length;
             var bytesToSend = Math.Min(_message.ContentLength, (int) bytesLeft);
@@ -93,7 +104,7 @@ namespace Griffin.Net.Protocols.Http
             _message.Body.Read(_buffer, offset, bytesToSend);
             _bytesToSend = (int) _stream.Length + bytesToSend;
             _totalAmountToSend = (int) _stream.Length + _message.ContentLength;
-            buffer.SetBuffer(_buffer, 0, _totalAmountToSend);
+            buffer.SetBuffer(_buffer, 0, _bytesToSend);
         }
 
         /// <summary>
@@ -110,7 +121,12 @@ namespace Griffin.Net.Protocols.Http
             if (_bytesToSend <= 0)
                 _offset = 0;
 
-            return _bytesToSend <= 0;
+            if (_totalAmountToSend == 0)
+            {
+                Clear();
+            }
+
+            return _totalAmountToSend <= 0;
         }
 
         /// <summary>
@@ -121,6 +137,7 @@ namespace Griffin.Net.Protocols.Http
             _bytesToSend = 0;
             _message = null;
             _isHeaderSent = false;
+            _stream.SetLength(0);
         }
     }
 }

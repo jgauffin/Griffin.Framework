@@ -8,10 +8,10 @@
         /// <summary>
         ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
         /// </summary>
-        int HttpStatusCode { get; set; }
+        int StatusCode { get; set; }
 
         /// <summary>
-        ///     Why the specified <see cref="HttpStatusCode" /> was set.
+        ///     Why the specified <see cref="StatusCode" /> was set.
         /// </summary>
         /// <remarks>
         ///     <para>

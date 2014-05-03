@@ -33,6 +33,16 @@ namespace Griffin.Net.Channels
         MessageHandler MessageSent { get; set; }
 
         /// <summary>
+        /// Invoked if the decoder failes to handle an incoming message
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The handler MUST close the connection once a reply have been sent.
+        /// </para>
+        /// </remarks>
+        DecoderFailureHandler DecoderFailure { get; set; }
+
+        /// <summary>
         ///     Gets address of the connected end point.
         /// </summary>
         EndPoint RemoteEndpoint { get; }

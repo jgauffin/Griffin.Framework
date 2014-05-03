@@ -23,6 +23,8 @@ namespace Griffin.Net.Channels
         private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
+        private static readonly object CloseMessage = new object();
+
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="TcpChannel" /> class.
@@ -54,6 +56,7 @@ namespace Griffin.Net.Channels
 
             _sendCompleteAction = (channel, message) => { };
             _disconnectAction = (channel, exception) => { };
+            DecoderFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
 
             _remoteEndPoint = EmptyEndpoint.Instance;
             ChannelId = GuidFactory.Create().ToString();
@@ -111,6 +114,16 @@ namespace Griffin.Net.Channels
                 _sendCompleteAction = value;
             }
         }
+
+        /// <summary>
+        /// Invoked if the decoder failes to handle an incoming message
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The handler MUST close the connection once a reply have been sent.
+        /// </para>
+        /// </remarks>
+        public DecoderFailureHandler DecoderFailure { get; set; }
 
         /// <summary>
         ///     Gets address of the connected end point.
@@ -189,7 +202,7 @@ namespace Griffin.Net.Channels
 
         public void Close()
         {
-            _socket.Shutdown(SocketShutdown.Both);
+            Send(CloseMessage);
         }
 
         /// <summary>
@@ -200,7 +213,6 @@ namespace Griffin.Net.Channels
             _encoder.Clear();
             _decoder.Clear();
             _currentOutboundMessage = null;
-            _socket = null;
             _remoteEndPoint = EmptyEndpoint.Instance;
 
             object msg;
@@ -210,11 +222,14 @@ namespace Griffin.Net.Channels
         }
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         private void HandleDisconnect(SocketError socketError)
         {
-            _disconnectAction(this, new SocketException((int) socketError));
             _socket.Close();
+            _disconnectAction(this, new SocketException((int)socketError));
         }
 
         private void OnMessageReceived(object obj)
@@ -230,10 +245,18 @@ namespace Griffin.Net.Channels
                 return;
             }
 
-            _decoder.ProcessReadBytes(_readArgsWrapper);
+            try
+            {
+                _decoder.ProcessReadBytes(_readArgsWrapper);
+            }
+            catch (Exception exception)
+            {
+                DecoderFailure(this, exception);
+            }
 
             ReadAsync();
         }
+
 
         private void OnSendCompleted(object sender, SocketAsyncEventArgs e)
         {
@@ -266,6 +289,12 @@ namespace Griffin.Net.Channels
             }
 
             _sendCompleteAction(this, msg);
+            if (_currentOutboundMessage == CloseMessage)
+            {
+                _socket.Shutdown(SocketShutdown.Both);
+                _currentOutboundMessage = null;
+                return;
+            }
 
             _encoder.Prepare(_currentOutboundMessage);
             _encoder.Send(_writeArgsWrapper);
@@ -285,6 +314,15 @@ namespace Griffin.Net.Channels
 
         private void SendCurrent()
         {
+            // Allows us to send everything before closing the connection.
+            if (_currentOutboundMessage == CloseMessage)
+            {
+                _socket.Shutdown(SocketShutdown.Both);
+                _currentOutboundMessage = null;
+                return;
+
+            }
+
             _encoder.Prepare(_currentOutboundMessage);
             _encoder.Send(_writeArgsWrapper);
             var isPending = _socket.SendAsync(_writeArgs);

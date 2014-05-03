@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using FluentAssertions;
+using Griffin.Net;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
@@ -23,7 +24,7 @@ namespace Griffin.Core.Tests.Net.Channels
         {
             _helper = ClientServerHelper.Create();
             _certificate = new X509Certificate2(
-                AppDomain.CurrentDomain.BaseDirectory + "\\cert\\GriffinNetworkingTemp.pfx", "mamma");
+                AppDomain.CurrentDomain.BaseDirectory + "\\Net\\cert\\GriffinNetworkingTemp.pfx", "mamma");
         }
 
         private SecureTcpChannel CreateClientChannel(IBufferSlice slice, IMessageEncoder encoder, IMessageDecoder decoder)
@@ -48,6 +49,8 @@ namespace Griffin.Core.Tests.Net.Channels
             var encoder = Substitute.For<IMessageEncoder>();
             var decoder = Substitute.For<IMessageDecoder>();
             object expected;
+            var stream = new SslStream(new NetworkStream(_helper.Server));
+            stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
 
             var sut = CreateClientChannel(slice, encoder, decoder);
             sut.MessageReceived += (channel, message) => expected = message;
@@ -61,6 +64,8 @@ namespace Griffin.Core.Tests.Net.Channels
             var slice = new BufferSlice(new byte[65535], 0, 65535);
             var encoder = Substitute.For<IMessageEncoder>();
             var decoder = Substitute.For<IMessageDecoder>();
+            var stream = new SslStream(new NetworkStream(_helper.Server));
+            stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
 
             var sut = CreateClientChannel(slice, encoder, decoder);
             Action actual = () => sut.Assign(_helper.Client);
@@ -75,6 +80,8 @@ namespace Griffin.Core.Tests.Net.Channels
             var encoder = Substitute.For<IMessageEncoder>();
             var decoder = new FakeDecoder();
             object expected = null;
+            var stream = new SslStream(new NetworkStream(_helper.Server));
+            stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
 
             var sut = CreateClientChannel(slice, encoder, decoder);
             sut.MessageReceived += (channel, message) => expected = message;

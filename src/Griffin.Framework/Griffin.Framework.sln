@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Tests", "Griff
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite.IntegrationTests", "Griffin.Data.Sqlite.IntegrationTests\Griffin.Data.Sqlite.IntegrationTests.csproj", "{069652A2-F059-4E8B-8161-B22262F8CC24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpServerTests", "HttpServerTests\HttpServerTests.csproj", "{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{069652A2-F059-4E8B-8161-B22262F8CC24}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{069652A2-F059-4E8B-8161-B22262F8CC24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{069652A2-F059-4E8B-8161-B22262F8CC24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,8 +10,8 @@ namespace Griffin.Core.Tests.Net
         public void Test()
         {
             var cert =
-                X509Certificate.CreateFromCertFile(AppDomain.CurrentDomain.BaseDirectory +
-                                                    "\\cert\\GriffinNetworking.cer");
+                new X509Certificate2(AppDomain.CurrentDomain.BaseDirectory +
+                                                    "\\Net\\cert\\GriffinNetworkingTemp.pfx", "mamma");
 
         }
 

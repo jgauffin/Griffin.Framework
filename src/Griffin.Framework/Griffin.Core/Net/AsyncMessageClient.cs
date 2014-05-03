@@ -4,12 +4,11 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
-using Griffin.Net.Protocols;
 
-namespace Griffin.Net
+namespace Griffin.Net.Protocols
 {
     /// <summary>
-    /// Can receive messages from messaging clients.
+    /// Can talk with messaging servers (i.e. servers based on <see cref="ProtocolTcpListener"/>).
     /// </summary>
     /// <typeparam name="T">Type of message to receive</typeparam>
     public class AsyncMessageClient<T>

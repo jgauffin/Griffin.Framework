@@ -1,26 +1,52 @@
 ﻿using System;
 using System.IO;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Http.Messages;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    ///     Decodes HTTP messages
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Per default the body is not decoded. To change that behavior you should assign a decoder to the
+    ///         <see cref="BodyDecoder" /> property.
+    ///     </para>
+    /// </remarks>
     public class HttpMessageDecoder : IMessageDecoder
     {
+        private readonly HeaderParser _headerParser;
         private int _frameContentBytesLeft = 0;
-        private HeaderParser _headerParser;
         private bool _isHeaderParsed;
         private HttpMessage _message;
         private Action<object> _messageReceived;
+        private HttpCookieParser _cookieParser = new HttpCookieParser();
 
         public HttpMessageDecoder()
         {
             _headerParser = new HeaderParser();
             _headerParser.HeaderParsed = OnHeader;
             _headerParser.RequestLineParsed = OnRequestLine;
-            _headerParser.Completed = OnMessageParsed;
+            _headerParser.Completed = OnHeaderParsed;
             _messageReceived = delegate { };
         }
+
+        public HttpMessageDecoder(IBodyDecoder decoder)
+        {
+            _headerParser = new HeaderParser();
+            _headerParser.HeaderParsed = OnHeader;
+            _headerParser.RequestLineParsed = OnRequestLine;
+            _headerParser.Completed = OnHeaderParsed;
+            BodyDecoder = decoder;
+            _messageReceived = delegate { };
+        }
+
+        /// <summary>
+        ///     Used to parse body
+        /// </summary>
+        public IBodyDecoder BodyDecoder { get; set; }
 
         /// <summary>
         ///     A message have been received.
@@ -60,7 +86,7 @@ namespace Griffin.Net.Protocols.Http
                     _frameContentBytesLeft = _message.ContentLength;
                     if (_frameContentBytesLeft == 0)
                     {
-                        MessageReceived(_message);
+                        TriggerMessageReceived(_message);
                         _message = null;
                         _isHeaderParsed = false;
                         continue;
@@ -78,7 +104,7 @@ namespace Griffin.Net.Protocols.Http
                 if (_frameContentBytesLeft == 0)
                 {
                     _message.Body.Position = 0;
-                    MessageReceived(_message);
+                    TriggerMessageReceived(_message);
                     Clear();
                 }
             }
@@ -101,7 +127,7 @@ namespace Griffin.Net.Protocols.Http
             _message.AddHeader(name, value);
         }
 
-        private void OnMessageParsed()
+        private void OnHeaderParsed()
         {
             _isHeaderParsed = true;
         }
@@ -116,7 +142,10 @@ namespace Griffin.Net.Protocols.Http
                         string.Format("Second word in the status line should be a HTTP code, you specified '{0}'.",
                             part2));
 
-                _message = new BasicHttpResponse(code, part3, part1);
+                if (BodyDecoder != null)
+                    _message = new HttpResponse(code, part3, part1);
+                else
+                    _message = new HttpResponseBase(code, part3, part1);
             }
             else
             {
@@ -125,8 +154,32 @@ namespace Griffin.Net.Protocols.Http
                         string.Format(
                             "Status line for requests should end with the HTTP version. Your line ended with '{0}'.",
                             part3));
-                _message = new BasicHttpRequest(part1, part2, part3);
+
+                _message = BodyDecoder != null
+                    ? new HttpRequest(part1, part2, part3)
+                    : new HttpRequestBase(part1, part2, part3);
             }
+        }
+
+        private void TriggerMessageReceived(HttpMessage message)
+        {
+            var request = message as HttpRequest;
+            if (BodyDecoder != null && request != null)
+            {
+                if (message.Body != null && message.Body.Length > 0)
+                {
+                    var result = BodyDecoder.Decode(request);
+                    if (!result)
+                        throw new BadRequestException("Unknown body content-type.");
+                }
+                var cookies = request.Headers["Cookie"];
+                if (cookies != null)
+                {
+                    request.Cookies = _cookieParser.Parse(cookies);
+                }
+            }
+
+            _messageReceived(message);
         }
     }
 }
