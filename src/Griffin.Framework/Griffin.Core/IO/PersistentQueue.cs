@@ -1,148 +1,128 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.IO;
-using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Griffin.IO
 {
-    public class PersistentQueue
-    {
-
-    }
-
-
     /// <summary>
-    /// A circular index.
+    /// Used to store items on disk
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Used for the persistant queue to keep track of all files and 
-    /// </para>
-    /// </remarks>
-    public class PersistentCircularIndex
+    /// <typeparam name="T">Type of item to store, may be a base type.</typeparam>
+    public class PersistentQueue<T> : IQueue<T>
     {
-        private readonly string _fileName;
-        private readonly int _maxDataSize;
-        private readonly int _maxQueueSize;
-        private const int HeaderLength = sizeof(Int32) * 5;
-        private object _syncLock = new object();
+        private readonly string _dataDirectory;
+        private readonly string _queueName;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
+        private readonly ISerializer _serializer;
+        private PersistentCircularIndex _index;
+        private const int RecordSize = 32;//Guid.NewGuid().ToString("N").Length;
+        private string _indexFileName;
 
-        public PersistentCircularIndex(string fileName, int maxDataSize, int maxQueueSize)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersistentQueue{T}"/> class.
+        /// </summary>
+        /// <exception cref="System.ArgumentNullException">dataDirectory</exception>
+        public PersistentQueue(PersistentQueueConfiguration configuration)
         {
-            _fileName = fileName;
-            _maxDataSize = maxDataSize;
-            _maxQueueSize = maxQueueSize;
-            if (!File.Exists(_fileName) || new FileInfo(fileName).Length == 0)
-                CreateFile(_fileName, maxDataSize, maxQueueSize);
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            _dataDirectory = Path.Combine(configuration.DataDirectory, configuration.QueueName);
+            _serializer = configuration.Serializer;
+            CreateDirectoryIfNotExists();
+
+            _indexFileName = Path.Combine(configuration.DataDirectory, configuration.QueueName + ".idx");
+            _index = new PersistentCircularIndex(_indexFileName, RecordSize, configuration.MaxCount);
+
+            Encoding = Encoding.UTF8;
         }
 
-        private void CreateFile(string fileName, int maxDataSize, int maxQueueSize)
-        {
-            using (var fs = File.Create(fileName))
-            {
-                var writer = new BinaryWriter(fs, Encoding.ASCII);
-                writer.Write(0); //queue size
-                writer.Write(0); //read record
-                writer.Write(0); // write record
-                writer.Write(maxDataSize);
-                writer.Write(maxQueueSize);
-                var data = new byte[maxDataSize];
-                for (int i = 0; i < maxQueueSize; i++)
-                {
-                    writer.Write(data, 0, maxDataSize);
-                }
+        public Encoding Encoding { get; set; }
 
-                fs.Flush();
+        private void CreateDirectoryIfNotExists()
+        {
+            if (!Directory.Exists(_dataDirectory))
+            {
+                CreateDirectory(_dataDirectory);
             }
         }
 
-        public void Enqueue(string data)
+        private void CreateDirectory(string directoryName)
         {
-            using (var fs = File.Open(_fileName, FileMode.Open))
-            {
-                var writer = new BinaryWriter(fs, Encoding.ASCII);
-                var reader = new BinaryReader(fs, Encoding.ASCII);
-                int writeRecord;
-                int recordSize;
-                byte[] buf;
-
-                lock (_syncLock)
-                {
-                    var queueSize = reader.ReadInt32();
-                    var readRecord = reader.ReadInt32();
-                    writeRecord = reader.ReadInt32();
-                    recordSize = reader.ReadInt32();
-                    var maxQueueSize = reader.ReadInt32();
-
-                    if (queueSize == maxQueueSize)
-                        throw new InvalidOperationException("Queue is full.");
-
-                    buf = new byte[recordSize];
-                    int len = Encoding.ASCII.GetBytes(data, 0, data.Length, buf, 0);
-                    if (len > recordSize)
-                        throw new ArgumentOutOfRangeException("data", data, "Record size is max " + recordSize + " bytes.");
-
-                    var nextWriteRecord = writeRecord + 1;
-                    if (nextWriteRecord == maxQueueSize)
-                    {
-                        nextWriteRecord = 0;
-                    }
-                    writer.Seek(0, SeekOrigin.Begin);
-                    writer.Write(queueSize+1);
-                    writer.Write(readRecord);
-                    writer.Write(nextWriteRecord);
-                }
-
-                writer.Seek(writeRecord * recordSize + HeaderLength, SeekOrigin.Begin);
-                writer.Write(buf, 0, buf.Length);
-            }
+            var sid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+            var security = new DirectorySecurity();
+            security.AddAccessRule(new FileSystemAccessRule(sid,
+                FileSystemRights.Modify | FileSystemRights.ReadAndExecute,
+                AccessControlType.Allow));
+            Directory.CreateDirectory(directoryName, security);
         }
 
-        public string Dequeue()
+
+        public async Task<T> DequeueAsync()
         {
-            using (var fs = File.Open(_fileName, FileMode.Open))
+            //var tempFile = Path.Combine(_dataDirectory, _indexFileName.Remove(_indexFileName.Length - 4, 4) + "TMP.idx");
+
+            //// we failed during processing, copy back the original file.
+            //if (File.Exists(tempFile))
+            //{
+            //    if (File.Exists(_indexFileName))
+            //        File.Delete(_indexFileName);
+            //    File.Move(tempFile, _indexFileName);
+            //}
+
+            //File.Move(_indexFileName, tempFile);
+
+
+            var targetFile = "";
+            try
             {
-                var writer = new BinaryWriter(fs, Encoding.ASCII);
-                var reader = new BinaryReader(fs, Encoding.ASCII);
-                int recordSize;
-                int readRecord;
+                await _lock.WaitAsync();
+                var filename = _index.Dequeue();
+                if (filename == null)
+                    return default(T);
 
-                lock (_syncLock)
-                {
-                    var queueSize = reader.ReadInt32();
-                    readRecord = reader.ReadInt32();
-                    var writeRecord = reader.ReadInt32();
-                    recordSize = reader.ReadInt32();
-                    var maxQueueSize = reader.ReadInt32();
+                targetFile = Path.Combine(_dataDirectory, filename);
 
-                    // same record, we've read everything.
-                    if (readRecord == writeRecord)
-                        return null;
 
-                    var nextReadRecord = readRecord + 1;
-                    if (nextReadRecord == maxQueueSize)
-                    {
-                        nextReadRecord = 0;
-                    }
-                    //move to the beginning again, to prevent disk scanning
-                    if (writeRecord == readRecord)
-                    {
-                        writeRecord = 0;
-                        readRecord = 0;
-                    }
+                //File.Delete(tempFile);
+            }
+            finally
+            {
+                _lock.Release();
+            }
 
-                    writer.Seek(0, SeekOrigin.Begin);
-                    writer.Write(queueSize - 1);
-                    writer.Write(nextReadRecord);
-                    writer.Write(writeRecord);
-                }
-                
 
-                reader.BaseStream.Position = (readRecord *recordSize) + HeaderLength;
-                var buf = reader.ReadBytes(recordSize);
-                return Encoding.ASCII.GetString(buf).TrimEnd('\0');
+            targetFile = Path.Combine(_dataDirectory, targetFile + ".json");
+            T result;
+            using (var file = File.OpenRead(targetFile))
+            {
+                result = (T)_serializer.Deserialize(file, typeof(T));
+            }
+            File.Delete(targetFile);
+            return result;
+        }
+
+        public async Task EnqueueAsync(T item)
+        {
+            var filename = Guid.NewGuid().ToString("N") + ".json";
+
+            using (var stream = File.OpenWrite(Path.Combine(_dataDirectory, filename)))
+            {
+                _serializer.Serialize(item, stream, typeof(T));
+            }
+
+            try
+            {
+                await _lock.WaitAsync();
+               _index.Enqueue(Path.GetFileNameWithoutExtension(filename));
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
     }

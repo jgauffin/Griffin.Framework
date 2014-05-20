@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Griffin.Core.Tests.Net
 {
-    public class Class1
+    public class LoadCertificateTest
     {
         [Fact]
         public void Test()

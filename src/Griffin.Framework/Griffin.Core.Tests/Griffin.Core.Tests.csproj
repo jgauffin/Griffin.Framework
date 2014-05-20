@@ -11,6 +11,8 @@
     <AssemblyName>Griffin.Core.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -93,7 +95,8 @@
     <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
     <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
     <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
-    <Compile Include="IO\Tests.cs" />
+    <Compile Include="IO\CircularIndexTests.cs" />
+    <Compile Include="IO\PersistantQueueTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerWrapper.cs" />
     <Compile Include="Logging\Loggers\ConsoleLoggerTests.cs" />
@@ -113,7 +116,7 @@
     <Compile Include="Net\Channels\SocketAsyncEventArgsWrapperTests.cs" />
     <Compile Include="Net\Channels\TcpChannelTests.cs" />
     <Compile Include="Net\Channels\TcpIntegrationTests.cs" />
-    <Compile Include="Net\Class1.cs" />
+    <Compile Include="Net\LoadCertificateTest.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\AuthenticationUserStub.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\DigestAuthenticatorTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HeaderParserTests.cs" />
@@ -166,6 +169,13 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
