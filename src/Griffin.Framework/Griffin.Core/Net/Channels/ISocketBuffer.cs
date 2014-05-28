@@ -46,12 +46,22 @@
         /// <param name="count">Amount of bytes to send</param>
         void SetBuffer(int offset, int count);
 
-            /// <summary>
+        /// <summary>
         /// Assign a buffer to the structure
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
         /// <param name="offset">Index of first byte to send</param>
         /// <param name="count">Amount of bytes to send</param>
+        /// <param name="capacity">Total number of bytes allocated for this slices</param>
+        void SetBuffer(byte[] buffer, int offset, int count, int capacity);
+
+        /// <summary>
+        /// Assign a buffer to the structure
+        /// </summary>
+        /// <param name="buffer">Buffer to use</param>
+        /// <param name="offset">Index of first byte to send</param>
+        /// <param name="count">Amount of bytes to send</param>
+        /// <remarks>Capacity will be set to same as <c>count</c>.</remarks>
         void SetBuffer(byte[] buffer, int offset, int count);
     }
 }

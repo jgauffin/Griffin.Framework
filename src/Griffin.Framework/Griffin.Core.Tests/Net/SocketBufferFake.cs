@@ -23,11 +23,20 @@ namespace Griffin.Core.Tests.Net
             Count = count;
         }
 
+        public void SetBuffer(byte[] buffer, int offset, int count, int capacity)
+        {
+            Buffer = buffer;
+            Count = count;
+            Offset = offset;
+            Capacity = capacity;
+        }
+
         public void SetBuffer(byte[] buffer, int offset, int count)
         {
             Buffer = buffer;
             Count = count;
             Offset = offset;
+            Capacity = count;
         }
     }
 }

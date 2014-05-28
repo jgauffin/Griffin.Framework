@@ -10,6 +10,11 @@ namespace Griffin.Net.Channels
     {
         private readonly SocketAsyncEventArgs _args;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SocketAsyncEventArgsWrapper"/> class.
+        /// </summary>
+        /// <param name="args">The <see cref="SocketAsyncEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.ArgumentNullException">args</exception>
         public SocketAsyncEventArgsWrapper(SocketAsyncEventArgs args)
         {
             if (args == null) throw new ArgumentNullException("args");
@@ -72,14 +77,32 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Assign a buffer.
+        /// Assign a buffer to the structure
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
-        /// <param name="offset">Offset to start next operation on</param>
-        /// <param name="count">Amount of bytes to process.</param>
+        /// <param name="offset">Index of first byte to send</param>
+        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="capacity">Total number of bytes allocated for this slices</param>
+        public void SetBuffer(byte[] buffer, int offset, int count, int capacity)
+        {
+            BaseOffset = offset;
+            Capacity = capacity;
+            _args.SetBuffer(buffer, offset, count);
+        }
+
+        /// <summary>
+        /// Assign a buffer to the structure
+        /// </summary>
+        /// <param name="buffer">Buffer to use</param>
+        /// <param name="offset">Index of first byte to send</param>
+        /// <param name="count">Amount of bytes to send</param>
+        /// <remarks>
+        /// Capacity will be set to same as <c>count</c>.
+        /// </remarks>
         public void SetBuffer(byte[] buffer, int offset, int count)
         {
             BaseOffset = offset;
+            Capacity = count;
             _args.SetBuffer(buffer, offset, count);
         }
     }

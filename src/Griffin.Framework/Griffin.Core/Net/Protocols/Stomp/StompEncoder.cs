@@ -50,7 +50,7 @@ namespace Griffin.Net.Protocols.Stomp
         {
             if (_bytesToSend > 0)
             {
-                buffer.SetBuffer(_buffer, _offset, _bytesToSend);
+                buffer.SetBuffer(_buffer, _offset, _bytesToSend, _bytesToSend);
                 return;
             }
             if (_isHeaderSent)
@@ -66,7 +66,7 @@ namespace Griffin.Net.Protocols.Stomp
                     bytes++;
                 }
 
-                buffer.SetBuffer(_buffer, 0, bytes);
+                buffer.SetBuffer(_buffer, 0, bytes, bytes);
                 return;
             }
 
