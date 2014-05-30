@@ -120,7 +120,7 @@
     <Compile Include="Logging\Providers\NamespaceFilter.cs" />
     <Compile Include="Logging\Providers\NoFilter.cs" />
     <Compile Include="Logging\Providers\NullLogProvider.cs" />
-    <Compile Include="Net\AsyncMessageClient.cs" />
+    <Compile Include="Net\ChannelTcpClient.cs" />
     <Compile Include="Net\Buffers\BufferSlice.cs" />
     <Compile Include="Net\Buffers\BufferSlicePool.cs" />
     <Compile Include="Net\Buffers\IBufferSlice.cs" />
@@ -143,9 +143,14 @@
     <Compile Include="Net\Channels\SocketAsyncEventArgsWrapper.cs" />
     <Compile Include="Net\Channels\SocketBuffer.cs" />
     <Compile Include="Net\Channels\TcpChannel.cs" />
+    <Compile Include="Net\ChannelTcpListener.cs" />
+    <Compile Include="Net\ChannelTcpListenerConfiguration.cs" />
+    <Compile Include="Net\IMessageQueue.cs" />
+    <Compile Include="Net\MessageQueue.cs" />
     <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\ClientDisconnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\CookieAuthentication.cs" />
+    <Compile Include="Net\Protocols\Http\External\ConcurrentPriorityQueue.cs" />
     <Compile Include="Net\Protocols\Http\HttpCookie.cs" />
     <Compile Include="Net\Protocols\Http\HttpCookieCollection.cs" />
     <Compile Include="Net\Protocols\Http\HttpRequest.cs" />
@@ -203,6 +208,7 @@
     <Compile Include="Net\Protocols\Http\Messages\UrlDecoder.cs" />
     <Compile Include="Net\IMessageDecoder.cs" />
     <Compile Include="Net\IMessageEncoder.cs" />
+    <Compile Include="Net\Protocols\Http\PipelinedMessageQueue.cs" />
     <Compile Include="Net\Protocols\IMessagingListener.cs" />
     <Compile Include="Net\Channels\ITcpChannelFactory.cs" />
     <Compile Include="Net\Protocols\MicroMsg\IMessageSerializer.cs" />
@@ -212,8 +218,7 @@
     <Compile Include="Net\Protocols\MicroMsg\NamespaceDoc.cs" />
     <Compile Include="Net\Protocols\MicroMsg\Serializers\DataContractMessageSerializer.cs" />
     <Compile Include="Net\Protocols\MicroMsg\Server\MicroMessageTcpListener.cs" />
-    <Compile Include="Net\Protocols\ProtocolListenerConfiguration.cs" />
-    <Compile Include="Net\Protocols\ProtocolTcpListener.cs" />
+    <Compile Include="Net\Channels\ChannelTcpListener.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\BadRequestException.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\FrameExtensions.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\IStompClient.cs" />

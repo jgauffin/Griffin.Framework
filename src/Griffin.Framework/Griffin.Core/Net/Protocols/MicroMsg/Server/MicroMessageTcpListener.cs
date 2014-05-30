@@ -1,15 +1,16 @@
-﻿using Griffin.Net.Protocols.MicroMsg.Serializers;
+﻿using Griffin.Net.Channels;
+using Griffin.Net.Protocols.MicroMsg.Serializers;
 
 namespace Griffin.Net.Protocols.MicroMsg.Server
 {
-    public class MicroMessageTcpListener : ProtocolTcpListener
+    public class MicroMessageTcpListener : ChannelTcpListener
     {
 
         /// <summary>
         /// 
         /// </summary>
         public MicroMessageTcpListener()
-            : this(new ProtocolListenerConfiguration(() => new MicroMessageDecoder(new DataContractMessageSerializer()), () => new MicroMessageEncoder(new DataContractMessageSerializer())))
+            : this(new ChannelTcpListenerConfiguration(() => new MicroMessageDecoder(new DataContractMessageSerializer()), () => new MicroMessageEncoder(new DataContractMessageSerializer())))
         {
         }
 
@@ -18,7 +19,7 @@ namespace Griffin.Net.Protocols.MicroMsg.Server
         /// 
         /// </summary>
         /// <param name="configuration"></param>
-        public MicroMessageTcpListener(ProtocolListenerConfiguration configuration)
+        public MicroMessageTcpListener(ChannelTcpListenerConfiguration configuration)
             : base(configuration)
         {
         }

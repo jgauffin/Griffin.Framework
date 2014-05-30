@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Protocols;
 
@@ -17,10 +19,12 @@ namespace Griffin.Net.Channels
     /// </remarks>
     public class SecureTcpChannel : ITcpChannel
     {
+        private static readonly object CloseMessage = new object();
+        private readonly SemaphoreSlim _closeEvent = new SemaphoreSlim(0, 1);
         private readonly IMessageDecoder _decoder;
         private readonly ISslStreamBuilder _sslStreamBuilder;
         private readonly IMessageEncoder _encoder;
-        private readonly ConcurrentQueue<object> _outboundMessages = new ConcurrentQueue<object>();
+        private readonly IMessageQueue _outboundMessages = new MessageQueue();
         private object _currentOutboundMessage;
         private DisconnectHandler _disconnectAction;
         private MessageHandler _messageReceived;
@@ -189,9 +193,34 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public IChannelData Data { get; private set; }
 
+        public IMessageQueue OutboundMessageQueue { get; set; }
+
+        /// <summary>
+        /// Close channel, wait for all messages to be sent.
+        /// </summary>
         public void Close()
         {
             _socket.Shutdown(SocketShutdown.Both);
+            _closeEvent.Wait(5000);
+        }
+
+        /// <summary>
+        ///     Signal channel to close.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Will wait for all data to be sent before closing.
+        ///     </para>
+        /// </remarks>
+        public Task CloseAsync()
+        {
+            Send(CloseMessage);
+            var t = _closeEvent.WaitAsync(5000);
+
+            // release again so that we can take reuse it internally
+            t.ContinueWith(x => _closeEvent.Release());
+
+            return t;
         }
 
         /// <summary>
@@ -203,6 +232,10 @@ namespace Griffin.Net.Channels
             _decoder.Clear();
             _currentOutboundMessage = null;
             _socket = null;
+
+            if (Data != null)
+                Data.Clear();
+
             RemoteEndpoint = EmptyEndpoint.Instance;
 
             object msg;
@@ -298,10 +331,7 @@ namespace Griffin.Net.Channels
             }
 
             _sendCompleteAction(this, msg);
-
-            _encoder.Prepare(_currentOutboundMessage);
-            _encoder.Send(_writeBuffer);
-            _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);
+            SendCurrent();
         }
 
         private void ReadAsync()
@@ -311,6 +341,16 @@ namespace Griffin.Net.Channels
 
         private void SendCurrent()
         {
+            // Allows us to send everything before closing the connection.
+            if (_currentOutboundMessage == CloseMessage)
+            {
+                _socket.Shutdown(SocketShutdown.Both);
+                _currentOutboundMessage = null;
+                _closeEvent.Release();
+                return;
+            }
+
+
             _encoder.Prepare(_currentOutboundMessage);
             _encoder.Send(_writeBuffer);
             _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);

@@ -14,6 +14,23 @@ namespace Griffin.Net.Channels
     {
         private readonly ConcurrentDictionary<string, object> _items = new ConcurrentDictionary<string, object>();
 
+        public object GetOrAdd(string key, Func<string, object> addCallback)
+        {
+            return _items.GetOrAdd(key, addCallback);
+        }
+
+        /// <summary>
+        /// Try updating a value
+        /// </summary>
+        /// <param name="key">Key for the value to update</param>
+        /// <param name="newValue">Value to set</param>
+        /// <param name="existingValue">Value that we've previously retreived</param>
+        /// <returns><c>true</c> if the existing value is the same as the one in the dictionary</returns>
+        public bool TryUpdate(string key, object newValue, object existingValue)
+        {
+            return _items.TryUpdate(key, newValue, existingValue);
+        }
+
         /// <summary>
         /// Get or set data
         /// </summary>
@@ -29,6 +46,14 @@ namespace Griffin.Net.Channels
             {
                 _items[key] = value;
             }
+        }
+
+        /// <summary>
+        /// Remove all existing data.
+        /// </summary>
+        public void Clear()
+        {
+            _items.Clear();
         }
     }
 }

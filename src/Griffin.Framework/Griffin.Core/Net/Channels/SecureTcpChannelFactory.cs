@@ -27,7 +27,17 @@ namespace Griffin.Net.Channels
         /// <returns>Created channel</returns>
         public ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
-            return new SecureTcpChannel(readBuffer, encoder, decoder, _sslStreamBuilder);
+            var channel= new SecureTcpChannel(readBuffer, encoder, decoder, _sslStreamBuilder);
+            if (OutboundMessageQueueFactory != null)
+                channel.OutboundMessageQueue = OutboundMessageQueueFactory();
+
+            return channel;
         }
+
+        /// <summary>
+        /// create a new queue which are used to store outbound messages in the created channel.
+        /// </summary>
+        /// <returns>Factory method</returns>
+        public Func<IMessageQueue> OutboundMessageQueueFactory { get; set; }
     }
 }

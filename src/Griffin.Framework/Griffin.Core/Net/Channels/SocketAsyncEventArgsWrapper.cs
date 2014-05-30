@@ -22,7 +22,13 @@ namespace Griffin.Net.Channels
             _args = args;
             Capacity = args.Count;
             BaseOffset = args.Offset;
+            
         }
+
+        /// <summary>
+        ///     an object which can be used by you to keep track of what's being sent and received.
+        /// </summary>
+        public object UserToken { get { return _args.UserToken; } set { _args.UserToken = value; } }
 
         /// <summary>
         /// Amount of bytes which was transferred in the last I/O operation

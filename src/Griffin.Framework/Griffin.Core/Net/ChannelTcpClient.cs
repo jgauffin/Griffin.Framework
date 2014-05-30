@@ -4,28 +4,29 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols;
 
-namespace Griffin.Net.Protocols
+namespace Griffin.Net
 {
     /// <summary>
-    /// Can talk with messaging servers (i.e. servers based on <see cref="ProtocolTcpListener"/>).
+    /// Can talk with messaging servers (i.e. servers based on <see cref="ChannelTcpListener"/>).
     /// </summary>
     /// <typeparam name="T">Type of message to receive</typeparam>
-    public class AsyncMessageClient<T>
+    public class ChannelTcpClient<T> : IDisposable
     {
         private readonly SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
-        private readonly TcpChannel _channel;
+        private TcpChannel _channel;
         private TaskCompletionSource<IPEndPoint> _connectCompletionSource;
         private TaskCompletionSource<T> _readCompletionSource;
         private TaskCompletionSource<T> _sendCompletionSource;
         private Socket _socket;
 
-        protected AsyncMessageClient(IMessageEncoder encoder, IMessageDecoder decoder)
+        public ChannelTcpClient(IMessageEncoder encoder, IMessageDecoder decoder)
             : this(encoder, decoder, new BufferSlice(new byte[65535], 0, 65535))
         {
         }
 
-        protected AsyncMessageClient(IMessageEncoder encoder, IMessageDecoder decoder, BufferSlice readBuffer)
+        public ChannelTcpClient(IMessageEncoder encoder, IMessageDecoder decoder, BufferSlice readBuffer)
         {
             if (encoder == null) throw new ArgumentNullException("encoder");
             if (decoder == null) throw new ArgumentNullException("decoder");
@@ -132,6 +133,24 @@ namespace Griffin.Net.Protocols
         {
             _sendCompletionSource.SetResult((T) sentMessage);
             _sendCompletionSource = null;
+        }
+
+        public async Task CloseAsync()
+        {
+            await _channel.CloseAsync();
+            _channel = null;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_channel == null)
+                return;
+
+            _channel.Close();
+            _channel = null;
         }
     }
 }

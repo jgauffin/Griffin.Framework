@@ -1,4 +1,5 @@
-﻿using Griffin.Net.Buffers;
+﻿using System;
+using Griffin.Net.Buffers;
 using Griffin.Net.Protocols;
 
 namespace Griffin.Net.Channels
@@ -20,5 +21,11 @@ namespace Griffin.Net.Channels
         /// <param name="decoder">Used to decode incoming data</param>
         /// <returns>Created channel</returns>
         ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder);
+
+        /// <summary>
+        /// create a new queue which are used to store outbound messages in the created channel.
+        /// </summary>
+        /// <returns>Factory method</returns>
+        Func<IMessageQueue> OutboundMessageQueueFactory { get; set; }
     }
 }

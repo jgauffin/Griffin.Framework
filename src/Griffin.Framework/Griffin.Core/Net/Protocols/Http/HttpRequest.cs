@@ -40,9 +40,27 @@ namespace Griffin.Net.Protocols.Http
         /// Create a response for this request.
         /// </summary>
         /// <returns>Response</returns>
+        /// <remarks>
+        /// <para>
+        /// If you override this method you have to copy the PipelineIndexKey header like this:
+        /// <code>
+        ///  var pipeline = Headers[PipelineIndexKey];
+        ///  if (pipeline != null)
+        ///  {
+        ///     response.Headers[PipelineIndexKey] = pipeline;
+        ///  }        
+        /// </code>
+        /// </para>
+        /// </remarks>
         public override IHttpResponse CreateResponse()
         {
-            return new HttpResponse(200, "OK", HttpVersion);
+            var response = new HttpResponse(200, "OK", HttpVersion);
+            var pipeline = Headers[PipelineIndexKey];
+            if (pipeline != null)
+            {
+                response.Headers[PipelineIndexKey] = pipeline;
+            }
+            return response;
         }
     }
 }

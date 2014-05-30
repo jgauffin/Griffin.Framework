@@ -5,12 +5,12 @@ namespace Griffin.Net.Protocols.Stomp
     /// <summary>
     /// Listens on STOMP messages from a client.
     /// </summary>
-    public class StompTcpListener : ProtocolTcpListener
+    public class StompTcpListener : ChannelTcpListener
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StompTcpListener"/> class.
         /// </summary>
-        public StompTcpListener() : base(new ProtocolListenerConfiguration(() => new StompDecoder(), () => new StompEncoder()))
+        public StompTcpListener() : base(new ChannelTcpListenerConfiguration(() => new StompDecoder(), () => new StompEncoder()))
         {
         }
 

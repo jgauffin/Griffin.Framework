@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Protocols;
 
@@ -10,20 +12,21 @@ namespace Griffin.Net.Channels
 {
     public class TcpChannel : ITcpChannel
     {
+        private static readonly object CloseMessage = new object();
+        private readonly SemaphoreSlim _closeEvent = new SemaphoreSlim(0, 1);
         private readonly IMessageDecoder _decoder;
         private readonly IMessageEncoder _encoder;
-        private readonly ConcurrentQueue<object> _outboundMessages = new ConcurrentQueue<object>();
         private readonly SocketAsyncEventArgs _readArgs;
         private readonly SocketAsyncEventArgsWrapper _readArgsWrapper;
         private readonly SocketAsyncEventArgs _writeArgs;
         private readonly SocketAsyncEventArgsWrapper _writeArgsWrapper;
+        private IMessageQueue _outboundMessages = new MessageQueue();
         private object _currentOutboundMessage;
         private DisconnectHandler _disconnectAction;
         private MessageHandler _messageReceived;
         private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
-        private static readonly object CloseMessage = new object();
 
 
         /// <summary>
@@ -61,7 +64,6 @@ namespace Griffin.Net.Channels
             _remoteEndPoint = EmptyEndpoint.Instance;
             ChannelId = GuidFactory.Create().ToString();
             Data = new ChannelData();
-
         }
 
         /// <summary>
@@ -77,6 +79,26 @@ namespace Griffin.Net.Channels
                     _disconnectAction = (x, e) => { };
                 else
                     _disconnectAction = value;
+            }
+        }
+
+        /// <summary>
+        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one have been sent)
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property exists so that you can switch implementation.  This is used by the HttpListener so that we can add support
+        /// for message pipelininig
+        /// </para>
+        /// </remarks>
+        public IMessageQueue OutboundMessageQueue
+        {
+            get { return _outboundMessages; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                _outboundMessages = value;
             }
         }
 
@@ -116,12 +138,12 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Invoked if the decoder failes to handle an incoming message
+        ///     Invoked if the decoder failes to handle an incoming message
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// The handler MUST close the connection once a reply have been sent.
-        /// </para>
+        ///     <para>
+        ///         The handler MUST close the connection once a reply have been sent.
+        ///     </para>
         /// </remarks>
         public DecoderFailureHandler DecoderFailure { get; set; }
 
@@ -134,10 +156,10 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Identity of this channel
+        ///     Identity of this channel
         /// </summary>
         /// <remarks>
-        /// Must be unique within a server.
+        ///     Must be unique within a server.
         /// </remarks>
         public string ChannelId { get; private set; }
 
@@ -193,16 +215,25 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Can be used to store information in the channel so that you can access it at later requests.
+        ///     Can be used to store information in the channel so that you can access it at later requests.
         /// </summary>
         /// <remarks>
-        /// <para>All data is lost when the channel is closed.</para>
+        ///     <para>All data is lost when the channel is closed.</para>
         /// </remarks>
-        public IChannelData Data { get; private set; }
+        public IChannelData Data { get; set; }
 
+        /// <summary>
+        ///     Signal channel to close.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Will wait for all data to be sent before closing.
+        ///     </para>
+        /// </remarks>
         public void Close()
         {
             Send(CloseMessage);
+            _closeEvent.Wait(5000);
         }
 
         /// <summary>
@@ -214,6 +245,10 @@ namespace Griffin.Net.Channels
             _decoder.Clear();
             _currentOutboundMessage = null;
             _remoteEndPoint = EmptyEndpoint.Instance;
+            _closeEvent.Wait();
+
+            if (Data != null)
+                Data.Clear();
 
             object msg;
             while (_outboundMessages.TryDequeue(out msg))
@@ -221,15 +256,33 @@ namespace Griffin.Net.Channels
             }
         }
 
+        /// <summary>
+        ///     Signal channel to close.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Will wait for all data to be sent before closing.
+        ///     </para>
+        /// </remarks>
+        public Task CloseAsync()
+        {
+            Send(CloseMessage);
+            var t = _closeEvent.WaitAsync(5000);
+
+            // release again so that we can take reuse it internally
+            t.ContinueWith(x => _closeEvent.Release());
+
+            return t;
+        }
+
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         private void HandleDisconnect(SocketError socketError)
         {
             _socket.Close();
-            _disconnectAction(this, new SocketException((int)socketError));
+            _disconnectAction(this, new SocketException((int) socketError));
         }
 
         private void OnMessageReceived(object obj)
@@ -289,18 +342,7 @@ namespace Griffin.Net.Channels
             }
 
             _sendCompleteAction(this, msg);
-            if (_currentOutboundMessage == CloseMessage)
-            {
-                _socket.Shutdown(SocketShutdown.Both);
-                _currentOutboundMessage = null;
-                return;
-            }
-
-            _encoder.Prepare(_currentOutboundMessage);
-            _encoder.Send(_writeArgsWrapper);
-            var isPending2 = _socket.SendAsync(_writeArgs);
-            if (!isPending2)
-                OnSendCompleted(this, _writeArgs);
+            SendCurrent();
         }
 
         private void ReadAsync()
@@ -319,8 +361,8 @@ namespace Griffin.Net.Channels
             {
                 _socket.Shutdown(SocketShutdown.Both);
                 _currentOutboundMessage = null;
+                _closeEvent.Release();
                 return;
-
             }
 
             _encoder.Prepare(_currentOutboundMessage);

@@ -39,7 +39,7 @@ namespace Griffin.Net.Protocols
         /// </summary>
         /// <param name="address">Address to accept connections on</param>
         /// <param name="port">Port to use. Set to <c>0</c> to let the OS decide which port to use. </param>
-        /// <seealso cref="ProtocolTcpListener.LocalPort" />
+        /// <seealso cref="ChannelTcpListener.LocalPort" />
         void Start(IPAddress address, int port);
 
         /// <summary>

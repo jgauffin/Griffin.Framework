@@ -22,6 +22,12 @@ namespace Griffin.Net.Channels
             Offset = readBuffer.Offset;
         }
 
+        /// <summary>
+        ///     an object which can be used by you to keep track of what's being sent and received.
+        /// </summary>
+        public object UserToken { get; set; }
+
+
         public int BytesTransferred { get; set; }
         public int Count { get; set; }
         public int Capacity { get; set; }

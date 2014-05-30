@@ -4,7 +4,7 @@ using Griffin.Net.Channels;
 namespace Griffin.Net.Protocols
 {
     /// <summary>
-    ///     Event arguments for <see cref="ProtocolTcpListener.ClientDisconnected" />.
+    ///     Event arguments for <see cref="ChannelTcpListener.ClientDisconnected" />.
     /// </summary>
     public class ClientDisconnectedEventArgs : EventArgs
     {

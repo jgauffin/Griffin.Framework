@@ -60,11 +60,15 @@ namespace Griffin.Net.Protocols.Http
         /// </param>
         public void Send(ISocketBuffer buffer)
         {
+            // last send operation did not send all bytes enqueued in the buffer
+            // so let's just continue until doing next message
             if (_bytesToSend > 0)
             {
                 buffer.SetBuffer(_buffer, _offset, _bytesToSend);
                 return;
             }
+
+            // continuing with the message body
             if (_isHeaderSent)
             {
                 var bytes = Math.Min(_totalAmountToSend, _buffer.Length);
@@ -76,15 +80,14 @@ namespace Griffin.Net.Protocols.Http
             }
 
             _writer.WriteLine(_message.StatusLine);
-
             foreach (var header in _message.Headers)
             {
                 _writer.Write("{0}:{1}\r\n", header.Key, header.Value);
             }
-
             _writer.Write("\r\n");
             _writer.Flush();
             _isHeaderSent = true;
+            buffer.UserToken = _message;
 
             if (_message.Body == null || _message.ContentLength == 0)
             {

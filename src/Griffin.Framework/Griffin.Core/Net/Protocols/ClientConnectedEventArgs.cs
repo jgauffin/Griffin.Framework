@@ -5,7 +5,7 @@ using Griffin.Net.Channels;
 namespace Griffin.Net.Protocols
 {
     /// <summary>
-    ///     Used by <see cref="ProtocolTcpListener.ClientConnected" />.
+    ///     Used by <see cref="ChannelTcpListener.ClientConnected" />.
     /// </summary>
     public class ClientConnectedEventArgs : EventArgs
     {

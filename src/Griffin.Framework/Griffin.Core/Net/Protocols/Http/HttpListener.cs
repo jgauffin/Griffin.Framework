@@ -1,28 +1,27 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.BodyDecoders;
 
 namespace Griffin.Net.Protocols.Http
 {
-    public class HttpListener : ProtocolTcpListener
+    public class HttpListener : ChannelTcpListener
     {
-        private int _pipelineIndex;
-
+        
         /// <summary>
         /// </summary>
         /// <param name="configuration"></param>
-        public HttpListener(ProtocolListenerConfiguration configuration) : base(configuration)
+        public HttpListener(ChannelTcpListenerConfiguration configuration) : base(configuration)
         {
         }
 
         public HttpListener()
         {
-            var config = new ProtocolListenerConfiguration(
+            var config = new ChannelTcpListenerConfiguration(
                 () => new HttpMessageDecoder(BodyDecoder),
                 () => new HttpMessageEncoder());
 
-            
             Configure(config);
         }
 
@@ -38,6 +37,20 @@ namespace Griffin.Net.Protocols.Http
             return base.OnClientConnected(channel);
         }
 
+        /// <summary>
+        ///     Start this listener
+        /// </summary>
+        /// <param name="address">Address to accept connections on</param>
+        /// <param name="port">Port to use. Set to <c>0</c> to let the OS decide which port to use. </param>
+        /// <seealso cref="ChannelTcpListener.LocalPort" />
+        public override void Start(IPAddress address, int port)
+        {
+            if (ChannelFactory.OutboundMessageQueueFactory == null)
+                ChannelFactory.OutboundMessageQueueFactory = () => new PipelinedMessageQueue();
+
+            base.Start(address, port);
+        }
+
         private void OnDecoderFailure(ITcpChannel channel, Exception error)
         {
             var pos = error.Message.IndexOfAny(new[] {'\r', '\n'});
@@ -47,12 +60,17 @@ namespace Griffin.Net.Protocols.Http
             channel.Close();
         }
 
+        
+
         protected override void OnMessage(ITcpChannel source, object msg)
         {
             var message = (IHttpMessage) msg;
 
-            // used to be able to send back all
-            message.Headers["X-Pipeline-index"] = (_pipelineIndex++).ToString();
+            //TODO: Try again if we fail to update
+            var counter = (int)source.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 0) + 1;
+            source.Data.TryUpdate(HttpMessage.PipelineIndexKey, counter, counter - 1);
+
+            message.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
 
             var request = msg as IHttpRequest;
             if (request != null)

@@ -1,11 +1,15 @@
-﻿using System;
+using System;
 using Griffin.Net.Buffers;
+using Griffin.Net.Protocols;
 
-namespace Griffin.Net.Protocols
+namespace Griffin.Net
 {
-    public class ProtocolListenerConfiguration
+    /// <summary>
+    /// Configuration for <see cref="ChannelTcpListener"/>
+    /// </summary>
+    public class ChannelTcpListenerConfiguration
     {
-        public ProtocolListenerConfiguration(Func<IMessageDecoder> decoderFactory, Func<IMessageEncoder> encoderFactory)
+        public ChannelTcpListenerConfiguration(Func<IMessageDecoder> decoderFactory, Func<IMessageEncoder> encoderFactory)
         {
             if (decoderFactory == null) throw new ArgumentNullException("decoderFactory");
             if (encoderFactory == null) throw new ArgumentNullException("encoderFactory");
@@ -36,6 +40,6 @@ namespace Griffin.Net.Protocols
         /// </value>
         public IBufferSlicePool BufferPool { get; set; }
 
-       
+
     }
 }

@@ -68,16 +68,33 @@ namespace Griffin.Net.Protocols.Http
         /// Create a response for this request.
         /// </summary>
         /// <returns>Response</returns>
+        /// <remarks>
+        /// <para>
+        /// If you override this method you have to copy the PipelineIndexKey header like this:
+        /// <code>
+        ///  var pipeline = Headers[PipelineIndexKey];
+        ///  if (pipeline != null)
+        ///  {
+        ///     response.Headers[PipelineIndexKey] = pipeline;
+        ///  }        
+        /// </code>
+        /// </para>
+        /// </remarks>
         public virtual IHttpResponse CreateResponse()
         {
-            return new HttpResponseBase(200, "OK", HttpVersion);
+            var response = new HttpResponseBase(200, "OK", HttpVersion);
+            var pipeline = Headers[PipelineIndexKey];
+            if (pipeline != null)
+            {
+                response.Headers[PipelineIndexKey] = pipeline;
+            }
+            return response;
         }
 
         protected override void OnHeaderSet(string name, string value)
         {
             if (name.Equals("host", StringComparison.OrdinalIgnoreCase))
             {
-
                 //TODO: Identify schema
                 Uri = new Uri("http://" + value + _pathAndQuery);
             }

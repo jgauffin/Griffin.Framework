@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols;
+using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.MicroMsg.Serializers;
 
-namespace Griffin.Net.Protocols
+namespace Griffin.Net
 {
     /// <summary>
     ///     Listens on one of the specified protocols
     /// </summary>
-    public class ProtocolTcpListener : IMessagingListener
+    public class ChannelTcpListener : IMessagingListener
     {
         private readonly ConcurrentStack<ITcpChannel> _channels = new ConcurrentStack<ITcpChannel>();
         private IBufferSlicePool _bufferPool;
         private ITcpChannelFactory _channelFactory;
-        private ProtocolListenerConfiguration _configuration;
+        private ChannelTcpListenerConfiguration _configuration;
         private TcpListener _listener;
         private MessageHandler _messageReceived;
         private MessageHandler _messageSent;
@@ -25,7 +28,7 @@ namespace Griffin.Net.Protocols
         /// <summary>
         /// </summary>
         /// <param name="configuration"></param>
-        public ProtocolTcpListener(ProtocolListenerConfiguration configuration)
+        public ChannelTcpListener(ChannelTcpListenerConfiguration configuration)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
 
@@ -35,50 +38,15 @@ namespace Griffin.Net.Protocols
 
         /// <summary>
         /// </summary>
-        public ProtocolTcpListener()
+        public ChannelTcpListener()
         {
             Configure(
-                new ProtocolListenerConfiguration(
+                new ChannelTcpListenerConfiguration(
                     () => new MicroMessageDecoder(new DataContractMessageSerializer()),
                     () => new MicroMessageEncoder(new DataContractMessageSerializer()))
                 );
 
             ChannelFactory = new TcpChannelFactory();
-        }
-
-        /// <summary>
-        ///     Used to create channels. Default is <see cref="TcpChannelFactory" />.
-        /// </summary>
-        public ITcpChannelFactory ChannelFactory
-        {
-            get { return _channelFactory; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException();
-                _channelFactory = value;
-            }
-        }
-
-        /// <summary>
-        ///     Delegate invoked when a new message is received
-        /// </summary>
-        public MessageHandler MessageReceived
-        {
-            get { return _messageReceived; }
-            set
-            {
-                _messageReceived = value ?? delegate {};
-            }
-        }
-
-        /// <summary>
-        ///     Delegate invoked when a message have been sent to the remote end point
-        /// </summary>
-        public MessageHandler MessageSent
-        {
-            get { return _messageSent; }
-            set { _messageSent = value ?? delegate { }; }
         }
 
         /// <summary>
@@ -100,6 +68,39 @@ namespace Griffin.Net.Protocols
         }
 
         /// <summary>
+        ///     Used to create channels. Default is <see cref="TcpChannelFactory" />.
+        /// </summary>
+        public ITcpChannelFactory ChannelFactory
+        {
+            get { return _channelFactory; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException();
+
+                _channelFactory = value;
+            }
+        }
+
+        /// <summary>
+        ///     Delegate invoked when a new message is received
+        /// </summary>
+        public MessageHandler MessageReceived
+        {
+            get { return _messageReceived; }
+            set { _messageReceived = value ?? delegate { }; }
+        }
+
+        /// <summary>
+        ///     Delegate invoked when a message have been sent to the remote end point
+        /// </summary>
+        public MessageHandler MessageSent
+        {
+            get { return _messageSent; }
+            set { _messageSent = value ?? delegate { }; }
+        }
+
+        /// <summary>
         ///     A client have connected (nothing have been sent or received yet)
         /// </summary>
         public event EventHandler<ClientConnectedEventArgs> ClientConnected = delegate { };
@@ -115,7 +116,7 @@ namespace Griffin.Net.Protocols
         /// <param name="address">Address to accept connections on</param>
         /// <param name="port">Port to use. Set to <c>0</c> to let the OS decide which port to use. </param>
         /// <seealso cref="LocalPort" />
-        public void Start(IPAddress address, int port)
+        public virtual void Start(IPAddress address, int port)
         {
             if (port < 0)
                 throw new ArgumentOutOfRangeException("port", port, "Port must be 0 or more.");
@@ -130,18 +131,23 @@ namespace Griffin.Net.Protocols
         }
 
         /// <summary>
-        /// Stop the listener.
+        ///     Stop the listener.
         /// </summary>
-        public void Stop()
+        public virtual void Stop()
         {
             _listener.Stop();
         }
 
         /// <summary>
+        ///     An internal error occured
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> ListenerError = delegate { };
+
+        /// <summary>
         ///     To allow the sub classes to configure this class in their constructors.
         /// </summary>
         /// <param name="configuration"></param>
-        protected void Configure(ProtocolListenerConfiguration configuration)
+        protected void Configure(ChannelTcpListenerConfiguration configuration)
         {
             _bufferPool = configuration.BufferPool;
             _configuration = configuration;
@@ -183,6 +189,11 @@ namespace Griffin.Net.Protocols
             _messageReceived(source, msg);
         }
 
+        private static IMessageQueue CreateNewMessageQueue()
+        {
+            return new PipelinedMessageQueue();
+        }
+
         private void OnChannelDisconnect(ITcpChannel source, Exception exception)
         {
             OnClientDisconnected(source, exception);
@@ -206,6 +217,7 @@ namespace Griffin.Net.Protocols
 
                 channel.Disconnected = OnChannelDisconnect;
                 channel.MessageReceived = OnMessage;
+                channel.Assign(socket);
 
                 var args = OnClientConnected(channel);
                 if (!args.MayConnect)
@@ -215,12 +227,10 @@ namespace Griffin.Net.Protocols
                     channel.Close();
                     return;
                 }
-
-                channel.Assign(socket);
             }
             catch (Exception exception)
             {
-                //TODO: Handle error
+                ListenerError(this, new ErrorEventArgs(exception));
             }
 
 
