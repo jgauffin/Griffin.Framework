@@ -28,6 +28,10 @@
         ///     <para>
         ///         Messages do not have to be placed in order, place them as they should be sent out.
         ///     </para>
+        ///     <para>
+        ///         You must be able to enqueue all messages as the library use some internal messages for different operations
+        ///         (like being able to close when all messages have been sent)
+        ///     </para>
         /// </remarks>
         void Enqueue(object message);
 

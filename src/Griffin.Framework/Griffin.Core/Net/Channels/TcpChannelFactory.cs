@@ -7,15 +7,13 @@ namespace Griffin.Net.Channels
     /// <summary>
     ///     Creates a <see cref="TcpChannel" />.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Allows you to provide your own custom channels to be able to control the IO operations that this library uses.
+    ///     </para>
+    /// </remarks>
     public class TcpChannelFactory : ITcpChannelFactory
     {
-        private readonly Func<IMessageQueue> _outboundMessageQueueFactory;
-
-        public TcpChannelFactory()
-        {
-            _outboundMessageQueueFactory = () => new MessageQueue();
-        }
-
         /// <summary>
         ///     Create a new channel
         /// </summary>
@@ -26,7 +24,7 @@ namespace Griffin.Net.Channels
         public ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
             var channel = new TcpChannel(readBuffer, encoder, decoder);
-            if (_outboundMessageQueueFactory != null)
+            if (OutboundMessageQueueFactory != null)
                 channel.OutboundMessageQueue = OutboundMessageQueueFactory();
             return channel;
         }

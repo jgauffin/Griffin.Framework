@@ -10,8 +10,10 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     public class PipelinedMessageQueue : IMessageQueue
     {
-        private readonly ConcurrentPriorityQueue<int, IHttpMessage> _queue =
-            new ConcurrentPriorityQueue<int, IHttpMessage>();
+        private readonly ConcurrentPriorityQueue<int, object> _queue =
+            new ConcurrentPriorityQueue<int, object>();
+
+        private int _lastIndex = 0;
 
         /// <summary>
         ///     Enqueue a message
@@ -24,17 +26,26 @@ namespace Griffin.Net.Protocols.Http
         /// </remarks>
         public void Enqueue(object message)
         {
-            var response = (IHttpMessage) message;
+            var response = message as IHttpMessage;
+            if (response == null)
+            {
+                _queue.Enqueue(++_lastIndex, message);
+                return;
+            }
+
             var header = response.Headers[HttpMessage.PipelineIndexKey];
             if (header == null)
-                throw new InvalidOperationException("Responses require the " + HttpMessage.PipelineIndexKey +
-                                                    " header to support PipelinedMessageQueue.");
+                throw new InvalidOperationException("PipelinedMessageQueue requires the header '" +
+                                                        HttpMessage.PipelineIndexKey +
+                                                        "' to support HTTP pipelinging.");
 
             var value = 0;
             if (!int.TryParse(header, out value))
                 throw new InvalidOperationException("PipelinedMessageQueue require the header '" +
                                                     HttpMessage.PipelineIndexKey +
                                                     "' and that it contains a numerical value.");
+
+            _lastIndex = value;
             _queue.Enqueue(value, response);
         }
 
@@ -45,7 +56,7 @@ namespace Griffin.Net.Protocols.Http
         /// <returns><c>true</c> if there was a message to send.</returns>
         public bool TryDequeue(out object msg)
         {
-            KeyValuePair<int, IHttpMessage> kvp;
+            KeyValuePair<int, object> kvp;
             if (!_queue.TryDequeue(out kvp))
             {
                 msg = null;

@@ -55,7 +55,7 @@ namespace Griffin.Net.Channels
 
             _sendCompleteAction = (channel, message) => { };
             _disconnectAction = (channel, exception) => { };
-            DecoderFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
+            ChannelFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
 
             RemoteEndpoint = EmptyEndpoint.Instance;
 
@@ -124,7 +124,7 @@ namespace Griffin.Net.Channels
         /// The handler MUST close the connection once a reply have been sent.
         /// </para>
         /// </remarks>
-        public DecoderFailureHandler DecoderFailure { get; set; }
+        public ChannelFailureHandler ChannelFailure { get; set; }
 
         /// <summary>
         ///     Gets address of the connected end point.
@@ -291,7 +291,7 @@ namespace Griffin.Net.Channels
             }
             catch (Exception exception)
             {
-                DecoderFailure(this, exception);
+                ChannelFailure(this, exception);
                 return;
             }
 

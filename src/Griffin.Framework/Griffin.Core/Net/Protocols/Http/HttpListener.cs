@@ -32,7 +32,7 @@ namespace Griffin.Net.Protocols.Http
 
         protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)
         {
-            channel.DecoderFailure = OnDecoderFailure;
+            channel.ChannelFailure = OnDecoderFailure;
             //GriffinNetworking.cerchannel.
             return base.OnClientConnected(channel);
         }

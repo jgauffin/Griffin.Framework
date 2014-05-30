@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
@@ -16,7 +18,9 @@ namespace HttpServerTests
         static IAuthenticator _authenticator = new BasicAuthentication(new SimpleAccountService(), "griffin");
         static void Main(string[] args)
         {
+            var certificate = new X509Certificate2("GriffinNetworkingTemp.pfx", "mamma");
             var listener = new HttpListener();
+            listener.ChannelFactory = new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(certificate));
             listener.ClientConnected += OnConnect;
             listener.MessageReceived = OnMessage;
             listener.BodyDecoder = new CompositeBodyDecoder();
@@ -25,18 +29,18 @@ namespace HttpServerTests
             Console.ReadLine();
         }
 
-        
+
 
         private static void OnConnect(object sender, ClientConnectedEventArgs e)
         {
-            
         }
+
 
         private static void OnMessage(ITcpChannel channel, object message)
         {
-            Console.WriteLine(message);
             var request = (HttpRequestBase)message;
             var response = request.CreateResponse();
+
 
             if (request.Uri.AbsolutePath.StartsWith("/restricted"))
             {
@@ -48,11 +52,18 @@ namespace HttpServerTests
                     channel.Send(response);
                     return;
                 }
-                    
+
 
                 Console.WriteLine("Logged in: " + user);
             }
-            
+
+            if (request.Uri.AbsolutePath == "/favicon.ico")
+            {
+                response.StatusCode = 404;
+                channel.Send(response);
+                return;
+            }
+
             var msg = Encoding.UTF8.GetBytes("Hello world");
             if (request.Uri.ToString().Contains(".jpg"))
             {
@@ -61,11 +72,16 @@ namespace HttpServerTests
             }
             else
             {
-                response.Body = new MemoryStream();
-                response.Body.Write(msg, 0, msg.Length);
+                response.Body = new MemoryStream(msg);
+                //response.Body.Write(msg, 0, msg.Length);
                 response.ContentType = "text/plain";
             }
             channel.Send(response);
+            if (request.HttpVersion == "HTTP/1.0")
+                channel.Close();
+
         }
     }
+
+
 }

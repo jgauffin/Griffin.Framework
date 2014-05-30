@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -27,6 +28,7 @@ namespace Griffin.Net.Channels
         private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
+        private Stopwatch _stopwatch = new Stopwatch();
 
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace Griffin.Net.Channels
 
             _sendCompleteAction = (channel, message) => { };
             _disconnectAction = (channel, exception) => { };
-            DecoderFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
+            ChannelFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
 
             _remoteEndPoint = EmptyEndpoint.Instance;
             ChannelId = GuidFactory.Create().ToString();
@@ -138,14 +140,14 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Invoked if the decoder failes to handle an incoming message
+        ///     The channel failed to complete an IO operation
         /// </summary>
         /// <remarks>
         ///     <para>
         ///         The handler MUST close the connection once a reply have been sent.
         ///     </para>
         /// </remarks>
-        public DecoderFailureHandler DecoderFailure { get; set; }
+        public ChannelFailureHandler ChannelFailure { get; set; }
 
         /// <summary>
         ///     Gets address of the connected end point.
@@ -245,7 +247,8 @@ namespace Griffin.Net.Channels
             _decoder.Clear();
             _currentOutboundMessage = null;
             _remoteEndPoint = EmptyEndpoint.Instance;
-            _closeEvent.Wait();
+            if (_closeEvent.CurrentCount == 1)
+                _closeEvent.Wait();
 
             if (Data != null)
                 Data.Clear();
@@ -281,8 +284,15 @@ namespace Griffin.Net.Channels
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         private void HandleDisconnect(SocketError socketError)
         {
-            _socket.Close();
-            _disconnectAction(this, new SocketException((int) socketError));
+            try
+            {
+                _socket.Close();
+                _disconnectAction(this, new SocketException((int) socketError));
+            }
+            catch (Exception exception)
+            {
+                ChannelFailure(this, exception);
+            }
         }
 
         private void OnMessageReceived(object obj)
@@ -292,6 +302,8 @@ namespace Griffin.Net.Channels
 
         private void OnReadCompleted(object sender, SocketAsyncEventArgs e)
         {
+            _stopwatch.Restart();
+
             if (e.BytesTransferred == 0 || e.SocketError != SocketError.Success)
             {
                 HandleDisconnect(e.SocketError);
@@ -300,11 +312,13 @@ namespace Griffin.Net.Channels
 
             try
             {
+                _stopwatch.Restart();
                 _decoder.ProcessReadBytes(_readArgsWrapper);
             }
             catch (Exception exception)
             {
-                DecoderFailure(this, exception);
+                Console.WriteLine(exception);
+                ChannelFailure(this, exception);
             }
 
             ReadAsync();

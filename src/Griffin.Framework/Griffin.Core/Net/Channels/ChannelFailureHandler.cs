@@ -13,5 +13,5 @@ namespace Griffin.Net.Channels
     /// Typically the handler will send an error message and close the connection.
     /// </para>
     /// </remarks>
-    public delegate void DecoderFailureHandler(ITcpChannel channel, Exception error);
+    public delegate void ChannelFailureHandler(ITcpChannel channel, Exception error);
 }

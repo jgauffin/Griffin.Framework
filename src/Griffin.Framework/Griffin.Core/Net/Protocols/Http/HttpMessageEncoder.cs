@@ -82,7 +82,7 @@ namespace Griffin.Net.Protocols.Http
             _writer.WriteLine(_message.StatusLine);
             foreach (var header in _message.Headers)
             {
-                _writer.Write("{0}:{1}\r\n", header.Key, header.Value);
+                _writer.Write("{0}: {1}\r\n", header.Key, header.Value);
             }
             _writer.Write("\r\n");
             _writer.Flush();
@@ -137,6 +137,9 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public void Clear()
         {
+            if (_message != null && _message.Body != null)
+                _message.Body.Dispose();
+
             _bytesToSend = 0;
             _message = null;
             _isHeaderSent = false;

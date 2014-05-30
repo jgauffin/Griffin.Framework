@@ -40,7 +40,7 @@ namespace Griffin.Net.Channels
         /// The handler MUST close the connection once a reply have been sent.
         /// </para>
         /// </remarks>
-        DecoderFailureHandler DecoderFailure { get; set; }
+        ChannelFailureHandler ChannelFailure { get; set; }
 
         /// <summary>
         ///     Gets address of the connected end point.

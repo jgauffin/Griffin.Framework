@@ -127,6 +127,14 @@ namespace Griffin.Net
             _listener = new TcpListener(address, port);
             _listener.Start();
 
+            for (int i = 0; i < 20; i++)
+            {
+                var decoder = _configuration.DecoderFactory();
+                var encoder = _configuration.EncoderFactory();
+                var channel  = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
+                _channels.Push(channel);
+            }
+
             _listener.BeginAcceptSocket(OnSocket, null);
         }
 
@@ -187,11 +195,6 @@ namespace Griffin.Net
         protected virtual void OnMessage(ITcpChannel source, object msg)
         {
             _messageReceived(source, msg);
-        }
-
-        private static IMessageQueue CreateNewMessageQueue()
-        {
-            return new PipelinedMessageQueue();
         }
 
         private void OnChannelDisconnect(ITcpChannel source, Exception exception)

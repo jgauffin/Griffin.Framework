@@ -129,7 +129,7 @@
     <Compile Include="Net\Channels\ChannelData.cs" />
     <Compile Include="Net\Channels\ClientCertificate.cs" />
     <Compile Include="Net\Channels\ClientSideSslStreamBuilder.cs" />
-    <Compile Include="Net\Channels\DecoderFailureHandler.cs" />
+    <Compile Include="Net\Channels\ChannelFailureHandler.cs" />
     <Compile Include="Net\Channels\DisconnectHandler.cs" />
     <Compile Include="Net\Channels\EmptyEndpoint.cs" />
     <Compile Include="Net\Channels\IAsyncArgsFactory.cs" />
