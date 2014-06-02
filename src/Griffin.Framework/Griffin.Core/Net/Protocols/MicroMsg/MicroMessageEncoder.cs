@@ -172,7 +172,8 @@ namespace Griffin.Net.Protocols.MicroMsg
             {
                 _bodyStream = _internalStream;
                 _serializer.Serialize(_message, _bodyStream, out contentType);
-                contentType = _message.GetType().AssemblyQualifiedName;
+                if (contentType == null)
+                    contentType = _message.GetType().AssemblyQualifiedName;
                 if (contentType.Length > byte.MaxValue)
                     throw new InvalidOperationException(
                         "The AssemblyQualifiedName (type name) may not be larger than 255 characters. Your type: " +

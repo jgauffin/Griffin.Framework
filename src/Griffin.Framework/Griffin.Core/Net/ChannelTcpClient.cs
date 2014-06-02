@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
@@ -9,16 +11,20 @@ using Griffin.Net.Protocols;
 namespace Griffin.Net
 {
     /// <summary>
-    /// Can talk with messaging servers (i.e. servers based on <see cref="ChannelTcpListener"/>).
+    ///     Can talk with messaging servers (i.e. servers based on <see cref="ChannelTcpListener" />).
     /// </summary>
     /// <typeparam name="T">Type of message to receive</typeparam>
     public class ChannelTcpClient<T> : IDisposable
     {
         private readonly SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
+        private readonly SemaphoreSlim _connectSemaphore = new SemaphoreSlim(0, 1);
+        private readonly ConcurrentQueue<object> _readItems = new ConcurrentQueue<object>();
+        private readonly SemaphoreSlim _readSemaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim _sendCompletedSemaphore = new SemaphoreSlim(0, 1);
+        private readonly SemaphoreSlim _sendQueueSemaphore = new SemaphoreSlim(1, 1);
         private TcpChannel _channel;
-        private TaskCompletionSource<IPEndPoint> _connectCompletionSource;
-        private TaskCompletionSource<T> _readCompletionSource;
-        private TaskCompletionSource<T> _sendCompletionSource;
+        private Exception _connectException;
+        private Exception _sendException;
         private Socket _socket;
 
         public ChannelTcpClient(IMessageEncoder encoder, IMessageDecoder decoder)
@@ -30,7 +36,6 @@ namespace Griffin.Net
         {
             if (encoder == null) throw new ArgumentNullException("encoder");
             if (decoder == null) throw new ArgumentNullException("decoder");
-
             _channel = new TcpChannel(readBuffer, encoder, decoder)
             {
                 Disconnected = OnDisconnect,
@@ -42,107 +47,8 @@ namespace Griffin.Net
             _args.Completed += OnConnect;
         }
 
-        public Task ConnectAsync(IPAddress address, int port)
-        {
-            if (_socket != null)
-                throw new InvalidOperationException("Socket is already connected");
-            if (_connectCompletionSource != null)
-                throw new InvalidOperationException("There is already a pending connect.");
-
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _args.RemoteEndPoint = new IPEndPoint(address, port);
-            var isPending = _socket.ConnectAsync(_args);
-
-            _connectCompletionSource = new TaskCompletionSource<IPEndPoint>();
-            if (!isPending)
-            {
-                _connectCompletionSource.SetResult((IPEndPoint) _socket.RemoteEndPoint);
-            }
-
-            return _connectCompletionSource.Task;
-        }
-
-
-        public Task<T> ReceiveAsync()
-        {
-            if (_readCompletionSource != null)
-                throw new InvalidOperationException("There is already a pending receive operation.");
-
-            _readCompletionSource = new TaskCompletionSource<T>();
-            _readCompletionSource.Task.ConfigureAwait(false);
-
-            return _readCompletionSource.Task;
-        }
-
-        public Task SendAsync(object message)
-        {
-            if (message == null) throw new ArgumentNullException("message");
-            if (_sendCompletionSource != null)
-                throw new InvalidOperationException("There is already a pending send operation.");
-
-            _sendCompletionSource = new TaskCompletionSource<T>();
-            _sendCompletionSource.Task.ConfigureAwait(false);
-
-            _channel.Send(message);
-            return _sendCompletionSource.Task;
-        }
-
-        private void OnChannelMessageReceived(ITcpChannel channel, object message)
-        {
-            _readCompletionSource.SetResult((T) message);
-            _readCompletionSource = null;
-        }
-
-        private void OnConnect(object sender, SocketAsyncEventArgs e)
-        {
-            if (e.SocketError != SocketError.Success)
-            {
-                _connectCompletionSource.SetException(new SocketException((int) e.SocketError));
-                _connectCompletionSource = null;
-                return;
-            }
-
-            _channel.Assign(_socket);
-            _connectCompletionSource.SetResult((IPEndPoint) _socket.RemoteEndPoint);
-            _connectCompletionSource = null;
-        }
-
-        private void OnDisconnect(ITcpChannel arg1, Exception arg2)
-        {
-            _socket = null;
-
-            if (_sendCompletionSource != null)
-            {
-                _sendCompletionSource.SetException(arg2);
-                _sendCompletionSource = null;
-            }
-
-            if (_readCompletionSource != null)
-            {
-                _readCompletionSource.SetException(arg2);
-                _readCompletionSource = null;
-            }
-        }
-
-        private void OnMessageReceived(object obj)
-        {
-            _readCompletionSource.SetResult((T) obj);
-        }
-
-        private void OnSendCompleted(ITcpChannel channel, object sentMessage)
-        {
-            _sendCompletionSource.SetResult((T) sentMessage);
-            _sendCompletionSource = null;
-        }
-
-        public async Task CloseAsync()
-        {
-            await _channel.CloseAsync();
-            _channel = null;
-        }
-
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
@@ -151,6 +57,154 @@ namespace Griffin.Net
 
             _channel.Close();
             _channel = null;
+        }
+
+        public async Task CloseAsync()
+        {
+            await _channel.CloseAsync();
+            _channel = null;
+        }
+
+        public async Task ConnectAsync(IPAddress address, int port)
+        {
+            if (_socket != null)
+                throw new InvalidOperationException("Socket is already connected");
+
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _args.RemoteEndPoint = new IPEndPoint(address, port);
+            var isPending = _socket.ConnectAsync(_args);
+
+            if (!isPending)
+                return;
+
+            await _connectSemaphore.WaitAsync();
+            if (_connectException != null)
+                throw _connectException;
+        }
+
+        public async Task ConnectAsync(IPAddress address, int port, TimeSpan timeout)
+        {
+            if (_socket != null)
+                throw new InvalidOperationException("Socket is already connected");
+
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _args.RemoteEndPoint = new IPEndPoint(address, port);
+            var isPending = _socket.ConnectAsync(_args);
+
+            if (!isPending)
+                return;
+
+            await _connectSemaphore.WaitAsync(timeout);
+        }
+
+
+        public Task<T> ReceiveAsync()
+        {
+            return ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
+        }
+
+        public Task<T> ReceiveAsync(CancellationToken cancellation)
+        {
+            return ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
+        }
+
+        public Task<T> ReceiveAsync(TimeSpan timeout)
+        {
+            return ReceiveAsync(timeout, CancellationToken.None);
+        }
+
+
+        public async Task<T> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
+        {
+            await _readSemaphore.WaitAsync(timeout, cancellation);
+            object item;
+            var gotItem = _readItems.TryDequeue(out item);
+
+            if (!gotItem)
+                throw new ChannelException(
+                    "Was signalled that something have been recieved, but found nothing in the in queue");
+
+            if (item is ChannelException)
+                throw (ChannelException) item;
+
+            // signal so that more items can be read directly
+            if (_readItems.Count > 0)
+                _readSemaphore.Release();
+
+            return (T) item;
+        }
+
+        public async Task SendAsync(object message)
+        {
+            if (message == null) throw new ArgumentNullException("message");
+
+
+            await _sendQueueSemaphore.WaitAsync();
+
+            _channel.Send(message);
+
+
+            await _sendCompletedSemaphore.WaitAsync();
+            _sendQueueSemaphore.Release();
+        }
+
+        private void OnChannelMessageReceived(ITcpChannel channel, object message)
+        {
+            _readItems.Enqueue((T) message);
+            _readSemaphore.Release();
+        }
+
+        private void OnConnect(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError != SocketError.Success)
+            {
+                _connectException = new SocketException((int) e.SocketError);
+            }
+
+            _channel.Assign(_socket);
+            _connectSemaphore.Release();
+        }
+
+        private void OnDisconnect(ITcpChannel arg1, Exception arg2)
+        {
+            _socket = null;
+
+            if (_sendCompletedSemaphore.CurrentCount == 0)
+            {
+                _sendException = arg2;
+                _sendCompletedSemaphore.Release();
+            }
+
+            if (_readSemaphore.CurrentCount == 0)
+            {
+                _readItems.Enqueue(new ChannelException("Socket got disconnected", arg2));
+                _readSemaphore.Release();
+            }
+        }
+
+        private void OnMessageReceived(object obj)
+        {
+            _readItems.Enqueue(obj);
+            if (_readSemaphore.CurrentCount == 0)
+                _readSemaphore.Release();
+        }
+
+        private void OnSendCompleted(ITcpChannel channel, object sentMessage)
+        {
+            _sendCompletedSemaphore.Release();
+        }
+    }
+
+    public class ChannelException : Exception
+    {
+        public ChannelException(string errorMessage, Exception inner)
+            : base(errorMessage, inner)
+        {
+        }
+
+        public ChannelException(string errorMessage)
+            : base(errorMessage)
+        {
         }
     }
 }
