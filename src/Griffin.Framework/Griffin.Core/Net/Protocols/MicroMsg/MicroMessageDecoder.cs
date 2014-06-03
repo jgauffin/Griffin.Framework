@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using Griffin.Net.Channels;
@@ -21,7 +22,6 @@ namespace Griffin.Net.Protocols.MicroMsg
     {
         private readonly IMessageSerializer _serializer;
         public const byte Version = 1;
-
         /// <summary>
         /// Size of the fixed header: (version, content length, type name length)
         /// </summary>
@@ -147,10 +147,10 @@ namespace Griffin.Net.Protocols.MicroMsg
             _stateMethod = ReadHeaderLength;
             _contentStream.Position = 0;
 
-            var type = Type.GetType(_contentName);
-            if (type != null && typeof (Stream).IsAssignableFrom(type))
+            
+            if (_contentName == "stream")
                 MessageReceived(_contentStream);
-            else if (type == typeof (byte[]))
+            else if (_contentName == "byte[]")
             {
                 MessageReceived(_contentStream);
             }

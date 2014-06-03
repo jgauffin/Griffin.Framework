@@ -28,7 +28,6 @@ namespace Griffin.Net.Channels
         private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
-        private Stopwatch _stopwatch = new Stopwatch();
 
 
         /// <summary>
@@ -302,8 +301,6 @@ namespace Griffin.Net.Channels
 
         private void OnReadCompleted(object sender, SocketAsyncEventArgs e)
         {
-            _stopwatch.Restart();
-
             if (e.BytesTransferred == 0 || e.SocketError != SocketError.Success)
             {
                 HandleDisconnect(e.SocketError);
@@ -312,7 +309,6 @@ namespace Griffin.Net.Channels
 
             try
             {
-                _stopwatch.Restart();
                 _decoder.ProcessReadBytes(_readArgsWrapper);
             }
             catch (Exception exception)

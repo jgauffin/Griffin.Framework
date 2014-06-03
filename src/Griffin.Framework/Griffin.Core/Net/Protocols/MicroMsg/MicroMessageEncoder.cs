@@ -144,11 +144,11 @@ namespace Griffin.Net.Protocols.MicroMsg
                 _bodyStream.Close();
                 _bodyStream = null;
             }
+            else
+                _internalStream.SetLength(0);
 
             _headerIsSent = false;
             _headerSize = 0;
-            _internalStream.Position = 0;
-            _internalStream.SetLength(0);
             _message = null;
         }
 
@@ -159,14 +159,14 @@ namespace Griffin.Net.Protocols.MicroMsg
             if (_message is Stream)
             {
                 _bodyStream = (Stream)_message;
-                contentType = typeof(Stream).FullName;
+                contentType = "stream";
             }
             else if (_message is byte[])
             {
                 var buffer = (byte[])_message;
                 _bodyStream = new MemoryStream(buffer);
                 _bodyStream.SetLength(buffer.Length);
-                contentType = _message.GetType().FullName;
+                contentType = "byte[]";
             }
             else
             {
@@ -180,13 +180,15 @@ namespace Griffin.Net.Protocols.MicroMsg
                         _message.GetType().AssemblyQualifiedName);
             }
 
+            var sliceOffset = _bufferSlice.Offset;
+            var sliceBuffer = _bufferSlice.Buffer;
             _bodyStream.Position = 0;
             _headerSize = FixedHeaderLength + contentType.Length;
-            BitConverter2.GetBytes(_headerSize, _bufferSlice.Buffer, _bufferSlice.Offset);
+            BitConverter2.GetBytes(_headerSize, sliceBuffer, sliceOffset);
             _bufferSlice.Buffer[_bufferSlice.Offset + 2] = Version;
-            BitConverter2.GetBytes((int)_bodyStream.Length, _bufferSlice.Buffer, _bufferSlice.Offset + 2 + 1);
-            BitConverter2.GetBytes((byte)contentType.Length, _bufferSlice.Buffer, _bufferSlice.Offset + 2 + 1 + 4);
-            Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, _bufferSlice.Buffer, _bufferSlice.Offset + 2 + 1 + 4 + 1);
+            BitConverter2.GetBytes((int)_bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
+            BitConverter2.GetBytes((byte)contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
+            Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
 
             return _headerSize + 2;
         }
