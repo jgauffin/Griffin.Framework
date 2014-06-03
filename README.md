@@ -18,6 +18,7 @@ Example repository:
 	{
 		IDbConnection _connection;
 		 
+		// You can also use the IDbTransaction
 		public MyRepository(IDbConnection connection)
 		{
 			if (connection == null) throw new ArgumentNullException();
@@ -26,39 +27,22 @@ Example repository:
 		
 		public void Create(User user)
 		{
-			using (var command = _connection.CreateCommand())
-			{
-				command.CommandText = @"INSERT INTO Users (CompanyId, FirstName) VALUES(@companyId, @firstName)";
-				command.AddParameter("companyId", user.CompanyId);
-				command.AddParameter("firstName", user.FirstName);
-				command.ExecuteNonQuery();
-			}
-			  
+			_connection.Insert(user);
 			//todo: Get identity. Depends on the db engine.
 		}
 	 
 	 
 		public void Update(User user)
 		{
-			using (var command = _connection.CreateCommand())
-			{
-				command.CommandText = @"UPDATE Users SET CompanyId = @companyId WHERE Id = @userId";
-				command.AddParameter("companyId", user.CompanyId);
-				command.AddParameter("userId", user.Id);
-				command.ExecuteNonQuery();
-			}
+			_connection.Update(user);
 		}
 	 
 		public void Delete(int id)
 		{
-			using (var command = _connection.CreateCommand())
-			{
-				command.CommandText = @"DELETE FROM Users WHERE Id = @userId";
-				command.AddParameter("userId", id);
-				command.ExecuteNonQuery();
-			}
-		}	
-	 
+			// can be any field or the actual entity
+			_connection.Delete<User>(new { Id = id });
+		}
+		
 		public User GetUser(int id)
 		{
 			return _connection.First<User>(new { id });

@@ -217,7 +217,7 @@
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoder.cs" />
     <Compile Include="Net\Protocols\MicroMsg\NamespaceDoc.cs" />
     <Compile Include="Net\Protocols\MicroMsg\Serializers\DataContractMessageSerializer.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\Server\MicroMessageTcpListener.cs" />
+    <Compile Include="Net\Protocols\MicroMsg\MicroMessageTcpListener.cs" />
     <Compile Include="Net\Channels\ChannelTcpListener.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\BadRequestException.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\FrameExtensions.cs" />
@@ -273,6 +273,7 @@
   <ItemGroup>
     <None Include="ApplicationServices\ReadMe.md" />
     <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
+    <None Include="Net\Protocols\MicroMsg\ReadMe.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Net\cert\howto.txt" />
