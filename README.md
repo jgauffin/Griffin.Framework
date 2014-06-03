@@ -6,80 +6,81 @@ Griffin.Framework is an open source library built using the experiences from all
 
 #Stable parts
 
+Libraries which have been completed.
+
 ## Griffin.Data
 
 A data mapper which works as an extension to ADO.NET. That gives you full control while not having to take care of mappings or CRUD operations.
 
 Example repository:
 
-public class MyRepository
-{
-    IDbConnection _connection;
-     
-    public MyRepository(IDbConnection connection)
-    {
-        if (connection == null) throw new ArgumentNullException();
-        _connection = connection;
-    }
-	
-    public void Create(User user)
-    {
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = @"INSERT INTO Users (CompanyId, FirstName) VALUES(@companyId, @firstName)";
-            command.AddParameter("companyId", user.CompanyId);
-            command.AddParameter("firstName", user.FirstName);
-            command.ExecuteNonQuery();
-        }
-          
-        //todo: Get identity. Depends on the db engine.
-    }
- 
- 
-    public void Update(User user)
-    {
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = @"UPDATE Users SET CompanyId = @companyId WHERE Id = @userId";
-            command.AddParameter("companyId", user.CompanyId);
-            command.AddParameter("userId", user.Id);
-            command.ExecuteNonQuery();
-        }
-    }
- 
-    public void Delete(int id)
-    {
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = @"DELETE FROM Users WHERE Id = @userId";
-            command.AddParameter("userId", id);
-            command.ExecuteNonQuery();
-        }
-    }	
- 
-    public User GetUser(int id)
-    {
-        return _connection.First<User>(new { id });
-    }
-	
-	public IEnumerable<User> FindUsers()
+	public class MyRepository
 	{
-		using (var command = _connection.CreateCommand())
+		IDbConnection _connection;
+		 
+		public MyRepository(IDbConnection connection)
 		{
-			command.CommandText = @"SELECT * FROM Users WHERE CompanyId = @companyId AND FirstName LIKE @firstName";
-			command.AddParameter("companyId", LoggedInUser.companyId);
-			command.AddParameter("firstName", firstName + "%");
-			
-			//skip through the first 1000 rows without mapping them and then just map the next 10 rows.
-			return command.ToEnumerable<User>().Skip(1000).Take(10).ToList();
+			if (connection == null) throw new ArgumentNullException();
+			_connection = connection;
+		}
+		
+		public void Create(User user)
+		{
+			using (var command = _connection.CreateCommand())
+			{
+				command.CommandText = @"INSERT INTO Users (CompanyId, FirstName) VALUES(@companyId, @firstName)";
+				command.AddParameter("companyId", user.CompanyId);
+				command.AddParameter("firstName", user.FirstName);
+				command.ExecuteNonQuery();
+			}
+			  
+			//todo: Get identity. Depends on the db engine.
+		}
+	 
+	 
+		public void Update(User user)
+		{
+			using (var command = _connection.CreateCommand())
+			{
+				command.CommandText = @"UPDATE Users SET CompanyId = @companyId WHERE Id = @userId";
+				command.AddParameter("companyId", user.CompanyId);
+				command.AddParameter("userId", user.Id);
+				command.ExecuteNonQuery();
+			}
+		}
+	 
+		public void Delete(int id)
+		{
+			using (var command = _connection.CreateCommand())
+			{
+				command.CommandText = @"DELETE FROM Users WHERE Id = @userId";
+				command.AddParameter("userId", id);
+				command.ExecuteNonQuery();
+			}
+		}	
+	 
+		public User GetUser(int id)
+		{
+			return _connection.First<User>(new { id });
+		}
+		
+		public IEnumerable<User> FindUsers()
+		{
+			using (var command = _connection.CreateCommand())
+			{
+				command.CommandText = @"SELECT * FROM Users WHERE CompanyId = @companyId AND FirstName LIKE @firstName";
+				command.AddParameter("companyId", LoggedInUser.companyId);
+				command.AddParameter("firstName", firstName + "%");
+				
+				//skip through the first 1000 rows without mapping them and then just map the next 10 rows.
+				return command.ToEnumerable<User>().Skip(1000).Take(10).ToList();
+			}
 		}
 	}
-	
-}
 
-Full blog post: http://blog.gauffin.org/2014/02/introducing-the-data-mapper-in-griffin-framework/
+Full article: http://blog.gauffin.org/2014/02/introducing-the-data-mapper-in-griffin-framework/
 
-## Griffin networking
+## Griffin.Networking
 
 High performance networking layer which makes it very easy to allow .NET applications to communicate.
 
@@ -103,7 +104,7 @@ Supports HTTP, STOMP and our own MicroMsg transport protocol.
 		channel.Send(new AuthenticateReply() {Success = true});
 	}
 
-** Sample client**
+**Sample client**
 
 	private static async Task RunClient()
 	{
