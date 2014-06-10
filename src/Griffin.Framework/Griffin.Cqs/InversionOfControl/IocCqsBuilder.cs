@@ -1,6 +1,10 @@
 ﻿namespace Griffin.Cqs.InversionOfControl
 {
-    class IocCqsBuilder
+    public class IocCqsBuilder
     {
+        public IocCqsBuilder()
+        {
+            
+        }
     }
 }

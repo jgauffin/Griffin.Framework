@@ -5,6 +5,9 @@ using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Strings
 {
+    /// <summary>
+    /// Encodes the string
+    /// </summary>
     public class StringEncoder : IMessageEncoder
     {
         private byte[] _buffer = new byte[65535];
