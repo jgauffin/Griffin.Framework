@@ -6,16 +6,28 @@ using Griffin.Net.Protocols.Http.BodyDecoders;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    /// HTTP listener
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Will produce <see cref="HttpRequestBase"/> unless you change the <see cref="BodyDecoder"/> property, which will make the listener produce <see cref="HttpRequest"/> instead.
+    /// </para>
+    /// </remarks>
     public class HttpListener : ChannelTcpListener
     {
-        
+
         /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListener"/> class.
         /// </summary>
         /// <param name="configuration"></param>
         public HttpListener(ChannelTcpListenerConfiguration configuration) : base(configuration)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListener"/> class.
+        /// </summary>
         public HttpListener()
         {
             var config = new ChannelTcpListenerConfiguration(
@@ -28,6 +40,11 @@ namespace Griffin.Net.Protocols.Http
         /// <summary>
         /// Used to decode the body of incoming request to form/files.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Per default <c>null</c> which means that nothing will be done with the body by the library.
+        /// </para>
+        /// </remarks>
         public IBodyDecoder BodyDecoder { get; set; }
 
         protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)

@@ -212,6 +212,8 @@
     <Compile Include="Net\IMessageDecoder.cs" />
     <Compile Include="Net\IMessageEncoder.cs" />
     <Compile Include="Net\Protocols\Http\PipelinedMessageQueue.cs" />
+    <Compile Include="Net\Protocols\Http\Range.cs" />
+    <Compile Include="Net\Protocols\Http\RangeCollection.cs" />
     <Compile Include="Net\Protocols\IMessagingListener.cs" />
     <Compile Include="Net\Channels\ITcpChannelFactory.cs" />
     <Compile Include="Net\Protocols\MicroMsg\IMessageSerializer.cs" />
@@ -274,6 +276,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ApplicationServices\ReadMe.md" />
+    <None Include="Container\ReadMe.md" />
     <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
     <None Include="Net\Channels\ReadMe.md" />
     <None Include="Net\Protocols\MicroMsg\ReadMe.md" />
