@@ -15,9 +15,9 @@ namespace Griffin.Net.Protocols.MicroMsg
         /// <summary>
         /// Serialize an object to the stream.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
-        /// <param name="contentType"></param>
+        /// <param name="source">Object to serialize</param>
+        /// <param name="destination">Stream that the serialized version will be written to</param>
+        /// <param name="contentType">If you include the type name to it after the format name, for instance <c>json;YourApp.DTO.User,YourApp</c></param>
         /// <returns>Content name (will be passed to the <see cref="Deserialize"/> method in the other end)</returns>
         /// <exception cref="SerializationException">Deserialization failed</exception>
         void Serialize(object source, Stream destination, out string contentType);
