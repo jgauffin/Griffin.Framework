@@ -26,6 +26,7 @@ namespace Griffin.Net
         private Exception _connectException;
         private Exception _sendException;
         private Socket _socket;
+        private FilterMessageHandler _filterHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelTcpClient{T}"/> class.
@@ -65,6 +66,28 @@ namespace Griffin.Net
 
             decoder.MessageReceived = OnMessageReceived;
             _args.Completed += OnConnect;
+        }
+
+        public bool Connected
+        {
+            get
+            {
+                return _
+            }
+        }
+        /// <summary>
+        /// Delegate which can be used instead of <see cref="ReceiveAsync()"/> or to inspect all incoming messages before they are passed to <see cref="ReceiveAsync()"/>.
+        /// </summary>
+        public FilterMessageHandler Filter
+        {
+            get { return _filterHandler; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+
+                _filterHandler = value;
+            }
         }
 
         /// <summary>
@@ -231,6 +254,14 @@ namespace Griffin.Net
 
         private void OnChannelMessageReceived(ITcpChannel channel, object message)
         {
+            if (_filterHandler != null)
+            {
+                var result = _filterHandler(channel, message);
+                if (result == ClientFilterResult.Revoke)
+                    return;
+            }
+                
+
             _readItems.Enqueue((T) message);
             _readSemaphore.Release();
         }
@@ -240,6 +271,7 @@ namespace Griffin.Net
             if (e.SocketError != SocketError.Success)
             {
                 _connectException = new SocketException((int) e.SocketError);
+                _socket = null;
             }
 
             _channel.Assign(_socket);

@@ -120,6 +120,7 @@
     <Compile Include="Logging\Providers\NamespaceFilter.cs" />
     <Compile Include="Logging\Providers\NoFilter.cs" />
     <Compile Include="Logging\Providers\NullLogProvider.cs" />
+    <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="Net\ChannelException.cs" />
     <Compile Include="Net\ChannelTcpClient.cs" />
     <Compile Include="Net\Buffers\BufferSlice.cs" />
@@ -146,6 +147,8 @@
     <Compile Include="Net\Channels\TcpChannel.cs" />
     <Compile Include="Net\ChannelTcpListener.cs" />
     <Compile Include="Net\ChannelTcpListenerConfiguration.cs" />
+    <Compile Include="Net\ClientFilterResult.cs" />
+    <Compile Include="Net\FilterMessageHandler.cs" />
     <Compile Include="Net\IMessageQueue.cs" />
     <Compile Include="Net\MessageQueue.cs" />
     <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />

@@ -28,7 +28,7 @@ namespace Griffin.Net.Channels
         private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
-
+        private bool _connected = false;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="TcpChannel" /> class.
@@ -182,9 +182,17 @@ namespace Griffin.Net.Channels
 
             _socket = socket;
             _remoteEndPoint = socket.RemoteEndPoint;
+            _connected = true;
             ReadAsync();
         }
 
+        /// <summary>
+        /// Gets if channel is connected
+        /// </summary>
+        public bool IsConnected
+        {
+            get { return _connected; }
+        }
 
         /// <summary>
         ///     Send a new message
@@ -201,6 +209,7 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public void Send(object message)
         {
+            if (_socket.Connected)
             lock (_outboundMessages)
             {
                 if (_currentOutboundMessage != null)
@@ -235,6 +244,7 @@ namespace Griffin.Net.Channels
         {
             Send(CloseMessage);
             _closeEvent.Wait(5000);
+            _connected = false;
         }
 
         /// <summary>
@@ -246,6 +256,7 @@ namespace Griffin.Net.Channels
             _decoder.Clear();
             _currentOutboundMessage = null;
             _remoteEndPoint = EmptyEndpoint.Instance;
+            _connected = false;
             if (_closeEvent.CurrentCount == 1)
                 _closeEvent.Wait();
 
@@ -272,7 +283,12 @@ namespace Griffin.Net.Channels
             var t = _closeEvent.WaitAsync(5000);
 
             // release again so that we can take reuse it internally
-            t.ContinueWith(x => _closeEvent.Release());
+            t.ContinueWith(x =>
+            {
+                _closeEvent.Release();
+                _connected = false;
+
+            });
 
             return t;
         }
@@ -286,6 +302,7 @@ namespace Griffin.Net.Channels
             try
             {
                 _socket.Close();
+                _connected = false;
                 _disconnectAction(this, new SocketException((int) socketError));
             }
             catch (Exception exception)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -25,6 +26,7 @@ namespace Griffin.Cqs.Net
         private readonly IRequestReplyBus _requestReplyBus;
         private ChannelTcpListener _listener;
         private Func<IMessageSerializer> _serializerFactory = () => new DataContractMessageSerializer();
+        private MethodInfoExtensions.LateBoundMethod _requestMethod2;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsServer" /> class.
@@ -36,6 +38,9 @@ namespace Griffin.Cqs.Net
             _queryBus = queryBus;
             _eventBus = eventBus;
             _requestReplyBus = requestReplyBus;
+
+            _requestMethod2 = _commandBus.GetType().GetMethod("ExecuteAsync").ToFastDelegate();
+
             var config = new ChannelTcpListenerConfiguration(CreateDecoder, CreateEncoder);
             _listener = new ChannelTcpListener(config);
             _listener.MessageReceived = OnClientMessage;
@@ -44,8 +49,14 @@ namespace Griffin.Cqs.Net
             _queryMethod = GetType().GetMethod("ExecuteQuery", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        public CqsServer(IMessagingListener messagingListener)
+        public void Start(IPAddress address, int port)
         {
+            _listener.Start(address, port);
+        }
+
+        public int LocalPort
+        {
+            get { return _listener.LocalPort; }
         }
 
         /// <summary>

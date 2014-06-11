@@ -4,17 +4,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{8FD6C4D0-1F91-4947-A542-EFDC62FFE705}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Griffin.Cqs</RootNamespace>
-    <AssemblyName>Griffin.Cqs</AssemblyName>
+    <RootNamespace>Griffin.Cqs.Demo</RootNamespace>
+    <AssemblyName>Griffin.Cqs.Demo</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,6 +25,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -44,40 +46,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bridges\QueryExecutor.cs" />
-    <Compile Include="BusFailedEventArgs.cs" />
-    <Compile Include="CommandHandlerFailedEventArgs.cs" />
-    <Compile Include="ICommandExecutor.cs" />
-    <Compile Include="IEventExecutor.cs" />
-    <Compile Include="InversionOfControl\ContainerCommandBus.cs" />
-    <Compile Include="InversionOfControl\ContainerEventBus.cs" />
-    <Compile Include="InversionOfControl\ContainerQueryBus.cs" />
-    <Compile Include="InversionOfControl\ContainerRequestReplyBus.cs" />
-    <Compile Include="InversionOfControl\IocCqsBuilder.cs" />
-    <Compile Include="CqsHandlerMissingException.cs" />
-    <Compile Include="EventHandlerFailedEventArgs.cs" />
-    <Compile Include="HandlerFailure.cs" />
-    <Compile Include="InversionOfControl\MemoryQueue.cs" />
-    <Compile Include="IQueryExecutor.cs" />
-    <Compile Include="IRequestReplyExecutor.cs" />
-    <Compile Include="Net\ClientResponse.cs" />
-    <Compile Include="Net\CqsClient.cs" />
-    <Compile Include="Net\CqsServer.cs" />
-    <Compile Include="OnlyOneHandlerAllowedException.cs" />
+    <Compile Include="Account.cs" />
+    <Compile Include="DiscountListItem.cs" />
+    <Compile Include="Event\DiscountUpdated.cs" />
+    <Compile Include="Query\GetDiscountHandler.cs" />
+    <Compile Include="Query\GetDiscounts.cs" />
+    <Compile Include="Command\IncreaseDiscount.cs" />
+    <Compile Include="Command\IncreaseDiscountHandler.cs" />
+    <Compile Include="Request\Login.cs" />
+    <Compile Include="Request\LoginHandler.cs" />
+    <Compile Include="Request\LoginReply.cs" />
+    <Compile Include="Event\NotifyUsersOfNewDiscount.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Simple\SimpleRequestReplyBus.cs" />
-    <Compile Include="Simple\SimpleQueryBus.cs" />
-    <Compile Include="Simple\SimpleEventBus.cs" />
-    <Compile Include="Simple\SimpleCommandBus.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
-      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
-      <Name>Griffin.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Griffin.Cqs\Griffin.Cqs.csproj">
+      <Project>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</Project>
+      <Name>Griffin.Cqs</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
