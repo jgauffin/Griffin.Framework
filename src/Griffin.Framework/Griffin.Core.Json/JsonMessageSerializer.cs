@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
@@ -8,7 +11,7 @@ using Newtonsoft.Json;
 namespace Griffin.Core.Json
 {
     /// <summary>
-    ///     JSON serializer for Griffin.Networking which uses the JSON.NET library
+    /// Serializer for the <see cref="Griffin.Net.Protocols.MicroMsg"/> protocol using JSON.NET.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -20,6 +23,7 @@ namespace Griffin.Core.Json
     public class JsonMessageSerializer : IMessageSerializer
     {
         private readonly JsonSerializerSettings _settings;
+        private static ConcurrentDictionary<string, Type> _types = new ConcurrentDictionary<string, Type>();
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="JsonMessageSerializer" /> class.
@@ -56,8 +60,8 @@ namespace Griffin.Core.Json
         public void Serialize(object source, Stream destination, out string contentType)
         {
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
-            serializer.Serialize(new StreamWriter(destination), source, typeof (object));
-            contentType = "application/json;" + source.GetType().GetSimpleAssemblyQualifiedName();
+            serializer.Serialize(new StreamWriter(destination, Encoding), source);
+            contentType = "application/json;" + source.GetType().GetSimplifiedAssemblyQualifiedName();
         }
 
         /// <summary>
@@ -72,8 +76,19 @@ namespace Griffin.Core.Json
         /// <exception cref="SerializationException">Deserialization failed</exception>
         public object Deserialize(string contentType, Stream source)
         {
+            Type type;
+            if (!_types.TryGetValue(contentType, out type))
+            {
+                int pos = contentType.IndexOf(";");
+                if (pos == -1)
+                    throw new NotSupportedException("Expected protobuf");
+
+                type = Type.GetType(contentType.Substring(pos + 1), true);
+                _types[contentType] = type;
+            }
+
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
-            return serializer.Deserialize(new StreamReader(source, Encoding), typeof (object));
+            return serializer.Deserialize(new StreamReader(source, Encoding), type);
         }
     }
 }

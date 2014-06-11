@@ -7,32 +7,52 @@ using Griffin.Net.Protocols.Http.Messages;
 namespace Griffin.Net.Protocols.Http.BodyDecoders
 {
     /// <summary>
-    /// Decodes multipart files.
+    ///     Decodes multipart files.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Uses <c>Environment.GetFolderPath(Environment.SpecialFolder.InternetCache)</c> as temporary storage. The folder
+    ///         <c>/var/tmp/</c> is used if the special folder is not found.
+    ///     </para>
+    /// </remarks>
     public class MultipartDecoder : IBodyDecoder
     {
         /// <summary>
-        /// form-data
+        ///     form-data
         /// </summary>
         public const string FormData = "form-data";
 
         /// <summary>
-        /// multipart/form-data
+        ///     Returns <c>multipart/form-data</c>
         /// </summary>
         public const string MimeType = "multipart/form-data";
 
 
         /// <summary>
-        /// All content types that the decoder can parse.
+        ///     All content types that the decoder can parse.
         /// </summary>
         /// <returns>A collection of all content types that the decoder can handle.</returns>
         public IEnumerable<string> ContentTypes
         {
-            get { return new[] { MimeType, FormData }; }
+            get { return new[] {MimeType, FormData}; }
         }
 
         #region IBodyDecoder Members
 
+        /// <summary>
+        /// Decode body stream
+        /// </summary>
+        /// <param name="message">Contains the body to decode. Expectes the body to be in format <c>multipart/form-data</c></param>
+        /// <returns>
+        ///   <c>true</c> if the body was decoded; otherwise <c>false</c>.
+        /// </returns>
+        /// <exception cref="System.NotSupportedException">MultipartDecoder expects requests of type 'HttpRequest'.</exception>
+        /// <exception cref="DecoderFailureException">
+        /// Missing boundary in content type:  + contentType
+        /// or
+        /// or
+        /// </exception>
+        /// <exception cref="System.FormatException">Missing boundary in content type.</exception>
         public bool Decode(IHttpRequest message)
         {
             if (!message.ContentType.StartsWith(MimeType))
@@ -42,11 +62,11 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
                 throw new NotSupportedException("MultipartDecoder expects requests of type 'HttpRequest'.");
 
             var contentType = new HttpHeaderValue(message.Headers["Content-Type"]);
-            
+
             //multipart/form-data, boundary=AaB03x
             var boundry = contentType.Parameters.Get("boundary");
             if (boundry == null)
-                throw new FormatException("Missing boundary in content type.");
+                throw new DecoderFailureException("Missing boundary in content type: " + contentType);
 
             var multipart = new HttpMultipart(message.Body, boundry.Value, message.ContentCharset);
 
@@ -64,18 +84,18 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
             while ((element = multipart.ReadNextElement()) != null)
             {
                 if (string.IsNullOrEmpty(element.Name))
-                    throw new FormatException("Error parsing request. Missing value name.\nElement: " + element);
+                    throw new DecoderFailureException(string.Format("Missing value name.\nElement: {0}", element));
 
                 if (!string.IsNullOrEmpty(element.Filename))
                 {
                     if (string.IsNullOrEmpty(element.ContentType))
-                        throw new FormatException("Error parsing request. Value '" + element.Name +
-                                                  "' lacks a content type.");
+                        throw new DecoderFailureException(string.Format("Value '{0}' lacks a content type.",
+                            element.Name));
 
                     // Read the file data
                     var buffer = new byte[element.Length];
                     message.Body.Seek(element.Start, SeekOrigin.Begin);
-                    message.Body.Read(buffer, 0, (int)element.Length);
+                    message.Body.Read(buffer, 0, (int) element.Length);
 
                     // Generate a filename
                     var originalFileName = element.Filename;
@@ -110,7 +130,7 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
                 {
                     var buffer = new byte[element.Length];
                     message.Body.Seek(element.Start, SeekOrigin.Begin);
-                    message.Body.Read(buffer, 0, (int)element.Length);
+                    message.Body.Read(buffer, 0, (int) element.Length);
 
                     form.Add(Uri.UnescapeDataString(element.Name), message.ContentCharset.GetString(buffer));
                 }

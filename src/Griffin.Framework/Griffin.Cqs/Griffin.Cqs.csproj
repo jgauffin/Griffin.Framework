@@ -44,8 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bridges\QueryExecutor.cs" />
     <Compile Include="BusFailedEventArgs.cs" />
     <Compile Include="CommandHandlerFailedEventArgs.cs" />
+    <Compile Include="ICommandExecutor.cs" />
+    <Compile Include="IEventExecutor.cs" />
     <Compile Include="InversionOfControl\ContainerCommandBus.cs" />
     <Compile Include="InversionOfControl\ContainerEventBus.cs" />
     <Compile Include="InversionOfControl\ContainerQueryBus.cs" />
@@ -54,6 +57,12 @@
     <Compile Include="CqsHandlerMissingException.cs" />
     <Compile Include="EventHandlerFailedEventArgs.cs" />
     <Compile Include="HandlerFailure.cs" />
+    <Compile Include="InversionOfControl\MemoryQueue.cs" />
+    <Compile Include="IQueryExecutor.cs" />
+    <Compile Include="IRequestReplyExecutor.cs" />
+    <Compile Include="Net\ClientResponse.cs" />
+    <Compile Include="Net\CqsClient.cs" />
+    <Compile Include="Net\CqsServer.cs" />
     <Compile Include="OnlyOneHandlerAllowedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

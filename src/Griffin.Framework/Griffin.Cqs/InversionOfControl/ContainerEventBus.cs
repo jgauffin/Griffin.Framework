@@ -28,9 +28,37 @@ namespace Griffin.Cqs.InversionOfControl
         private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
         private bool _shutdown;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerEventBus" /> class.
+        /// </summary>
+        /// <param name="queue">The queue.</param>
+        /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// queue
+        /// or
+        /// container
+        /// </exception>
         public ContainerEventBus(IQueue<ApplicationEvent> queue, IContainer container)
         {
+            if (queue == null) throw new ArgumentNullException("queue");
+            if (container == null) throw new ArgumentNullException("container");
             _queue = queue;
+            _container = container;
+            _executionThread = new Thread(OnExecuteCommand);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerEventBus" /> class.
+        /// </summary>
+        /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
+        /// <remarks>
+        /// Uses <![CDATA[ConcurrentQueue<T>]]> to store events before they are executed.
+        /// </remarks>
+        public ContainerEventBus(IContainer container)
+        {
+            if (container == null) throw new ArgumentNullException("container");
+            _queue = new MemoryQueue<ApplicationEvent>();
             _container = container;
             _executionThread = new Thread(OnExecuteCommand);
         }

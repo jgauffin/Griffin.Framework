@@ -3,6 +3,9 @@ using System.Net;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    /// Represents a HTTP request
+    /// </summary>
     public interface IHttpRequest : IHttpMessage
     {
         /// <summary>

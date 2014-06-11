@@ -3,6 +3,9 @@ using System.Net;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    /// HTTP request, but without any operations done of the body.
+    /// </summary>
     public class HttpRequestBase : HttpMessage, IHttpRequest
     {
         private string _pathAndQuery;

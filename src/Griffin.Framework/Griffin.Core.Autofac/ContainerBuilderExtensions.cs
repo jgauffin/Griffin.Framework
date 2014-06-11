@@ -9,40 +9,49 @@ namespace Griffin.Core.Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterQueryHandlers(this ContainerBuilder builer, params Assembly[] assemblies)
+
+        public static void RegisterCqsHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
+        {
+            RegisterQueryHandlers(builder);
+            RegisterCommandHandlers(builder);
+            RegisterApplicationEventHandlers(builder);
+            RegisterRequestReplyHandlers(builder);
+        }
+
+        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterQueryHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
         {
             return
-                builer.RegisterAssemblyTypes(assemblies)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(IsQueryHandler)
                     .AsImplementedInterfaces()
                     .InstancePerLifetimeScope()
                     .OwnedByLifetimeScope();
         }
 
-        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterCommandHandlers(this ContainerBuilder builer, params Assembly[] assemblies)
+        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterCommandHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
         {
             return
-                builer.RegisterAssemblyTypes(assemblies)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(IsCommandHandler)
                     .AsImplementedInterfaces()
                     .InstancePerLifetimeScope()
                     .OwnedByLifetimeScope();
         }
 
-        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterApplicationEventHandlers(this ContainerBuilder builer, params Assembly[] assemblies)
+        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterApplicationEventHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
         {
             return
-                builer.RegisterAssemblyTypes(assemblies)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(IsEventHandler)
                     .AsImplementedInterfaces()
                     .InstancePerLifetimeScope()
                     .OwnedByLifetimeScope();
         }
 
-        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterRequestReplyHandlers(this ContainerBuilder builer, params Assembly[] assemblies)
+        public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterRequestReplyHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
         {
             return
-                builer.RegisterAssemblyTypes(assemblies)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(IsRequestReplyHandler)
                     .AsImplementedInterfaces()
                     .InstancePerLifetimeScope()
@@ -68,5 +77,7 @@ namespace Griffin.Core.Autofac
         {
             return arg.GetInterfaces().Any(x => x.Name == "IRequestHandler" && x.Namespace == "DotNetCqs");
         }
+
+        
     }
 }

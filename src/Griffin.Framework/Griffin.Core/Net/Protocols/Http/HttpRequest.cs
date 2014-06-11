@@ -6,7 +6,7 @@ namespace Griffin.Net.Protocols.Http
     /// <summary>
     /// A HTTP request where the included body have been parsed
     /// </summary>
-    public class HttpRequest : HttpRequestBase
+    public class HttpRequest : HttpRequestBase, IHttpMessageWithForm
     {
         /// <summary>
         /// 

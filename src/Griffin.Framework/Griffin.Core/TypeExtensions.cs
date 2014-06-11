@@ -88,5 +88,16 @@ namespace Griffin
 
             return string.Format(type.FullName + ", " + type.Assembly.GetName().Name);
         }
+
+        /// <summary>
+        /// Gets the assembly qualified name, but without public token and version.
+        /// </summary>
+        /// <param name="type">Type to get name from</param>
+        /// <returns>for instance <c>"MyApp.Contracts.User, MyApp"</c></returns>
+        public static string GetSimplifiedAssemblyQualifiedName(this Type type)
+        {
+            if (type == null) throw new ArgumentNullException("type");
+            return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
+        }
     }
 }

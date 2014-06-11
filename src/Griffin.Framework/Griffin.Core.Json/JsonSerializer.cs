@@ -43,7 +43,7 @@ namespace Griffin.Core.Json
         public void Serialize(object source, Stream destination)
         {
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
-            serializer.Serialize(new StreamWriter(destination), source);
+            serializer.Serialize(new StreamWriter(destination, Encoding), source);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Griffin.Core.Json
         public void Serialize(object source, Stream destination, Type baseType)
         {
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
-            serializer.Serialize(new StreamWriter(destination), source, baseType);
+            serializer.Serialize(new StreamWriter(destination, Encoding), source, baseType);
         }
 
         /// <summary>

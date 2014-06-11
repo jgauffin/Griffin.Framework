@@ -54,7 +54,7 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
             }
             catch (ArgumentException err)
             {
-                throw new FormatException(err.Message, err);
+                throw new DecoderFailureException(err.Message, err);
             }
         }
 
