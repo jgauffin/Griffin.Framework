@@ -53,7 +53,6 @@
     <Compile Include="InversionOfControl\ContainerEventBus.cs" />
     <Compile Include="InversionOfControl\ContainerQueryBus.cs" />
     <Compile Include="InversionOfControl\ContainerRequestReplyBus.cs" />
-    <Compile Include="InversionOfControl\IocCqsBuilder.cs" />
     <Compile Include="CqsHandlerMissingException.cs" />
     <Compile Include="EventHandlerFailedEventArgs.cs" />
     <Compile Include="HandlerFailure.cs" />

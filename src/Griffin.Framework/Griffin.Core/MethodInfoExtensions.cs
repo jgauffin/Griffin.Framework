@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -24,6 +26,7 @@ namespace Griffin
         /// <returns>Delegate to invoke</returns>
         public static LateBoundMethod ToFastDelegate(this MethodInfo method)
         {
+            if (method == null) throw new ArgumentNullException("method");
             var instanceParameter = Expression.Parameter(typeof (object), "target");
             var argumentsParameter = Expression.Parameter(typeof (object[]), "arguments");
 
@@ -42,10 +45,27 @@ namespace Griffin
 
         private static Expression[] CreateParameterExpressions(MethodInfo method, Expression argumentsParameter)
         {
-            return method.GetParameters().Select((parameter, index) =>
-                Expression.Convert(
-                    Expression.ArrayIndex(argumentsParameter, Expression.Constant(index)), parameter.ParameterType))
-                .ToArray();
+            List<Expression> expressions = new List<Expression>();
+            int index = 0;
+            foreach (var parameter in method.GetParameters())
+            {
+                //TODO: clean up hack.
+                Type argumentType;
+                if (parameter.ParameterType.IsGenericParameter)
+                {
+                    argumentType = method.GetGenericArguments()[0];
+
+                }
+                    
+                else
+                    argumentType = parameter.ParameterType;
+
+                var expression = Expression.Convert(
+                    Expression.ArrayIndex(argumentsParameter, Expression.Constant(index++)), argumentType);
+                expressions.Add(expression);
+            }
+
+            return expressions.ToArray();
         }
     }
 }

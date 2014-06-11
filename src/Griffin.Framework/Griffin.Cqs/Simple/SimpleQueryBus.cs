@@ -56,7 +56,10 @@ namespace Griffin.Cqs.Simple
             {
                 var constructor = handler.GetConstructor(new Type[0]);
                 var factory = constructor.CreateFactory();
-                var handlerMethod = handler.GetMethod("PublishAsync");
+
+                var intfc = handler.GetInterface("IQueryHandler`1");
+
+                var handlerMethod = handler.GetMethod("HandleAsync").MakeGenericMethod(intfc.GetGenericArguments()[0]);
                 var deleg = handlerMethod.ToFastDelegate();
                 Func<IQuery, Task> action = cmd =>
                 {
@@ -67,7 +70,7 @@ namespace Griffin.Cqs.Simple
                     return task;
                 };
 
-                var intfc = handler.GetInterface("IQueryHandler`1");
+                
                 _handlers[intfc.GetGenericArguments()[0]] = action;
             }
         }

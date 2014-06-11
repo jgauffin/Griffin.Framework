@@ -8,12 +8,21 @@ using Griffin.Container;
 
 namespace Griffin.Cqs.InversionOfControl
 {
+    /// <summary>
+    /// Uses an inversion of control container to resolve query handlers.
+    /// </summary>
     public class ContainerQueryBus : IQueryBus
     {
         private readonly IContainer _container;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerQueryBus" /> class.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
         public ContainerQueryBus(IContainer container)
         {
+            if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
 

@@ -15,6 +15,9 @@ namespace Griffin.Cqs.Demo.Command
         /// </returns>
         public async Task ExecuteAsync(IncreaseDiscount command)
         {
+            if (command.Percent == 1)
+                throw new Exception("Must increase with at least two percent, cheap bastard!");
+
             Console.WriteLine("Being executed");
         }
 

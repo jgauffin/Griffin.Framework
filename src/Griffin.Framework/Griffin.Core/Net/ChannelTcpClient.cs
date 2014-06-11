@@ -68,12 +68,12 @@ namespace Griffin.Net
             _args.Completed += OnConnect;
         }
 
-        public bool Connected
+        /// <summary>
+        /// Gets if channel is connected
+        /// </summary>
+        public bool IsConnected
         {
-            get
-            {
-                return _
-            }
+            get { return _channel.IsConnected; }
         }
         /// <summary>
         /// Delegate which can be used instead of <see cref="ReceiveAsync()"/> or to inspect all incoming messages before they are passed to <see cref="ReceiveAsync()"/>.
@@ -297,6 +297,13 @@ namespace Griffin.Net
 
         private void OnMessageReceived(object obj)
         {
+            if (_filterHandler != null)
+            {
+                var result = _filterHandler(_channel, obj);
+                if (result == ClientFilterResult.Revoke)
+                    return;
+            }
+
             _readItems.Enqueue(obj);
             if (_readSemaphore.CurrentCount == 0)
                 _readSemaphore.Release();

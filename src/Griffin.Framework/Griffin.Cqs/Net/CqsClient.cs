@@ -62,6 +62,8 @@ namespace Griffin.Cqs.Net
 
         public async Task ExecuteAsync<T>(T command) where T : Command
         {
+            await EnsureConnected();
+
             try
             {
                 var waiter = new Waiter<T>(command.CommandId);
@@ -75,6 +77,12 @@ namespace Griffin.Cqs.Net
                 
                 throw;
             }
+        }
+
+        private async Task EnsureConnected()
+        {
+            if (!_client.IsConnected)
+                await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
         }
 
         public Task PublishAsync<TApplicationEvent>(TApplicationEvent e) where TApplicationEvent : ApplicationEvent

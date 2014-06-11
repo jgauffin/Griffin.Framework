@@ -65,6 +65,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Griffin.Core.Json\Griffin.Core.Json.csproj">
+      <Project>{B529EF99-44BC-4A4F-A28A-08888BD4F6A0}</Project>
+      <Name>Griffin.Core.Json</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
+      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
+      <Name>Griffin.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Griffin.Cqs\Griffin.Cqs.csproj">
       <Project>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</Project>
       <Name>Griffin.Cqs</Name>

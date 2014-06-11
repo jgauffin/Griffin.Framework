@@ -6,7 +6,7 @@ using Griffin.Net.Channels;
 namespace Griffin.Net.Protocols.Strings
 {
     /// <summary>
-    /// Encodes the string
+    /// Encodes strings using UTF8 and sends them over the network with a binary header (<c>int</c>).
     /// </summary>
     public class StringEncoder : IMessageEncoder
     {

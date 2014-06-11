@@ -26,7 +26,6 @@ namespace Griffin.Cqs.Net
         private readonly IRequestReplyBus _requestReplyBus;
         private ChannelTcpListener _listener;
         private Func<IMessageSerializer> _serializerFactory = () => new DataContractMessageSerializer();
-        private MethodInfoExtensions.LateBoundMethod _requestMethod2;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsServer" /> class.
@@ -38,8 +37,6 @@ namespace Griffin.Cqs.Net
             _queryBus = queryBus;
             _eventBus = eventBus;
             _requestReplyBus = requestReplyBus;
-
-            _requestMethod2 = _commandBus.GetType().GetMethod("ExecuteAsync").ToFastDelegate();
 
             var config = new ChannelTcpListenerConfiguration(CreateDecoder, CreateEncoder);
             _listener = new ChannelTcpListener(config);
@@ -111,14 +108,22 @@ namespace Griffin.Cqs.Net
                 var dto = (Command) message;
                 var type = message.GetType();
                 var method = _commandMethod.MakeGenericMethod(type);
-                var task = (Task) method.Invoke(this, new object[] {message});
-                task.ContinueWith(t =>
+                try
                 {
-                    if (t.Exception != null)
-                        channel.Send(new ClientResponse(dto.CommandId, task.Exception));
-                    else
-                        channel.Send(new ClientResponse(dto.CommandId, ((dynamic) task).Result));
-                });
+                    var task = (Task) method.Invoke(this, new object[] {message});
+                    task.ConfigureAwait(false);
+                    task.ContinueWith(t =>
+                    {
+                        if (t.Exception != null)
+                            channel.Send(new ClientResponse(dto.CommandId, task.Exception));
+                        else
+                            channel.Send(new ClientResponse(dto.CommandId, null));
+                    });
+                }
+                catch (Exception exception)
+                {
+                    channel.Send(new ClientResponse(dto.CommandId, exception));
+                }
             }
             if (message is IRequest)
             {
@@ -144,7 +149,7 @@ namespace Griffin.Cqs.Net
                     if (t.Exception != null)
                         channel.Send(new ClientResponse(dto.EventId, task.Exception));
                     else
-                        channel.Send(new ClientResponse(dto.EventId, ((dynamic) task).Result));
+                        channel.Send(new ClientResponse(dto.EventId, null));
                 });
             }
         }

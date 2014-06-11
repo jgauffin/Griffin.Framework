@@ -9,7 +9,7 @@ namespace Griffin.Container
     public interface IContainer
     {
         /// <summary>
-        ///     Resolve a service
+        ///     Resolve the last registered implementation for a service.
         /// </summary>
         /// <typeparam name="TService">Service that we want to get an implementation for</typeparam>
         /// <returns>object that implements the specified service</returns>
@@ -18,7 +18,7 @@ namespace Griffin.Container
         TService Resolve<TService>();
 
         /// <summary>
-        ///     Resolve a service
+        ///     Resolve the last registered implementation for a service.
         /// </summary>
         /// <param name="service">Service that we want to get an implementation for.</param>
         /// <returns>object that implements the specified service</returns>
@@ -27,7 +27,7 @@ namespace Griffin.Container
         object Resolve(Type service);
 
         /// <summary>
-        ///     Resolve a service
+        ///     Resolve all implementations for a service.
         /// </summary>
         /// <typeparam name="TService">Service that we want to get an implementation(s) for</typeparam>
         /// <returns>A list of implementations, or an empty list if no implementations are found.</returns>
@@ -35,7 +35,7 @@ namespace Griffin.Container
         IEnumerable<TService> ResolveAll<TService>();
 
         /// <summary>
-        ///     Resolve a service
+        ///     Resolve all implementations for a service.
         /// </summary>
         /// <param name="service">Service that we want to get an implementation(s) for</param>
         /// <returns>A list of implementations, or an empty list if no implementations are found.</returns>

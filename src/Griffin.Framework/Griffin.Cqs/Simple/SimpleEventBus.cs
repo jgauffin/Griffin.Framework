@@ -54,7 +54,7 @@ namespace Griffin.Cqs.Simple
             {
                 var constructor = handler.GetConstructor(new Type[0]);
                 var factory = constructor.CreateFactory();
-                var handlerMethod = handler.GetMethod("PublishAsync");
+                var handlerMethod = handler.GetMethod("HandleAsync");
                 var deleg = handlerMethod.ToFastDelegate();
                 Func<ApplicationEvent, Task> action = cmd =>
                 {
@@ -89,7 +89,7 @@ namespace Griffin.Cqs.Simple
             var handler = typeof (THandler);
             var constructor = handler.GetConstructor(new Type[0]);
             var factory = constructor.CreateFactory();
-            var handlerMethod = handler.GetMethod("PublishAsync", new[] { typeof(TEvent) });
+            var handlerMethod = handler.GetMethod("HandleAsync", new[] { typeof(TEvent) });
             var deleg = handlerMethod.ToFastDelegate();
             Func<ApplicationEvent, Task> action = cmd =>
             {

@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
 using Griffin.Net.Protocols.MicroMsg;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Griffin.Core.Json
 {
     /// <summary>
-    /// Serializer for the <see cref="Griffin.Net.Protocols.MicroMsg"/> protocol using JSON.NET.
+    ///     Serializer for the <see cref="Griffin.Net.Protocols.MicroMsg" /> protocol using JSON.NET.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -22,8 +23,8 @@ namespace Griffin.Core.Json
     /// </remarks>
     public class JsonMessageSerializer : IMessageSerializer
     {
+        private static readonly ConcurrentDictionary<string, Type> _types = new ConcurrentDictionary<string, Type>();
         private readonly JsonSerializerSettings _settings;
-        private static ConcurrentDictionary<string, Type> _types = new ConcurrentDictionary<string, Type>();
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="JsonMessageSerializer" /> class.
@@ -35,12 +36,12 @@ namespace Griffin.Core.Json
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 ObjectCreationHandling = ObjectCreationHandling.Auto,
                 TypeNameHandling = TypeNameHandling.Auto,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple,
+                ContractResolver = new PrivateSetterContractResolver()
             };
 
             Encoding = Encoding.UTF8;
         }
-
 
         /// <summary>
         ///     Encoding used to read/write JSON
@@ -60,7 +61,9 @@ namespace Griffin.Core.Json
         public void Serialize(object source, Stream destination, out string contentType)
         {
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
-            serializer.Serialize(new StreamWriter(destination, Encoding), source);
+            var writer = new StreamWriter(destination, Encoding);
+            serializer.Serialize(writer, source);
+            writer.Flush();
             contentType = "application/json;" + source.GetType().GetSimplifiedAssemblyQualifiedName();
         }
 
@@ -79,9 +82,9 @@ namespace Griffin.Core.Json
             Type type;
             if (!_types.TryGetValue(contentType, out type))
             {
-                int pos = contentType.IndexOf(";");
+                var pos = contentType.IndexOf(";");
                 if (pos == -1)
-                    throw new NotSupportedException("Expected protobuf");
+                    throw new NotSupportedException("Expected 'application/json'");
 
                 type = Type.GetType(contentType.Substring(pos + 1), true);
                 _types[contentType] = type;
@@ -89,6 +92,26 @@ namespace Griffin.Core.Json
 
             var serializer = Newtonsoft.Json.JsonSerializer.Create(_settings);
             return serializer.Deserialize(new StreamReader(source, Encoding), type);
+        }
+
+        private class PrivateSetterContractResolver : DefaultContractResolver
+        {
+            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+            {
+                var prop = base.CreateProperty(member, memberSerialization);
+
+                if (!prop.Writable)
+                {
+                    var property = member as PropertyInfo;
+                    if (property != null)
+                    {
+                        var hasPrivateSetter = property.GetSetMethod(true) != null;
+                        prop.Writable = hasPrivateSetter;
+                    }
+                }
+
+                return prop;
+            }
         }
     }
 }

@@ -12,14 +12,16 @@ To register your commands queries you can do the following:
 ```csharp
 var cb = new ContainerBuilder();
 cb.RegisterCqsHandlers(Assembly.GetExecutingAssembly());
-cb.Register(x => new ContainerQueryBus(_griffinContainer)).As<IQueryBus>().SingleInstance();
-cb.Register(x => new ContainerCommandBus(_griffinContainer)).As<ICommandBus>().SingleInstance();
-cb.Register(x => new ContainerEventBus(_griffinContainer)).As<IApplicationEventBus>().SingleInstance();
-cb.Register(x => new ContainerRequestReplyBus(_griffinContainer)).As<IRequestReplyBus>().SingleInstance();
-cb.RegisterType<IQueryBus>(x => new ContainerQueryBus(_griffinContainer));
+cb.RegisterType<ContainerQueryBus>().As<IQueryBus>().SingleInstance();
+cb.RegisterType<ContainerCommandBus>().As<ICommandBus>().SingleInstance();
+cb.RegisterType<ContainerEventBus>().As<IApplicationEventBus>().SingleInstance();
+cb.RegisterType<ContainerRequestReplyBus>().As<IRequestReplyBus>().SingleInstance();
+cb.RegisterInstance(_griffinContainer).AsImplementedInterfaces();
 // .. your other registrations ..
 
 var container = cb.Build();
+
+// store as a class member variable
 _griffinContainer = new AutofacContainer(container);
 
 ```
