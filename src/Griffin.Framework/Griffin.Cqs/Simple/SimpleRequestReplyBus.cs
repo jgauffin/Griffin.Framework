@@ -67,7 +67,7 @@ namespace Griffin.Cqs.Simple
                     return task;
                 };
 
-                var intfc = handler.GetInterface("IRequestHandler`1");
+                var intfc = handler.GetInterface("IRequestHandler`2");
                 _handlers[intfc.GetGenericArguments()[0]] = action;
             }
         }
@@ -103,13 +103,13 @@ namespace Griffin.Cqs.Simple
                 return task;
             };
 
-            var intfc = handler.GetInterface("IRequestHandler`1");
+            var intfc = handler.GetInterface("IRequestHandler`2");
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 
         private static bool IsHandler(Type arg)
         {
-            var intfc = arg.GetInterface("IRequestHandler`1");
+            var intfc = arg.GetInterface("IRequestHandler`2");
             return intfc != null && !arg.IsAbstract && !arg.IsInterface;
         }
     }

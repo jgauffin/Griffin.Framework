@@ -15,12 +15,12 @@ namespace Griffin.Cqs.InversionOfControl
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This bus will store all events on disk and execute them on another thread. This means that the events will be
+    ///         This bus will store all events on disk and then execute them on a background thread. This means that the events will be
     ///         executed even if the application
     ///         crashes (unless the application crashes during the actual execution of the event).
     ///     </para>
     /// </remarks>
-    public class ContainerEventBus : IEventBus
+    public class QueuedIocEventBus : IEventBus
     {
         private readonly IContainer _container;
         private readonly IQueue<ApplicationEvent> _queue;
@@ -29,7 +29,7 @@ namespace Griffin.Cqs.InversionOfControl
         private bool _shutdown;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContainerEventBus" /> class.
+        /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
         /// </summary>
         /// <param name="queue">The queue.</param>
         /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
@@ -38,7 +38,7 @@ namespace Griffin.Cqs.InversionOfControl
         /// or
         /// container
         /// </exception>
-        public ContainerEventBus(IQueue<ApplicationEvent> queue, IContainer container)
+        public QueuedIocEventBus(IQueue<ApplicationEvent> queue, IContainer container)
         {
             if (queue == null) throw new ArgumentNullException("queue");
             if (container == null) throw new ArgumentNullException("container");
@@ -48,14 +48,14 @@ namespace Griffin.Cqs.InversionOfControl
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContainerEventBus" /> class.
+        /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
         /// </summary>
         /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
         /// <remarks>
         /// Uses <![CDATA[ConcurrentQueue<T>]]> to store events before they are executed.
         /// </remarks>
-        public ContainerEventBus(IContainer container)
+        public QueuedIocEventBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");
             _queue = new MemoryQueue<ApplicationEvent>();

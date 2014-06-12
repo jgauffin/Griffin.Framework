@@ -9,29 +9,30 @@ using Griffin.Container;
 namespace Griffin.Cqs.InversionOfControl
 {
     /// <summary>
-    /// Uses an inversion of control container to resolve query handlers.
+    ///     Uses an inversion of control container to resolve and execute query handlers.
     /// </summary>
-    public class ContainerQueryBus : IQueryBus
+    public class IocQueryBus : IQueryBus
     {
         private readonly IContainer _container;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContainerQueryBus" /> class.
+        ///     Initializes a new instance of the <see cref="IocQueryBus" /> class.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
-        public ContainerQueryBus(IContainer container)
+        public IocQueryBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
 
         /// <summary>
-        /// Invoke a query and wait for the result
+        ///     Invoke a query and wait for the result
         /// </summary>
-        /// <typeparam name="TResult">Type of result that the query will return</typeparam><param name="query">Query to execute.</param>
+        /// <typeparam name="TResult">Type of result that the query will return</typeparam>
+        /// <param name="query">Query to execute.</param>
         /// <returns>
-        /// Task which will complete once we've got the result (or something failed, like a query wait timeout).
+        ///     Task which will complete once we've got the result (or something failed, like a query wait timeout).
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">query</exception>
         public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
@@ -58,11 +59,9 @@ namespace Griffin.Cqs.InversionOfControl
                 catch (TargetInvocationException exception)
                 {
                     ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
-                    throw new Exception("this will never happen");
+                    throw new Exception("this will never happen as the line above throws an exception. It's just here to remove a warning");
                 }
-                
             }
         }
     }
-
 }

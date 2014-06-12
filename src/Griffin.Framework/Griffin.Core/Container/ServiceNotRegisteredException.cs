@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace Griffin.Container
 {
     /// <summary>
     ///     The requested service has not been registerd.
     /// </summary>
+    [Serializable]
     public class ServiceNotRegisteredException : Exception
     {
         public ServiceNotRegisteredException(Type serviceType, Exception inner)
@@ -12,6 +14,19 @@ namespace Griffin.Container
         {
             ServiceType = serviceType;
         }
+
+        public ServiceNotRegisteredException(Type serviceType)
+            : base("Service not registered: " + serviceType.FullName)
+        {
+            ServiceType = serviceType;
+        }
+
+        protected ServiceNotRegisteredException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        {
+        }
+
 
         /// <summary>
         ///     Gets services that was requested

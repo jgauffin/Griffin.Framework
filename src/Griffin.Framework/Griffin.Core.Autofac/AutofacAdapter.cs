@@ -4,47 +4,55 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Core.Registration;
 using Griffin.Container;
+using IContainer = Griffin.Container.IContainer;
+using ResolutionExtensions = Autofac.ResolutionExtensions;
 
 namespace Griffin.Core.Autofac
 {
     /// <summary>
-    /// Adapter for autofac and the griffin child container contract.
+    ///     Adapter between Autofac and the Griffin inversion of control contract.
     /// </summary>
-    public class AutofacScope : IContainerScope
+    public class AutofacAdapter : IContainer
     {
-        private readonly ILifetimeScope _scope;
+        private readonly global::Autofac.IContainer _container;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AutofacScope"/> class.
+        ///     Initializes a new instance of the <see cref="AutofacAdapter" /> class.
         /// </summary>
-        /// <param name="scope">The scope.</param>
-        /// <exception cref="System.ArgumentNullException">scope</exception>
-        public AutofacScope(ILifetimeScope scope)
+        /// <param name="container">The container.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
+        public AutofacAdapter(global::Autofac.IContainer container)
         {
-            if (scope == null) throw new ArgumentNullException("scope");
-            _scope = scope;
+            if (container == null) throw new ArgumentNullException("container");
+            _container = container;
         }
 
         /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        ///     Created a child scope (i.e. a container with a lifetime that you control. Dispose the scope to clean up all
+        ///     resolved services).
         /// </summary>
-        public void Dispose()
+        /// <returns>
+        ///     A child container (i.e. a lifetime scope)
+        /// </returns>
+        public IContainerScope CreateScope()
         {
-            _scope.Dispose();
+            return new AutofacScopeAdapter(_container.BeginLifetimeScope());
         }
 
         /// <summary>
-        ///     Resolve the last registered implementation of a service.
+        ///     Resolve the last registered implementation for a service.
         /// </summary>
         /// <typeparam name="TService">Service that we want to get an implementation for</typeparam>
-        /// <returns>object that implements the specified service</returns>
+        /// <returns>
+        ///     object that implements the specified service
+        /// </returns>
         /// <exception cref="ServiceNotRegisteredException">Failed to find an implementation for the service</exception>
         /// <exception cref="DependencyMissingException">A dependency was missing when constructing the service implementation.</exception>
         public TService Resolve<TService>()
         {
             try
             {
-                return _scope.Resolve<TService>();
+                return ResolutionExtensions.Resolve<TService>((IComponentContext) _container);
             }
             catch (ComponentNotRegisteredException ex)
             {
@@ -56,19 +64,23 @@ namespace Griffin.Core.Autofac
             }
         }
 
+
         /// <summary>
-        ///     Resolve the last registered implementation of a service.
+        ///     Resolve the last registered implementation for a service.
         /// </summary>
         /// <param name="service">Service that we want to get an implementation for.</param>
-        /// <returns>object that implements the specified service</returns>
+        /// <returns>
+        ///     object that implements the specified service
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">service</exception>
         /// <exception cref="ServiceNotRegisteredException">Failed to find an implementation for the service</exception>
         /// <exception cref="DependencyMissingException">A dependency was missing when constructing the service implementation.</exception>
-        /// <exception cref="ArgumentNullException">service</exception>
         public object Resolve(Type service)
         {
+            if (service == null) throw new ArgumentNullException("service");
             try
             {
-                return _scope.Resolve(service);
+                return _container.Resolve(service);
             }
             catch (ComponentNotRegisteredException ex)
             {
@@ -80,8 +92,9 @@ namespace Griffin.Core.Autofac
             }
         }
 
+
         /// <summary>
-        ///     Resolve all implementations of a service.
+        ///     Resolve all implementations for a service.
         /// </summary>
         /// <typeparam name="TService">Service that we want to get an implementation(s) for</typeparam>
         /// <returns>A list of implementations, or an empty list if no implementations are found.</returns>
@@ -90,7 +103,7 @@ namespace Griffin.Core.Autofac
         {
             try
             {
-                return _scope.Resolve<IEnumerable<TService>>();
+                return _container.Resolve<IEnumerable<TService>>();
             }
             catch (ComponentNotRegisteredException ex)
             {
@@ -103,18 +116,22 @@ namespace Griffin.Core.Autofac
         }
 
         /// <summary>
-        ///     Resolve all implementations of a service.
+        ///     Resolve all implementations for a service.
         /// </summary>
         /// <param name="service">Service that we want to get an implementation(s) for</param>
-        /// <returns>A list of implementations, or an empty list if no implementations are found.</returns>
+        /// <returns>
+        ///     A list of implementations, or an empty list if no implementations are found.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">service</exception>
+        /// <exception cref="ServiceNotRegisteredException"></exception>
         /// <exception cref="DependencyMissingException">A dependency was missing when constructing the service implementation.</exception>
-        /// <exception cref="ArgumentNullException">service</exception>
         public IEnumerable<object> ResolveAll(Type service)
         {
+            if (service == null) throw new ArgumentNullException("service");
             try
             {
-                var type = typeof(IEnumerable<>).MakeGenericType(service);
-                return (IEnumerable<object>)_scope.Resolve(type);
+                var type = typeof (IEnumerable<>).MakeGenericType(service);
+                return (IEnumerable<object>) _container.Resolve(type);
             }
             catch (ComponentNotRegisteredException ex)
             {

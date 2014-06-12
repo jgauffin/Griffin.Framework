@@ -1,11 +1,11 @@
-﻿Autofac support for Griffin.Framework
+﻿Unity support for Griffin.Framework
 ==========
 
-This library enables Griffin.Framework to use Autofac for its features which require service location (to enable you to use dependency injection).
+This library enables Griffin.Framework to use Unity for its features which require service location (to enable you to use dependency injection).
 
 Install it using nuget:
 
-    install-package griffin.framework.autofac
+    install-package griffin.framework.unity
 
 
 # Registrations
@@ -27,19 +27,18 @@ and then register it:
 ```csharp
 public class CompositionRoot
 {
-	private static AutofacContainer _griffinContainer;
+	private static UnityContainerAdapter _container;
 
 	public static void Register()
 	{
-		var cb = new ContainerBuilder();
+		var container = new UnityContainer();
 
 		// register all classes with the [ContainerService] attribute from the current assembly.
-		cb.RegisterServices(Assembly.GetExecutingAssembly());
+		container.RegisterServices(Assembly.GetExecutingAssembly());
 
 		// [.. your other registrations ..]
 
-		var container = cb.Build();
-		_griffinContainer = new AutofacContainer(container);
+		_container = new UnityContainerAdapter(container);
 	}
 }
 ```

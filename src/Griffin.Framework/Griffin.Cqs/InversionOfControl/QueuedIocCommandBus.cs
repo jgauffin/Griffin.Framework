@@ -10,7 +10,7 @@ using Griffin.Container;
 namespace Griffin.Cqs.InversionOfControl
 {
     /// <summary>
-    ///     Event bus implementation using autofac as a container.
+    ///     Queues commands and execute them in order in the background.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -18,7 +18,7 @@ namespace Griffin.Cqs.InversionOfControl
     ///         commands.
     ///     </para>
     /// </remarks>
-    public class ContainerCommandBus : ICommandBus, IDisposable, IApplicationService
+    public class QueuedIocCommandBus : ICommandBus, IDisposable, IApplicationService
     {
         private readonly IContainer _container;
         private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
@@ -29,7 +29,7 @@ namespace Griffin.Cqs.InversionOfControl
         private bool _shutdown;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ContainerCommandBus" /> class.
+        ///     Initializes a new instance of the <see cref="QueuedIocCommandBus" /> class.
         /// </summary>
         /// <param name="queue">Used to store items before the command is executed.</param>
         /// <param name="container">
@@ -41,7 +41,7 @@ namespace Griffin.Cqs.InversionOfControl
         ///     or
         ///     container
         /// </exception>
-        public ContainerCommandBus(IQueue<Command> queue, IContainer container, int workerCount)
+        public QueuedIocCommandBus(IQueue<Command> queue, IContainer container, int workerCount)
         {
             if (queue == null) throw new ArgumentNullException("queue");
             if (container == null) throw new ArgumentNullException("container");
@@ -53,7 +53,7 @@ namespace Griffin.Cqs.InversionOfControl
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ContainerCommandBus" /> class.
+        ///     Initializes a new instance of the <see cref="QueuedIocCommandBus" /> class.
         /// </summary>
         /// <param name="container">
         ///     Used for service location (to lookup <![CDATA[ICommandHandler<T>]]>).
@@ -64,7 +64,7 @@ namespace Griffin.Cqs.InversionOfControl
         ///         Uses a <![CDATA[ConcurrentQueue<T>]]> and 10 workers.
         ///     </para>
         /// </remarks>
-        public ContainerCommandBus(IContainer container)
+        public QueuedIocCommandBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");
 

@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.Container;
 
 namespace Griffin.Cqs.Demo.Event
 {
+    [ContainerService]
     public class NotifyUsersOfNewDiscount : IApplicationEventSubscriber<DiscountUpdated>
     {
         /// <summary>

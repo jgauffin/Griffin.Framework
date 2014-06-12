@@ -313,7 +313,8 @@ namespace Griffin.Net.Channels
 
         private void OnMessageReceived(object obj)
         {
-            MessageReceived(this, obj);
+            //TODO: Wrap to catch app exceptions
+            _messageReceived(this, obj);
         }
 
         private void OnReadCompleted(object sender, SocketAsyncEventArgs e)
@@ -332,6 +333,10 @@ namespace Griffin.Net.Channels
             {
                 Console.WriteLine(exception);
                 ChannelFailure(this, exception);
+
+                // event handler closed the socket.
+                if (!_socket.Connected)
+                    return;
             }
 
             ReadAsync();

@@ -49,19 +49,25 @@
     <Compile Include="CommandHandlerFailedEventArgs.cs" />
     <Compile Include="ICommandExecutor.cs" />
     <Compile Include="IEventExecutor.cs" />
-    <Compile Include="InversionOfControl\ContainerCommandBus.cs" />
-    <Compile Include="InversionOfControl\ContainerEventBus.cs" />
-    <Compile Include="InversionOfControl\ContainerQueryBus.cs" />
-    <Compile Include="InversionOfControl\ContainerRequestReplyBus.cs" />
+    <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
+    <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />
+    <Compile Include="InversionOfControl\IocCommandBus.cs" />
+    <Compile Include="InversionOfControl\IocEventBus.cs" />
+    <Compile Include="InversionOfControl\IocRequestReplyBus.cs" />
+    <Compile Include="InversionOfControl\QueuedIocCommandBus.cs" />
+    <Compile Include="InversionOfControl\QueuedIocEventBus.cs" />
+    <Compile Include="InversionOfControl\IocQueryBus.cs" />
     <Compile Include="CqsHandlerMissingException.cs" />
     <Compile Include="EventHandlerFailedEventArgs.cs" />
     <Compile Include="HandlerFailure.cs" />
     <Compile Include="InversionOfControl\MemoryQueue.cs" />
+    <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
     <Compile Include="IQueryExecutor.cs" />
     <Compile Include="IRequestReplyExecutor.cs" />
     <Compile Include="Net\ClientResponse.cs" />
     <Compile Include="Net\CqsClient.cs" />
     <Compile Include="Net\CqsServer.cs" />
+    <Compile Include="Net\ServerSideException.cs" />
     <Compile Include="OnlyOneHandlerAllowedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Simple\SimpleRequestReplyBus.cs" />
@@ -76,7 +82,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="InversionOfControl\ReadMe.md" />
+    <None Include="Net\ReadMe.md" />
     <None Include="packages.config" />
+    <None Include="Simple\ReadMe.md" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

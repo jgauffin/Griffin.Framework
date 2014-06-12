@@ -1,3 +1,4 @@
 ﻿# Work in progress.
 
-I really gotto start using branches in my OS projects.
+This will contain services for applications so that you can easier control what's running and when.
+

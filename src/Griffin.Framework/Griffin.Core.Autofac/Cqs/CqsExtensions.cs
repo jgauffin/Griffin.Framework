@@ -5,12 +5,12 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Features.Scanning;
 
-namespace Griffin.Core.Autofac
+namespace Griffin.Core.Autofac.Cqs
 {
     /// <summary>
-    /// Extension methods for different parts of the Griffin Library
+    /// Extension methods for the CQS implementation in Griffin Framework.
     /// </summary>
-    public static class ContainerBuilderExtensions
+    public static class CqsExtensions
     {
 
         /// <summary>
@@ -26,10 +26,10 @@ namespace Griffin.Core.Autofac
         public static void RegisterCqsHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
         {
             if (builder == null) throw new ArgumentNullException("builder");
-            RegisterQueryHandlers(builder);
-            RegisterCommandHandlers(builder);
-            RegisterApplicationEventHandlers(builder);
-            RegisterRequestReplyHandlers(builder);
+            RegisterQueryHandlers(builder, assemblies);
+            RegisterCommandHandlers(builder, assemblies);
+            RegisterApplicationEventHandlers(builder, assemblies);
+            RegisterRequestReplyHandlers(builder, assemblies);
         }
 
         public static IRegistrationBuilder<object, ScanningActivatorData, DynamicRegistrationStyle> RegisterQueryHandlers(this ContainerBuilder builder, params Assembly[] assemblies)
@@ -74,22 +74,22 @@ namespace Griffin.Core.Autofac
 
         private static bool IsQueryHandler(Type arg)
         {
-            return arg.GetInterfaces().Any(x => x.Name == "IApplicationEventSubscriber" && x.Namespace == "DotNetCqs");
+            return arg.GetInterfaces().Any(x => x.Name == "IApplicationEventSubscriber`1" && x.Namespace == "DotNetCqs");
         }
 
         private static bool IsCommandHandler(Type arg)
         {
-            return arg.GetInterfaces().Any(x => x.Name == "ICommandHandler" && x.Namespace == "DotNetCqs");
+            return arg.GetInterfaces().Any(x => x.Name == "ICommandHandler`1" && x.Namespace == "DotNetCqs");
         }
 
         private static bool IsEventHandler(Type arg)
         {
-            return arg.GetInterfaces().Any(x => x.Name == "IQueryHandler" && x.Namespace == "DotNetCqs");
+            return arg.GetInterfaces().Any(x => x.Name == "IQueryHandler`2" && x.Namespace == "DotNetCqs");
         }
 
         private static bool IsRequestReplyHandler(Type arg)
         {
-            return arg.GetInterfaces().Any(x => x.Name == "IRequestHandler" && x.Namespace == "DotNetCqs");
+            return arg.GetInterfaces().Any(x => x.Name == "IRequestHandler`2" && x.Namespace == "DotNetCqs");
         }
 
         

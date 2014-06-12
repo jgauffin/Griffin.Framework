@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.Container;
 
 namespace Griffin.Cqs.Demo.Query
 {
+    [ContainerService]
     public class GetDiscountHandler : IQueryHandler<GetDiscounts, DiscountListItem[]>
     {
         /// <summary>

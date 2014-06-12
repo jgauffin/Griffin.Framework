@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.Container;
 
 namespace Griffin.Cqs.Demo.Request
 {
+    [ContainerService]
     public class LoginHandler : IRequestHandler<Login, LoginReply>
     {
         /// <summary>

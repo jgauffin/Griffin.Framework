@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\packages\Autofac.3.4.1\lib\net40\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="DotNetCqs">
       <HintPath>..\packages\DotNetCqs.1.0.0\lib\net45\DotNetCqs.dll</HintPath>
     </Reference>
@@ -47,6 +50,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Account.cs" />
+    <Compile Include="CompositionRoot.cs" />
+    <Compile Include="CqsBus.cs" />
     <Compile Include="DiscountListItem.cs" />
     <Compile Include="Event\DiscountUpdated.cs" />
     <Compile Include="Query\GetDiscountHandler.cs" />
@@ -59,12 +64,17 @@
     <Compile Include="Event\NotifyUsersOfNewDiscount.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleCqsBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Griffin.Core.Autofac\Griffin.Core.Autofac.csproj">
+      <Project>{5a84711b-ad28-4314-9cdf-0af8e6e5fc8c}</Project>
+      <Name>Griffin.Core.Autofac</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Griffin.Core.Json\Griffin.Core.Json.csproj">
       <Project>{B529EF99-44BC-4A4F-A28A-08888BD4F6A0}</Project>
       <Name>Griffin.Core.Json</Name>

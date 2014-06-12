@@ -47,6 +47,8 @@
     <Compile Include="ApplicationServices\IApplicationService.cs" />
     <Compile Include="BitConverter2.cs" />
     <Compile Include="ConstructorExtensions.cs" />
+    <Compile Include="Container\ContainerLifetime.cs" />
+    <Compile Include="Container\ContainerServiceAttribute.cs" />
     <Compile Include="Container\NamespaceDoc.cs" />
     <Compile Include="Container\ServiceNotRegisteredException.cs" />
     <Compile Include="Container\DependencyMissingException.cs" />
@@ -280,12 +282,15 @@
   <ItemGroup>
     <None Include="ApplicationServices\ReadMe.md" />
     <None Include="Container\ReadMe.md" />
+    <None Include="Data\ReadMe.md" />
+    <None Include="Logging\ReadMe.md" />
     <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
     <None Include="Net\Channels\ReadMe.md" />
     <None Include="Net\Protocols\MicroMsg\ReadMe.md" />
     <None Include="Net\Protocols\ReadMe.md" />
     <None Include="Net\Protocols\Stomp\ReadMe.md" />
     <None Include="Net\Protocols\Strings\ReadMe.md" />
+    <None Include="ReadMe.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Net\cert\howto.txt" />

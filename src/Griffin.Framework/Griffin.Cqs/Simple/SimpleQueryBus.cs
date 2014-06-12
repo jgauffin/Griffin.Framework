@@ -57,9 +57,9 @@ namespace Griffin.Cqs.Simple
                 var constructor = handler.GetConstructor(new Type[0]);
                 var factory = constructor.CreateFactory();
 
-                var intfc = handler.GetInterface("IQueryHandler`1");
+                var intfc = handler.GetInterface("IQueryHandler`2");
 
-                var handlerMethod = handler.GetMethod("HandleAsync").MakeGenericMethod(intfc.GetGenericArguments()[0]);
+                var handlerMethod = handler.GetMethod("ExecuteAsync");//.MakeGenericMethod(intfc.GetGenericArguments()[1]);
                 var deleg = handlerMethod.ToFastDelegate();
                 Func<IQuery, Task> action = cmd =>
                 {
@@ -106,13 +106,13 @@ namespace Griffin.Cqs.Simple
                 return task;
             };
 
-            var intfc = handler.GetInterface("IQueryHandler`1");
+            var intfc = handler.GetInterface("IQueryHandler`2");
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 
         private static bool IsHandler(Type arg)
         {
-            var intfc = arg.GetInterface("IQueryHandler`1");
+            var intfc = arg.GetInterface("IQueryHandler`2");
             return intfc != null && !arg.IsAbstract && !arg.IsInterface;
         }
     }

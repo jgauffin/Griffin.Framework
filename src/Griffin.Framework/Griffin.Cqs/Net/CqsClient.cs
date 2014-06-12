@@ -13,9 +13,9 @@ namespace Griffin.Cqs.Net
 {
     public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
     {
+        private readonly Timer _cleanuptimer;
         private readonly ChannelTcpClient<ClientResponse> _client;
         private readonly ConcurrentDictionary<Guid, Waiter> _response = new ConcurrentDictionary<Guid, Waiter>();
-        private Timer _cleanuptimer;
         private IPEndPoint _endPoint;
 
         public CqsClient()
@@ -24,25 +24,7 @@ namespace Griffin.Cqs.Net
                 new MicroMessageEncoder(new DataContractMessageSerializer()),
                 new MicroMessageDecoder(new DataContractMessageSerializer()));
             _client.Filter = OnMessageReceived;
-            _cleanuptimer = new Timer(OnCleanup, 0, 10000,10000);
-        }
-
-        private void OnCleanup(object state)
-        {
-            try
-            {
-                var values = _response.Values;
-                foreach (var waiter in values)
-                {
-                    Waiter removed;
-                    if (waiter.Expired)
-                        _response.TryRemove(waiter.Id, out removed);
-                }
-            }
-            catch (Exception exception)
-            {
-                //TODO: Log
-            }
+            _cleanuptimer = new Timer(OnCleanup, 0, 10000, 10000);
         }
 
         public CqsClient(Func<IMessageSerializer> serializer)
@@ -53,51 +35,52 @@ namespace Griffin.Cqs.Net
             _cleanuptimer = new Timer(OnCleanup);
         }
 
-        public async Task StartAsync(IPAddress address, int port)
-        {
-            _endPoint = new IPEndPoint(address, port);
-            await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
-        }
-
 
         public async Task ExecuteAsync<T>(T command) where T : Command
         {
             await EnsureConnected();
-
-            try
-            {
-                var waiter = new Waiter<T>(command.CommandId);
-                _response[command.CommandId] = waiter;
-                await _client.SendAsync(command);
-                await waiter.Task;
-
-            }
-            catch (Exception)
-            {
-                
-                throw;
-            }
+            var waiter = new Waiter<T>(command.CommandId);
+            _response[command.CommandId] = waiter;
+            await _client.SendAsync(command);
+            await waiter.Task;
         }
 
-        private async Task EnsureConnected()
+        /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
         {
-            if (!_client.IsConnected)
-                await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
+            _cleanuptimer.Dispose();
         }
 
-        public Task PublishAsync<TApplicationEvent>(TApplicationEvent e) where TApplicationEvent : ApplicationEvent
+        public async Task PublishAsync<TApplicationEvent>(TApplicationEvent e)
+            where TApplicationEvent : ApplicationEvent
         {
-            throw new NotImplementedException();
+            await EnsureConnected();
+            var waiter = new Waiter<TApplicationEvent>(e.EventId);
+            _response[e.EventId] = waiter;
+            await _client.SendAsync(e);
+            await waiter.Task;
         }
 
-        public Task<TResult> QueryAsync<TResult>(Query<TResult> query)
+        public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
         {
-            throw new NotImplementedException();
+            await EnsureConnected();
+            var waiter = new Waiter<TResult>(query.QueryId);
+            _response[query.QueryId] = waiter;
+            await _client.SendAsync(query);
+            await waiter.Task;
+            return ((dynamic) waiter.Task).Result;
         }
 
-        public Task<TReply> ExecuteAsync<TReply>(Request<TReply> request)
+        public async Task<TReply> ExecuteAsync<TReply>(Request<TReply> request)
         {
-            throw new NotImplementedException();
+            await EnsureConnected();
+            var waiter = new Waiter<TReply>(request.RequestId);
+            _response[request.RequestId] = waiter;
+            await _client.SendAsync(request);
+            await waiter.Task;
+            return ((dynamic) waiter.Task).Result;
         }
 
         private abstract class Waiter
@@ -137,9 +120,45 @@ namespace Griffin.Cqs.Net
             public override void Trigger(object result)
             {
                 if (result is Exception)
-                    _completionSource.SetException((Exception) result);
+                {
+                    if (result is AggregateException)
+                        _completionSource.SetException(new ServerSideException("Server failed to execute.", ((AggregateException)result).InnerException));
+                    else
+                        _completionSource.SetException((Exception) result);
+                }
+
                 else
                     _completionSource.SetResult((T) result);
+            }
+        }
+
+        public async Task StartAsync(IPAddress address, int port)
+        {
+            _endPoint = new IPEndPoint(address, port);
+            await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
+        }
+
+        private async Task EnsureConnected()
+        {
+            if (!_client.IsConnected)
+                await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
+        }
+
+        private void OnCleanup(object state)
+        {
+            try
+            {
+                var values = _response.Values;
+                foreach (var waiter in values)
+                {
+                    Waiter removed;
+                    if (waiter.Expired)
+                        _response.TryRemove(waiter.Id, out removed);
+                }
+            }
+            catch (Exception exception)
+            {
+                //TODO: Log
             }
         }
 
@@ -162,14 +181,6 @@ namespace Griffin.Cqs.Net
             waiter.Trigger(result.Body);
 
             return ClientFilterResult.Revoke;
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            _cleanuptimer.Dispose();
         }
     }
 }

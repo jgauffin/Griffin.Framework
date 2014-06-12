@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.Container;
+using Griffin.Cqs.Demo.Event;
 
 namespace Griffin.Cqs.Demo.Command
 {
+    [ContainerService]
     public class IncreaseDiscountHandler : ICommandHandler<IncreaseDiscount>, IDisposable
     {
         /// <summary>
@@ -19,6 +22,7 @@ namespace Griffin.Cqs.Demo.Command
                 throw new Exception("Must increase with at least two percent, cheap bastard!");
 
             Console.WriteLine("Being executed");
+            await CqsBus.EventBus.PublishAsync(new DiscountUpdated(Guid.NewGuid()));
         }
 
         /// <summary>
