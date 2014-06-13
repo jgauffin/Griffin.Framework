@@ -8,7 +8,7 @@ using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.MicroMsg;
-using Griffin.Net.Protocols.MicroMsg.Serializers;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net
 {

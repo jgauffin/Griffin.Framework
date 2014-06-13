@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Net;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
-using Griffin.Net.Protocols.MicroMsg.Serializers;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Cqs.Net
 {

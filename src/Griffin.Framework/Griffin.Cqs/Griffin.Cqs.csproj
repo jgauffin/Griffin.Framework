@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bridges\QueryExecutor.cs" />
+    <Compile Include="AuthorizeAttribute.cs" />
     <Compile Include="BusFailedEventArgs.cs" />
     <Compile Include="CommandHandlerFailedEventArgs.cs" />
     <Compile Include="ICommandExecutor.cs" />
@@ -64,10 +64,9 @@
     <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
     <Compile Include="IQueryExecutor.cs" />
     <Compile Include="IRequestReplyExecutor.cs" />
-    <Compile Include="Net\ClientResponse.cs" />
     <Compile Include="Net\CqsClient.cs" />
-    <Compile Include="Net\CqsServer.cs" />
     <Compile Include="Net\ServerSideException.cs" />
+    <Compile Include="Net\CqsModule.cs" />
     <Compile Include="OnlyOneHandlerAllowedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Simple\SimpleRequestReplyBus.cs" />

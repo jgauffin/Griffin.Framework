@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
+using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
+using Griffin.Net.Protocols.Serializers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -47,6 +49,11 @@ namespace Griffin.Core.Json
         ///     Encoding used to read/write JSON
         /// </summary>
         public Encoding Encoding { get; set; }
+
+        /// <summary>
+        /// Content types that this serializer supports.
+        /// </summary>
+        public string[] SupportedContentTypes { get { return new[] {"application/json"}; } }
 
         /// <summary>
         ///     Serialize an object to the stream.

@@ -1,5 +1,5 @@
 ﻿using Griffin.Net.Channels;
-using Griffin.Net.Protocols.MicroMsg.Serializers;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.MicroMsg.Server
 {

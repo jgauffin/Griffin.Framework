@@ -10,6 +10,15 @@ namespace Griffin.Net.Protocols.Http.Messages
     ///         Created to take care of optional value parameters.
     ///     </para>
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// var str =  "application/x-www-form-urlencoded;charset=windows-1250;type=Your.App.Namespace.SomeType-YourApp";
+    /// var header = new HttpHeaderValue(str);
+    /// var contentType = header.Value;                 // application/x-www-form-urlencoded
+    /// var charset = header.Parameters["charset"];     // windows-1250
+    /// var type = header.Parameters["type"];           // Your.App.Namespace.SomeType-YourApp
+    /// </code>
+    /// </example>
     public class HttpHeaderValue
     {
         private readonly ParameterCollection _parameters;

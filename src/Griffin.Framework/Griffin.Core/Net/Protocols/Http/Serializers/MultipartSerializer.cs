@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Text;
 using Griffin.Net.Protocols.Http.BodyDecoders.Mono;
 using Griffin.Net.Protocols.Http.Messages;
+using Griffin.Net.Protocols.Serializers;
 
-namespace Griffin.Net.Protocols.Http.BodyDecoders
+namespace Griffin.Net.Protocols.Http.Serializers
 {
     /// <summary>
     ///     Decodes multipart files.
@@ -15,7 +18,7 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
     ///         <c>/var/tmp/</c> is used if the special folder is not found.
     ///     </para>
     /// </remarks>
-    public class MultipartDecoder : IBodyDecoder
+    public class MultipartSerializer : IMessageSerializer
     {
         /// <summary>
         ///     form-data
@@ -27,59 +30,51 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
         /// </summary>
         public const string MimeType = "multipart/form-data";
 
+        /// <summary>
+        /// Content types that this serializer supports.
+        /// </summary>
+        public string[] SupportedContentTypes { get { return new[] {FormData, MimeType}; }}
 
         /// <summary>
-        ///     All content types that the decoder can parse.
+        /// Serialize an object to the stream.
         /// </summary>
-        /// <returns>A collection of all content types that the decoder can handle.</returns>
-        public IEnumerable<string> ContentTypes
+        /// <param name="source">Object to serialize</param>
+        /// <param name="destination">Stream that the serialized version will be written to</param>
+        /// <param name="contentType">If you include the type name to it after the format name, for instance <c>json;YourApp.DTO.User,YourApp</c></param>
+        /// <returns>Content name (will be passed to the <see cref="IMessageSerializer.Deserialize"/> method in the other end)</returns>
+        /// <exception cref="SerializationException">Deserialization failed</exception>
+        public void Serialize(object source, Stream destination, out string contentType)
         {
-            get { return new[] {MimeType, FormData}; }
+            throw new NotSupportedException();
         }
 
-        #region IBodyDecoder Members
-
         /// <summary>
-        /// Decode body stream
+        /// Deserialize the content from the stream.
         /// </summary>
-        /// <param name="message">Contains the body to decode. Expectes the body to be in format <c>multipart/form-data</c></param>
-        /// <returns>
-        ///   <c>true</c> if the body was decoded; otherwise <c>false</c>.
-        /// </returns>
-        /// <exception cref="System.NotSupportedException">MultipartDecoder expects requests of type 'HttpRequest'.</exception>
-        /// <exception cref="DecoderFailureException">
-        /// Missing boundary in content type:  + contentType
-        /// or
-        /// or
-        /// </exception>
-        /// <exception cref="System.FormatException">Missing boundary in content type.</exception>
-        public bool Decode(IHttpRequest message)
+        /// <param name="contentType">Used to identify the object which is about to be deserialized. Specified by the <c>Serialize()</c> method when invoked in the other end point.</param>
+        /// <param name="source">Stream that contains the object to deserialize.</param>
+        /// <returns>Created object</returns>
+        /// <exception cref="SerializationException">Deserialization failed</exception>
+        public object Deserialize(string contentType, Stream source)
         {
-            if (!message.ContentType.StartsWith(MimeType))
-                return false;
-            var msg = message as HttpRequest;
-            if (msg == null)
-                throw new NotSupportedException("MultipartDecoder expects requests of type 'HttpRequest'.");
+            if (!contentType.EndsWith(MimeType))
+                return null;
 
-            var contentType = new HttpHeaderValue(message.Headers["Content-Type"]);
+            var result = new FormAndFilesResult()
+            {
+                Form = new ParameterCollection(),
+                Files = new HttpFileCollection()
+            };
+            var contentTypeHeader = new HttpHeaderValue(contentType);
+            var encodingStr = contentTypeHeader.Parameters["charset"];
+            var encoding = Encoding.GetEncoding(encodingStr);
 
             //multipart/form-data, boundary=AaB03x
-            var boundry = contentType.Parameters.Get("boundary");
+            var boundry = contentTypeHeader.Parameters.Get("boundary");
             if (boundry == null)
                 throw new DecoderFailureException("Missing boundary in content type: " + contentType);
 
-            var multipart = new HttpMultipart(message.Body, boundry.Value, message.ContentCharset);
-
-            var form = msg.Form;
-            /*
-            FileStream stream1 = new FileStream("C:\\temp\\mimebody.tmp", FileMode.Create);
-            byte[] bytes = new byte[stream.Length];
-            stream.Read(bytes, 0, bytes.Length);
-            stream1.Write(bytes, 0, bytes.Length);
-            stream1.Flush();
-            stream1.Close();
-            */
-
+            var multipart = new HttpMultipart(source, boundry.Value, encoding);
             HttpMultipart.Element element;
             while ((element = multipart.ReadNextElement()) != null)
             {
@@ -94,8 +89,8 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
 
                     // Read the file data
                     var buffer = new byte[element.Length];
-                    message.Body.Seek(element.Start, SeekOrigin.Begin);
-                    message.Body.Read(buffer, 0, (int) element.Length);
+                    source.Seek(element.Start, SeekOrigin.Begin);
+                    source.Read(buffer, 0, (int)element.Length);
 
                     // Generate a filename
                     var originalFileName = element.Filename;
@@ -124,22 +119,20 @@ namespace Griffin.Net.Protocols.Http.BodyDecoders
                         ContentType = element.ContentType,
                         TempFileName = element.Filename
                     };
-                    msg.Files.Add(file);
+                    result.Files.Add(file);
                 }
                 else
                 {
                     var buffer = new byte[element.Length];
-                    message.Body.Seek(element.Start, SeekOrigin.Begin);
-                    message.Body.Read(buffer, 0, (int) element.Length);
+                    source.Seek(element.Start, SeekOrigin.Begin);
+                    source.Read(buffer, 0, (int)element.Length);
 
-                    form.Add(Uri.UnescapeDataString(element.Name), message.ContentCharset.GetString(buffer));
+                    result.Form.Add(Uri.UnescapeDataString(element.Name), encoding.GetString(buffer));
                 }
             }
 
 
-            return true;
+            return result;
         }
-
-        #endregion
     }
 }

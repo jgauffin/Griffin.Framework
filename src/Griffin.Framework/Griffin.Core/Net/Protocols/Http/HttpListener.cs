@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.BodyDecoders;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.Http
 {
@@ -45,7 +46,7 @@ namespace Griffin.Net.Protocols.Http
         /// Per default <c>null</c> which means that nothing will be done with the body by the library.
         /// </para>
         /// </remarks>
-        public IBodyDecoder BodyDecoder { get; set; }
+        public IMessageSerializer BodyDecoder { get; set; }
 
         protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)
         {

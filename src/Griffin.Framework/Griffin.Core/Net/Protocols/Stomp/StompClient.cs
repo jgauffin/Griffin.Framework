@@ -1,4 +1,5 @@
 ﻿using Griffin.Net.Protocols.MicroMsg;
+using Griffin.Net.Protocols.Serializers;
 using Griffin.Net.Protocols.Stomp.Frames;
 
 namespace Griffin.Net.Protocols.Stomp

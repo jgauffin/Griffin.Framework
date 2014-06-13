@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Http.Messages;
+using Griffin.Net.Protocols.Http.Serializers;
+using Griffin.Net.Protocols.Serializers;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
@@ -63,16 +65,15 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
         [Fact]
         public void Decode()
         {
-            var request = new HttpRequest("POST", "/", "HTTP/1.1");
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded;charset=ASCII");
-            request.Body = new MemoryStream();
-            request.Body.Write(Encoding.ASCII.GetBytes("hello=world"), 0, "hello=world".Length);
-            request.Body.Position = 0;
+            var contentType = "application/x-www-form-urlencoded;charset=ASCII";
+            var body = new MemoryStream();
+            body.Write(Encoding.ASCII.GetBytes("hello=world"), 0, "hello=world".Length);
+            body.Position = 0;
 
-            var decoder = new UrlFormattedDecoder();
-            decoder.Decode(request);
+            var decoder = new UrlFormattedMessageSerializer();
+            var result = decoder.Deserialize(contentType, body);
 
-            Assert.Equal("world", request.Form["hello"]);
+            Assert.Equal("world", ((FormAndFilesResult) result).Form["hello"]);
         }
     }
 }

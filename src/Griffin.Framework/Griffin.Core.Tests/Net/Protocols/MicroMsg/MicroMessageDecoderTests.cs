@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using FluentAssertions;
 using Griffin.Net.Protocols.MicroMsg;
-using Griffin.Net.Protocols.MicroMsg.Serializers;
+using Griffin.Net.Protocols.Serializers;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.MicroMsg

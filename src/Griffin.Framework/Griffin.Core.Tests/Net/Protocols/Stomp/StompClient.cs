@@ -4,7 +4,9 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Core.Tests.Net.Protocols.Stomp
 {

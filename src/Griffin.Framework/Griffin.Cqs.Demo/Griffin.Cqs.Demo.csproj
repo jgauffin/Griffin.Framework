@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Account.cs" />
+    <Compile Include="AuthenticationModule.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="CqsBus.cs" />
     <Compile Include="DiscountListItem.cs" />

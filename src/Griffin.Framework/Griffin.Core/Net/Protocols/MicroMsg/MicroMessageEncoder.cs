@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.MicroMsg
 {

@@ -156,7 +156,8 @@
     <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\ClientDisconnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\CookieAuthentication.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\DecoderFailureException.cs" />
+    <Compile Include="Net\Protocols\Serializers\DecoderFailureException.cs" />
+    <Compile Include="Net\Protocols\Http\Serializers\FormAndFilesResult.cs" />
     <Compile Include="Net\Protocols\Http\External\ConcurrentPriorityQueue.cs" />
     <Compile Include="Net\Protocols\Http\HttpCookie.cs" />
     <Compile Include="Net\Protocols\Http\HttpCookieCollection.cs" />
@@ -178,12 +179,11 @@
     <Compile Include="Net\Protocols\Http\HttpRequestBase.cs" />
     <Compile Include="Net\Protocols\Http\HttpResponse.cs" />
     <Compile Include="Net\Protocols\Http\HttpResponseBase.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\UrlFormattedDecoder.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\CompositeBodyDecoder.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\IBodyDecoder.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\Mono\StrUtils.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\Mono\HttpMultipart.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\MultipartDecoder.cs" />
+    <Compile Include="Net\Protocols\Http\Serializers\UrlFormattedMessageSerializer.cs" />
+    <Compile Include="Net\Protocols\Serializers\CompositeSerializer.cs" />
+    <Compile Include="Net\Protocols\Serializers\Mono\StrUtils.cs" />
+    <Compile Include="Net\Protocols\Serializers\Mono\HttpMultipart.cs" />
+    <Compile Include="Net\Protocols\Http\Serializers\MultipartSerializer.cs" />
     <Compile Include="Net\Protocols\Http\HttpException.cs" />
     <Compile Include="Net\Protocols\Http\HttpListener.cs" />
     <Compile Include="Net\Protocols\Http\HttpMessage.cs" />
@@ -221,12 +221,12 @@
     <Compile Include="Net\Protocols\Http\RangeCollection.cs" />
     <Compile Include="Net\Protocols\IMessagingListener.cs" />
     <Compile Include="Net\Channels\ITcpChannelFactory.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\IMessageSerializer.cs" />
+    <Compile Include="Net\Protocols\Serializers\IMessageSerializer.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageClient.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoder.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoder.cs" />
     <Compile Include="Net\Protocols\MicroMsg\NamespaceDoc.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\Serializers\DataContractMessageSerializer.cs" />
+    <Compile Include="Net\Protocols\Serializers\DataContractMessageSerializer.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageTcpListener.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\BadRequestException.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\FrameExtensions.cs" />
@@ -272,6 +272,15 @@
     <Compile Include="Net\Protocols\Strings\StringEncoder.cs" />
     <Compile Include="Net\Channels\TcpChannelFactory.cs" />
     <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
+    <Compile Include="Net\Server\LiteServerConfiguration.cs" />
+    <Compile Include="Net\Server\LiteServer.cs" />
+    <Compile Include="Net\Server\Modules\ClientContext.cs" />
+    <Compile Include="Net\Server\Modules\DictionaryContextData.cs" />
+    <Compile Include="Net\Server\Modules\IClientContext.cs" />
+    <Compile Include="Net\Server\Modules\IContextData.cs" />
+    <Compile Include="Net\Server\Modules\IServerModule.cs" />
+    <Compile Include="Net\Server\Modules\ModulePipeBuilder.cs" />
+    <Compile Include="Net\Server\Modules\ModuleResult.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -295,7 +304,9 @@
   <ItemGroup>
     <Content Include="Net\cert\howto.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Net\Protocols\MessageDeserializers\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

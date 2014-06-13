@@ -23,7 +23,7 @@ namespace HttpServerTests
             listener.ChannelFactory = new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(certificate));
             listener.ClientConnected += OnConnect;
             listener.MessageReceived = OnMessage;
-            listener.BodyDecoder = new CompositeBodyDecoder();
+            listener.BodyDecoder = new CompositeSerializer();
             listener.Start(IPAddress.Any, 8083);
 
             

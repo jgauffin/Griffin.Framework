@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Griffin.Net.Protocols.Http.BodyDecoders
+namespace Griffin.Net.Protocols.Serializers
 {
     /// <summary>
     ///     A decoder failed to decode request/response body
     /// </summary>
     [Serializable]
-    public class DecoderFailureException : BadRequestException
+    public class DecoderFailureException : Exception
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="DecoderFailureException" /> class.

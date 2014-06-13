@@ -3,6 +3,8 @@ using System.IO;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Http.Messages;
+using Griffin.Net.Protocols.Http.Serializers;
+using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.Http
 {
@@ -17,6 +19,7 @@ namespace Griffin.Net.Protocols.Http
     /// </remarks>
     public class HttpMessageDecoder : IMessageDecoder
     {
+        private readonly IMessageSerializer _messageSerializer;
         private readonly HeaderParser _headerParser;
         private int _frameContentBytesLeft = 0;
         private bool _isHeaderParsed;
@@ -33,21 +36,17 @@ namespace Griffin.Net.Protocols.Http
             _messageReceived = delegate { };
         }
 
-        public HttpMessageDecoder(IBodyDecoder decoder)
+        public HttpMessageDecoder(IMessageSerializer messageSerializer)
         {
+            _messageSerializer = messageSerializer;
             _headerParser = new HeaderParser();
             _headerParser.HeaderParsed = OnHeader;
             _headerParser.RequestLineParsed = OnRequestLine;
             _headerParser.Completed = OnHeaderParsed;
-            BodyDecoder = decoder;
             _messageReceived = delegate { };
         }
 
-        /// <summary>
-        ///     Used to parse body
-        /// </summary>
-        public IBodyDecoder BodyDecoder { get; set; }
-
+       
         /// <summary>
         ///     A message have been received.
         /// </summary>
@@ -142,7 +141,7 @@ namespace Griffin.Net.Protocols.Http
                         string.Format("Second word in the status line should be a HTTP code, you specified '{0}'.",
                             part2));
 
-                if (BodyDecoder != null)
+                if (_messageSerializer != null)
                     _message = new HttpResponse(code, part3, part1);
                 else
                     _message = new HttpResponseBase(code, part3, part1);
@@ -155,7 +154,7 @@ namespace Griffin.Net.Protocols.Http
                             "Status line for requests should end with the HTTP version. Your line ended with '{0}'.",
                             part3));
 
-                _message = BodyDecoder != null
+                _message = _messageSerializer != null
                     ? new HttpRequest(part1, part2, part3)
                     : new HttpRequestBase(part1, part2, part3);
             }
@@ -164,13 +163,23 @@ namespace Griffin.Net.Protocols.Http
         private void TriggerMessageReceived(HttpMessage message)
         {
             var request = message as HttpRequest;
-            if (BodyDecoder != null && request != null)
+            if (_messageSerializer != null && request != null)
             {
                 if (message.Body != null && message.Body.Length > 0)
                 {
-                    var result = BodyDecoder.Decode(request);
-                    if (!result)
-                        throw new BadRequestException("Unknown body content-type.");
+                    var result = _messageSerializer.Deserialize(message.Headers["Content-Type"], message.Body);
+                    if (result == null)
+                        throw new BadRequestException("Unsupported content-type: " + message.ContentType);
+
+                    var formAndFiles = result as FormAndFilesResult;
+                    if (formAndFiles != null)
+                    {
+                        request.Form = formAndFiles.Form;
+                        request.Files = formAndFiles.Files;
+                    }
+                    else
+                        throw new HttpException(500, "Unknown decoder result: " + result);
+                    
                 }
                 var cookies = request.Headers["Cookie"];
                 if (cookies != null)

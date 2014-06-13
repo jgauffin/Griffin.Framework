@@ -9,7 +9,7 @@ namespace Griffin.Cqs.Demo.Event
     public class NotifyUsersOfNewDiscount : IApplicationEventSubscriber<DiscountUpdated>
     {
         /// <summary>
-        /// Process an event asynchronously.
+        /// ProcessAsync an event asynchronously.
         /// </summary>
         /// <param name="e">event to process</param>
         /// <returns>
