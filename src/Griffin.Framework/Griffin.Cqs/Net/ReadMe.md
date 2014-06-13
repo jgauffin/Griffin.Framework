@@ -80,50 +80,50 @@ Here is a working example.
 
 
 ```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
 using Griffin.Core.Json;
-using Griffin.Cqs.Demo.Command;
 using Griffin.Cqs.Net;
-using Griffin.Cqs.Simple;
+using Griffin.Net.Protocols.MicroMsg;
+using Griffin.Net.Server;
 
-namespace Griffin.Cqs.Demo
+namespace Griffin.Cqs.Demo.Server
 {
-    class Program
+    public class ServerDemo
     {
-        static void Main(string[] args)
+        private LiteServer _server;
+
+        public int LocalPort
         {
-            var server = CreateServer();
-            server.Start(IPAddress.Any, 0);
-
-			// Wait for enter before shutting down the server
-            Console.ReadLine();
-
-			server.Stop();
+            get { return _server.LocalPort; }
         }
 
-        private static CqsServer CreateServer()
+        public void Setup()
         {
-            var cmdBus = new SimpleCommandBus();
-            cmdBus.Register(typeof (Program).Assembly);
+            var root = new CompositionRoot();
+            root.Build();
 
-            var queryBus = new SimpleQueryBus();
-            queryBus.Register(typeof (Program).Assembly);
+            var module = new CqsModule
+            {
+                CommandBus = CqsBus.CmdBus,
+                QueryBus = CqsBus.QueryBus,
+                RequestReplyBus = CqsBus.RequestReplyBus,
+                EventBus = CqsBus.EventBus
+            };
 
-            var requestReplyBus = new SimpleRequestReplyBus();
-            requestReplyBus.Register(typeof (Program).Assembly);
 
-            var eventBus = new SimpleEventBus();
-            eventBus.Register(typeof (Program).Assembly);
+            var config = new LiteServerConfiguration();
+            config.DecoderFactory = () => new MicroMessageDecoder(new JsonMessageSerializer());
+            config.EncoderFactory = () => new MicroMessageEncoder(new JsonMessageSerializer());
 
-            var server = new CqsServer(cmdBus, queryBus, eventBus, requestReplyBus);
-            server.SerializerFactory = () => new JsonMessageSerializer();
-            
-            return server;
+            config.Modules.AddAuthentication(new AuthenticationModule());
+            config.Modules.AddHandler(module);
+
+            _server = new LiteServer(config);
+        }
+
+        public void Start()
+        {
+            _server.Start(IPAddress.Any, 0);
         }
     }
 }
@@ -131,34 +131,50 @@ namespace Griffin.Cqs.Demo
 
 ## Example client
 
+```csharp
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
+using System.Threading.Tasks;
 using Griffin.Core.Json;
-using Griffin.Cqs.Demo.Command;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 using Griffin.Cqs.Net;
-using Griffin.Cqs.Simple;
 
-namespace Griffin.Cqs.Demo
+namespace Griffin.Cqs.Demo.Client
 {
-    class Program
+    internal class ClientDemo
     {
-        static void Main(string[] args)
+        private readonly CqsClient _client;
+
+        public ClientDemo()
         {
-            var client = new CqsClient(() => new JsonMessageSerializer());
-            client.StartAsync(IPAddress.Loopback, server.LocalPort).Wait();
+            _client = new CqsClient(() => new JsonMessageSerializer());
+        }
 
-            // Invoking a command
-            client.ExecuteAsync(new IncreaseDiscount(1)).Wait();
-            
-            Console.ReadLine();
+        public async Task RunAsync(int port)
+        {
+            await _client.StartAsync(IPAddress.Loopback, port);
 
+            Console.WriteLine("Client: Executing request/reply");
+            var response = await _client.ExecuteAsync<LoginReply>(new Login("jonas", "mamma"));
+            if (response.Success)
+                Console.WriteLine("Client: Logged in successfully");
+            else
+            {
+                Console.WriteLine("Client: Failed to login");
+                return;
+            }
+
+            Console.WriteLine("Client: Executing command");
+            await _client.ExecuteAsync(new IncreaseDiscount(20));
+
+
+            Console.WriteLine("Client: Executing query");
+            var discounts = await _client.QueryAsync(new GetDiscounts());
+            Console.WriteLine("Client: First discount: " + discounts[0].Name);
         }
     }
 }
+
 ```
 
 ## Dependencies
@@ -184,13 +200,6 @@ namespace Griffin.Cqs.Demo.Command
 
     public class IncreaseDiscountHandler : ICommandHandler<IncreaseDiscount>, IDisposable
     {
-        /// <summary>
-        /// Execute a command asynchronously.
-        /// </summary>
-        /// <param name="command">Command to execute.</param>
-        /// <returns>
-        /// Task which will be completed once the command has been executed.
-        /// </returns>
         public async Task ExecuteAsync(IncreaseDiscount command)
         {
             if (command.Percent == 1)
@@ -199,9 +208,6 @@ namespace Griffin.Cqs.Demo.Command
             Console.WriteLine("Being executed");
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
         public void Dispose()
         {
             Console.WriteLine("Being disposed");

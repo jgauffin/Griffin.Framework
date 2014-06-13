@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Griffin.Core.Json;
 using Griffin.Cqs.Demo.Contracts.Cqs;
@@ -10,9 +7,9 @@ using Griffin.Cqs.Net;
 
 namespace Griffin.Cqs.Demo.Client
 {
-    class ClientDemo
+    internal class ClientDemo
     {
-        private CqsClient _client;
+        private readonly CqsClient _client;
 
         public ClientDemo()
         {
@@ -42,5 +39,4 @@ namespace Griffin.Cqs.Demo.Client
             Console.WriteLine("Client: First discount: " + discounts[0].Name);
         }
     }
-
 }

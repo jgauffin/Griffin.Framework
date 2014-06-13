@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Griffin.Core.Autofac")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Autofac adapter for Griffin.Framework")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Griffin.Core.Autofac")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("Gauffin Interactive AB")]
+[assembly: AssemblyProduct("Griffin.Framework")]
+[assembly: AssemblyCopyright("Copyright ©  2014 Gauffin Interactive AB")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

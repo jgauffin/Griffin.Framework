@@ -2,8 +2,10 @@
 using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
+using DotNetCqs;
 using Griffin.Core.Json;
 using Griffin.Cqs.Demo.Client;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 using Griffin.Cqs.Demo.Server;
 using Griffin.Cqs.Net;
 using Griffin.Net;

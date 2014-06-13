@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Griffin.Cqs.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCqs">
@@ -86,7 +87,10 @@
   <ItemGroup>
     <None Include="InversionOfControl\ReadMe.md" />
     <None Include="Net\ReadMe.md" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="ReadMe.md" />
     <None Include="Simple\ReadMe.md" />
   </ItemGroup>
   <ItemGroup />

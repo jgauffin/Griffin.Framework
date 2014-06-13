@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Griffin.Cqs")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Griffin.Framework implementation of DotNetCqs")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Griffin.Cqs")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("Gauffin Interactive AB")]
+[assembly: AssemblyProduct("Griffin.Framework")]
+[assembly: AssemblyCopyright("Copyright ©  2014 Gauffin Interactive AB")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -35,10 +35,30 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\packages\Autofac.3.4.1\lib\net40\Autofac.dll</HintPath>
+      <HintPath>packages\Autofac.3.4.1\lib\net40\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="DotNetCqs">
-      <HintPath>..\packages\DotNetCqs.1.0.0\lib\net45\DotNetCqs.dll</HintPath>
+      <HintPath>packages\DotNetCqs.1.0.0\lib\net45\DotNetCqs.dll</HintPath>
+    </Reference>
+    <Reference Include="Griffin.Core">
+      <HintPath>packages\Griffin.Framework.1.0.5\lib\net45\Griffin.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Griffin.Core.Autofac">
+      <HintPath>packages\Griffin.Framework.Autofac.1.0.0\lib\net45\Griffin.Core.Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Griffin.Core.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Griffin.Framework.Json.1.0.1\lib\net45\Griffin.Core.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Griffin.Cqs">
+      <HintPath>packages\Griffin.Framework.Cqs.1.0.0\lib\net45\Griffin.Cqs.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -72,24 +92,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Griffin.Core.Autofac\Griffin.Core.Autofac.csproj">
-      <Project>{5a84711b-ad28-4314-9cdf-0af8e6e5fc8c}</Project>
-      <Name>Griffin.Core.Autofac</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Griffin.Core.Json\Griffin.Core.Json.csproj">
-      <Project>{B529EF99-44BC-4A4F-A28A-08888BD4F6A0}</Project>
-      <Name>Griffin.Core.Json</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
-      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
-      <Name>Griffin.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Griffin.Cqs\Griffin.Cqs.csproj">
-      <Project>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</Project>
-      <Name>Griffin.Cqs</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
