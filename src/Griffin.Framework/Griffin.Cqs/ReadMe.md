@@ -12,3 +12,4 @@ This library includes three different implementations:
 
 ## sample project
 
+Can be found [here](https://github.com/jgauffin/Griffin.Framework/tree/master/samples/Griffin.Cqs.Demo)
