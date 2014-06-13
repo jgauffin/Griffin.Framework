@@ -64,7 +64,10 @@
     <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
     <Compile Include="IQueryExecutor.cs" />
     <Compile Include="IRequestReplyExecutor.cs" />
+    <Compile Include="Net\AuthorizationModule.cs" />
+    <Compile Include="Net\ClientResponse.cs" />
     <Compile Include="Net\CqsClient.cs" />
+    <Compile Include="Net\CqsExtensions.cs" />
     <Compile Include="Net\ServerSideException.cs" />
     <Compile Include="Net\CqsModule.cs" />
     <Compile Include="OnlyOneHandlerAllowedException.cs" />

@@ -5,7 +5,7 @@ using Griffin.Core.Autofac;
 using Griffin.Core.Autofac.Cqs;
 using Griffin.Cqs.InversionOfControl;
 
-namespace Griffin.Cqs.Demo
+namespace Griffin.Cqs.Demo.Server
 {
     public class CompositionRoot
     {

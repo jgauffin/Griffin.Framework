@@ -127,6 +127,11 @@ namespace Griffin.Net.Channels
         public ChannelFailureHandler ChannelFailure { get; set; }
 
         /// <summary>
+        /// Checks if the channel is connected.
+        /// </summary>
+        public bool IsConnected { get { return _socket.Connected; }}
+
+        /// <summary>
         ///     Gets address of the connected end point.
         /// </summary>
         public EndPoint RemoteEndpoint { get; private set; }

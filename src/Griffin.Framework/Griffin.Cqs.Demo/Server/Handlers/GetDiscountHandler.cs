@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Demo.Contracts;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 
-namespace Griffin.Cqs.Demo.Query
+namespace Griffin.Cqs.Demo.Server.Handlers
 {
     [ContainerService]
     public class GetDiscountHandler : IQueryHandler<GetDiscounts, DiscountListItem[]>
@@ -17,7 +19,7 @@ namespace Griffin.Cqs.Demo.Query
         /// </returns>
         public async Task<DiscountListItem[]> ExecuteAsync(GetDiscounts query)
         {
-            Console.WriteLine("Fetching discounts..");
+            Console.WriteLine("Server: Fetching discounts..");
             return new[] {new DiscountListItem() {Id = Guid.NewGuid(), Name = "Special"}};
         }
     }

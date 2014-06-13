@@ -19,7 +19,7 @@ namespace Griffin.Net.Server.Modules
             RequestMessage = message;
             ChannelData = Channel.Data;
             RemoteEndPoint = channel.RemoteEndpoint;
-            Data = new DictionaryContextData();
+            RequestData = new DictionaryContextData();
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Griffin.Net.Server.Modules
         /// <summary>
         /// Data specific for this request
         /// </summary>
-        public IContextData Data { get; private set; }
+        public IContextData RequestData { get; private set; }
 
         /// <summary>
         /// User if authenticated (otherwise <c>GenericPrincipal</c> which is marked as not authenticated)

@@ -1,7 +1,7 @@
 using System;
 using DotNetCqs;
 
-namespace Griffin.Cqs.Demo.Event
+namespace Griffin.Cqs.Demo.Contracts.Cqs
 {
     public class DiscountUpdated : ApplicationEvent
     {

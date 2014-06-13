@@ -6,6 +6,18 @@ namespace Griffin.Net.Server.Modules
     /// <summary>
     ///     Build a handler pipeline used to identify the user and then take care of the incoming message
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Modules will be run in the following order:
+    ///         <list type="number">
+    ///             <item>Authentication</item>
+    ///             <item>Authorization</item>
+    ///             <item>PreRequestHandler</item>
+    ///             <item>RequestHandler</item>
+    ///             <item>PostRequestHandler</item>
+    ///         </list>
+    ///     </para>
+    /// </remarks>
     public class ModulePipeBuilder
     {
         private readonly List<IServerModule> _authenticateModules = new List<IServerModule>();
@@ -68,7 +80,7 @@ namespace Griffin.Net.Server.Modules
         ///         Used to process messages to generate responses.
         ///     </para>
         /// </remarks>
-        public void Handler(IServerModule module)
+        public void AddHandler(IServerModule module)
         {
             if (module == null) throw new ArgumentNullException("module");
             _requestModules.Add(module);
@@ -83,7 +95,7 @@ namespace Griffin.Net.Server.Modules
         ///         Used to process messages to generate responses.
         ///     </para>
         /// </remarks>
-        public void PostHandler(IServerModule module)
+        public void AddPostHandler(IServerModule module)
         {
             if (module == null) throw new ArgumentNullException("module");
             _requestModules.Add(module);
@@ -94,7 +106,7 @@ namespace Griffin.Net.Server.Modules
         ///     and authorized when this module is being invoked)
         /// </summary>
         /// <param name="module">Module</param>
-        public void PreHandler(IServerModule module)
+        public void AddPreHandler(IServerModule module)
         {
             if (module == null) throw new ArgumentNullException("module");
             _preRequestModules.Add(module);

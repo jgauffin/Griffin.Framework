@@ -1,6 +1,6 @@
 ﻿using DotNetCqs;
 
-namespace Griffin.Cqs.Demo.Request
+namespace Griffin.Cqs.Demo.Contracts.Cqs
 {
     public class Login : Request<LoginReply>
     {

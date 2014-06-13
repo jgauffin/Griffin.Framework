@@ -96,7 +96,17 @@ namespace Griffin.Net.Server
             }
 
 
-            await EndRequestAsync(context);
+            try
+            {
+                await EndRequestAsync(context);
+            }
+            catch (Exception exception)
+            {
+                if (context.ResponseMessage == null)
+                    context.ResponseMessage = exception;
+                result = ModuleResult.Disconnect;
+            }
+
             if (context.ResponseMessage != null)
                 channel.Send(context.ResponseMessage);
 

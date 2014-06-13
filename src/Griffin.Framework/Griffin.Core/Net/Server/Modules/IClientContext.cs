@@ -35,7 +35,7 @@ namespace Griffin.Net.Server.Modules
         /// <summary>
         /// Data specific for this request
         /// </summary>
-        IContextData Data { get;  }
+        IContextData RequestData { get;  }
 
         /// <summary>
         /// User if authenticated (otherwise <c>GenericPrincipal</c> which is marked as not authenticated)

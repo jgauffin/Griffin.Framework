@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Demo.Contracts;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 
-namespace Griffin.Cqs.Demo.Request
+namespace Griffin.Cqs.Demo.Server.Handlers
 {
     [ContainerService]
     public class LoginHandler : IRequestHandler<Login, LoginReply>
@@ -17,7 +19,7 @@ namespace Griffin.Cqs.Demo.Request
         /// </returns>
         public async Task<LoginReply> ExecuteAsync(Login request)
         {
-            Console.WriteLine("Logging in "+ request.UserName);
+            Console.WriteLine("Server: Logging in " + request.UserName);
             return new LoginReply() {Success = true, Account = new Account() {UserName = request.UserName}};
         }
     }

@@ -18,18 +18,21 @@ namespace Griffin.Net
     {
         private readonly SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
         private readonly SemaphoreSlim _connectSemaphore = new SemaphoreSlim(0, 1);
+        private readonly IMessageDecoder _decoder;
+        private readonly IMessageEncoder _encoder;
+        private readonly IBufferSlice _readBuffer;
         private readonly ConcurrentQueue<object> _readItems = new ConcurrentQueue<object>();
         private readonly SemaphoreSlim _readSemaphore = new SemaphoreSlim(0, 1);
         private readonly SemaphoreSlim _sendCompletedSemaphore = new SemaphoreSlim(0, 1);
         private readonly SemaphoreSlim _sendQueueSemaphore = new SemaphoreSlim(1, 1);
-        private TcpChannel _channel;
+        private ITcpChannel _channel;
         private Exception _connectException;
-        private Exception _sendException;
-        private Socket _socket;
         private FilterMessageHandler _filterHandler;
+        private Socket _socket;
+        private Exception _sendException;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelTcpClient{T}"/> class.
+        ///     Initializes a new instance of the <see cref="ChannelTcpClient{T}" /> class.
         /// </summary>
         /// <param name="encoder">Used to encode outbound messages.</param>
         /// <param name="decoder">Used to decode inbound messages.</param>
@@ -39,17 +42,17 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChannelTcpClient{T}" /> class.
+        ///     Initializes a new instance of the <see cref="ChannelTcpClient{T}" /> class.
         /// </summary>
         /// <param name="encoder">Used to encode outbound messages.</param>
         /// <param name="decoder">Used to decode inbound messages.</param>
         /// <param name="readBuffer">Buffer used to receive bytes..</param>
         /// <exception cref="System.ArgumentNullException">
-        /// encoder
-        /// or
-        /// decoder
-        /// or
-        /// readBuffer
+        ///     encoder
+        ///     or
+        ///     decoder
+        ///     or
+        ///     readBuffer
         /// </exception>
         public ChannelTcpClient(IMessageEncoder encoder, IMessageDecoder decoder, IBufferSlice readBuffer)
         {
@@ -57,26 +60,30 @@ namespace Griffin.Net
             if (decoder == null) throw new ArgumentNullException("decoder");
             if (readBuffer == null) throw new ArgumentNullException("readBuffer");
 
-            _channel = new TcpChannel(readBuffer, encoder, decoder)
-            {
-                Disconnected = OnDisconnect,
-                MessageSent = OnSendCompleted,
-                MessageReceived = OnChannelMessageReceived
-            };
+            _encoder = encoder;
+            _decoder = decoder;
+            _readBuffer = readBuffer;
 
             decoder.MessageReceived = OnMessageReceived;
             _args.Completed += OnConnect;
         }
 
         /// <summary>
-        /// Gets if channel is connected
+        ///     Set certificate if you want to use secure connections.
+        /// </summary>
+        public ISslStreamBuilder Certificate { get; set; }
+
+        /// <summary>
+        ///     Gets if channel is connected
         /// </summary>
         public bool IsConnected
         {
             get { return _channel.IsConnected; }
         }
+
         /// <summary>
-        /// Delegate which can be used instead of <see cref="ReceiveAsync()"/> or to inspect all incoming messages before they are passed to <see cref="ReceiveAsync()"/>.
+        ///     Delegate which can be used instead of <see cref="ReceiveAsync()" /> or to inspect all incoming messages before they
+        ///     are passed to <see cref="ReceiveAsync()" />.
         /// </summary>
         public FilterMessageHandler Filter
         {
@@ -103,7 +110,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Wait for all messages to be sent and close the connection
+        ///     Wait for all messages to be sent and close the connection
         /// </summary>
         /// <returns>Async task</returns>
         public async Task CloseAsync()
@@ -113,7 +120,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Connects to remote end point.
+        ///     Connects to remote end point.
         /// </summary>
         /// <param name="address">Address to connect to.</param>
         /// <param name="port">Remote port.</param>
@@ -121,6 +128,8 @@ namespace Griffin.Net
         /// <exception cref="System.InvalidOperationException">Socket is already connected</exception>
         public async Task ConnectAsync(IPAddress address, int port)
         {
+            EnsureChannel();
+
             if (_socket != null)
                 throw new InvalidOperationException("Socket is already connected");
 
@@ -136,8 +145,23 @@ namespace Griffin.Net
                 throw _connectException;
         }
 
+        private void EnsureChannel()
+        {
+            if (_channel == null)
+            {
+                if (Certificate != null)
+                    _channel = new SecureTcpChannel(_readBuffer, _encoder, _decoder, Certificate);
+                else
+                    _channel = new TcpChannel(_readBuffer, _encoder, _decoder);
+
+                _channel.Disconnected = OnDisconnect;
+                _channel.MessageSent = OnSendCompleted;
+                _channel.MessageReceived = OnChannelMessageReceived;
+            }
+        }
+
         /// <summary>
-        /// Connects to remote end point.
+        ///     Connects to remote end point.
         /// </summary>
         /// <param name="address">Address to connect to.</param>
         /// <param name="port">Remote port.</param>
@@ -148,6 +172,8 @@ namespace Griffin.Net
         {
             if (_socket != null)
                 throw new InvalidOperationException("Socket is already connected");
+
+            EnsureChannel();
 
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _args.RemoteEndPoint = new IPEndPoint(address, port);
@@ -161,7 +187,7 @@ namespace Griffin.Net
 
 
         /// <summary>
-        /// Receive a message
+        ///     Receive a message
         /// </summary>
         /// <returns>Decoded message</returns>
         public Task<T> ReceiveAsync()
@@ -170,11 +196,11 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Receive a message
+        ///     Receive a message
         /// </summary>
         /// <param name="cancellation">Token used to cancel the pending read operation.</param>
         /// <returns>
-        /// Decoded message if successful; <c>default(T)</c> if cancellation is requested.
+        ///     Decoded message if successful; <c>default(T)</c> if cancellation is requested.
         /// </returns>
         public Task<T> ReceiveAsync(CancellationToken cancellation)
         {
@@ -182,25 +208,31 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Receives the asynchronous.
+        ///     Receives the asynchronous.
         /// </summary>
         /// <param name="timeout">Maximum amount of time to wait on a message</param>
         /// <returns>Decoded message</returns>
-        /// <exception cref="Griffin.Net.ChannelException">Was signalled that something have been recieved, but found nothing in the in queue</exception>
+        /// <exception cref="Griffin.Net.ChannelException">
+        ///     Was signalled that something have been recieved, but found nothing in
+        ///     the in queue
+        /// </exception>
         public Task<T> ReceiveAsync(TimeSpan timeout)
         {
             return ReceiveAsync(timeout, CancellationToken.None);
         }
 
         /// <summary>
-        /// Receive a message
+        ///     Receive a message
         /// </summary>
         /// <param name="timeout">Maximum amount of time to wait on a message</param>
         /// <param name="cancellation">Token used to cancel the pending read operation.</param>
         /// <returns>
-        /// Decoded message if successful; <c>default(T)</c> if cancellation is requested.
+        ///     Decoded message if successful; <c>default(T)</c> if cancellation is requested.
         /// </returns>
-        /// <exception cref="Griffin.Net.ChannelException">Was signalled that something have been recieved, but found nothing in the in queue</exception>
+        /// <exception cref="Griffin.Net.ChannelException">
+        ///     Was signalled that something have been recieved, but found nothing in
+        ///     the in queue
+        /// </exception>
         public async Task<T> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
         {
             await _readSemaphore.WaitAsync(timeout, cancellation);
@@ -225,23 +257,31 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        /// Send message to the remote end point.
+        ///     Send message to the remote end point.
         /// </summary>
         /// <param name="message">message to send.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">message</exception>
         /// <remarks>
-        /// <para>
-        /// All messages are being enqueued and sent in order. This method will return when the current message have been sent. It
-        /// </para>
-        /// <para>
-        /// The method is thread safe and can be executed from multiple threads.
-        /// </para>
+        ///     <para>
+        ///         All messages are being enqueued and sent in order. This method will return when the current message have been
+        ///         sent. It
+        ///     </para>
+        ///     <para>
+        ///         The method is thread safe and can be executed from multiple threads.
+        ///     </para>
         /// </remarks>
         public async Task SendAsync(object message)
         {
             if (message == null) throw new ArgumentNullException("message");
 
+            if (_sendException != null)
+            {
+                var ex = _sendException;
+                _sendException = null;
+                throw new AggregateException(ex);
+            }
+                
 
             await _sendQueueSemaphore.WaitAsync();
 
@@ -260,7 +300,7 @@ namespace Griffin.Net
                 if (result == ClientFilterResult.Revoke)
                     return;
             }
-                
+
 
             _readItems.Enqueue((T) message);
             _readSemaphore.Release();

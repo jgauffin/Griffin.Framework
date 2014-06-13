@@ -1,6 +1,6 @@
 using System;
 
-namespace Griffin.Cqs.Demo
+namespace Griffin.Cqs.Demo.Contracts
 {
     public class Account
     {

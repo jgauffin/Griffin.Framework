@@ -9,6 +9,7 @@ using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Authentication;
 using Griffin.Net.Protocols.Http.BodyDecoders;
+using Griffin.Net.Protocols.Serializers;
 using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
 
 namespace HttpServerTests
@@ -23,7 +24,7 @@ namespace HttpServerTests
             listener.ChannelFactory = new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(certificate));
             listener.ClientConnected += OnConnect;
             listener.MessageReceived = OnMessage;
-            listener.BodyDecoder = new CompositeSerializer();
+            listener.BodyDecoder = new CompositeIMessageSerializer();
             listener.Start(IPAddress.Any, 8083);
 
             

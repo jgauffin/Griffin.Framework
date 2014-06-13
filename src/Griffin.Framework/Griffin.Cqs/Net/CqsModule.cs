@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Cqs.Net.Modules;
@@ -6,7 +8,7 @@ using Griffin.Cqs.Simple;
 using Griffin.Net.Server;
 using Griffin.Net.Server.Modules;
 
-namespace Griffin.Cqs.Net.Server
+namespace Griffin.Cqs.Net
 {
     /// <summary>
     /// Used to execute CQS messages in a <see cref="LiteServer"/>.
@@ -66,18 +68,24 @@ namespace Griffin.Cqs.Net.Server
         }
 
         /// <summary>
-        ///     Always called for all modules.
+        ///    The client expects a ClientResposne to be able to map responses to requests.
         /// </summary>
         /// <param name="context">Context information</param>
-        /// <returns>If message processing can continue</returns>
-        /// <remarks>
-        ///     <para>
-        ///         Check the <see cref="ModuleResult" /> property to see how the message processing have gone so
-        ///         far.
-        ///     </para>
-        /// </remarks>
         public async Task EndRequest(IClientContext context)
         {
+            if (context.ResponseMessage is ClientResponse)
+                return;
+
+            if (context.ResponseMessage == null && context.Error != null)
+                context.ResponseMessage = context.Error;
+
+            var id = context.RequestData["Id"];
+            if (id == null)
+            {
+                id = CqsExtensions.GetId(context.RequestMessage);
+            }
+
+            context.ResponseMessage = new ClientResponse((Guid)id, context.ResponseMessage);
         }
 
         /// <summary>
@@ -97,15 +105,16 @@ namespace Griffin.Cqs.Net.Server
 
             if (message is IQuery)
             {
-                var dto = (IQuery) message;
+                var dto = (IQuery)message;
                 var type = message.GetType();
                 var replyType = type.BaseType.GetGenericArguments()[0];
                 var method = _queryMethod.MakeGenericMethod(type, replyType);
+                context.RequestData["Id"] = dto.QueryId;
                 try
                 {
-                    var task = (Task) method.Invoke(this, new[] {message});
+                    var task = (Task)method.Invoke(this, new[] { message });
                     await task;
-                    context.ResponseMessage = new ClientResponse(dto.QueryId, ((dynamic) task).Result);
+                    context.ResponseMessage = new ClientResponse(dto.QueryId, ((dynamic)task).Result);
                 }
                 catch (TargetInvocationException exception)
                 {
@@ -117,12 +126,13 @@ namespace Griffin.Cqs.Net.Server
 
             if (message is Command)
             {
-                var dto = (Command) message;
+                var dto = (Command)message;
                 var type = message.GetType();
                 var method = _commandMethod.MakeGenericMethod(type);
+                context.RequestData["Id"] = dto.CommandId;
                 try
                 {
-                    var task = (Task) method.Invoke(this, new[] {message});
+                    var task = (Task)method.Invoke(this, new[] { message });
                     await task;
                     context.ResponseMessage = new ClientResponse(dto.CommandId, null);
                 }
@@ -136,15 +146,16 @@ namespace Griffin.Cqs.Net.Server
 
             if (message is IRequest)
             {
-                var dto = (IRequest) message;
+                var dto = (IRequest)message;
+                context.RequestData["Id"] = dto.RequestId;
                 var type = message.GetType();
                 var replyType = type.BaseType.GetGenericArguments()[0];
                 var method = _requestMethod.MakeGenericMethod(type, replyType);
                 try
                 {
-                    var task = (Task) method.Invoke(this, new[] {message});
+                    var task = (Task)method.Invoke(this, new[] { message });
                     await task;
-                    context.ResponseMessage = new ClientResponse(dto.RequestId, ((dynamic) task).Result);
+                    context.ResponseMessage = new ClientResponse(dto.RequestId, ((dynamic)task).Result);
                 }
                 catch (TargetInvocationException exception)
                 {
@@ -156,7 +167,8 @@ namespace Griffin.Cqs.Net.Server
 
             if (message is ApplicationEvent)
             {
-                var dto = (ApplicationEvent) message;
+                var dto = (ApplicationEvent)message;
+                context.RequestData["Id"] = dto.EventId;
                 try
                 {
                     var task = _eventBus.PublishAsync(dto);

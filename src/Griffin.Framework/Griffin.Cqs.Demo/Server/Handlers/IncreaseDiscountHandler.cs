@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
-using Griffin.Cqs.Demo.Event;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 
-namespace Griffin.Cqs.Demo.Command
+namespace Griffin.Cqs.Demo.Server.Handlers
 {
     [ContainerService]
     public class IncreaseDiscountHandler : ICommandHandler<IncreaseDiscount>, IDisposable
@@ -21,7 +21,7 @@ namespace Griffin.Cqs.Demo.Command
             if (command.Percent == 1)
                 throw new Exception("Must increase with at least two percent, cheap bastard!");
 
-            Console.WriteLine("Being executed");
+            Console.WriteLine("Server: Being executed");
             await CqsBus.EventBus.PublishAsync(new DiscountUpdated(Guid.NewGuid()));
         }
 
@@ -30,7 +30,7 @@ namespace Griffin.Cqs.Demo.Command
         /// </summary>
         public void Dispose()
         {
-            Console.WriteLine("Being disposed");
+            Console.WriteLine("Server: Being disposed");
         }
     }
 }

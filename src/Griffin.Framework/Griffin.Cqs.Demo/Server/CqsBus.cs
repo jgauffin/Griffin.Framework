@@ -1,8 +1,6 @@
-using System;
-using System.Reflection;
 using DotNetCqs;
 
-namespace Griffin.Cqs.Demo
+namespace Griffin.Cqs.Demo.Server
 {
 
     /// <summary>

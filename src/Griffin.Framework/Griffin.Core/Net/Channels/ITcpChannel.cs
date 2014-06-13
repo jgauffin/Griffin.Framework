@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Griffin.Net.Channels
 {
@@ -33,14 +33,19 @@ namespace Griffin.Net.Channels
         MessageHandler MessageSent { get; set; }
 
         /// <summary>
-        /// Invoked if the decoder failes to handle an incoming message
+        ///     Invoked if the decoder failes to handle an incoming message
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// The handler MUST close the connection once a reply have been sent.
-        /// </para>
+        ///     <para>
+        ///         The handler MUST close the connection once a reply have been sent.
+        ///     </para>
         /// </remarks>
         ChannelFailureHandler ChannelFailure { get; set; }
+
+        /// <summary>
+        ///     Checks if the channel is connected.
+        /// </summary>
+        bool IsConnected { get; }
 
         /// <summary>
         ///     Gets address of the connected end point.
@@ -48,12 +53,20 @@ namespace Griffin.Net.Channels
         EndPoint RemoteEndpoint { get; }
 
         /// <summary>
-        /// Identity of this channel
+        ///     Identity of this channel
         /// </summary>
         /// <remarks>
-        /// Must be unique within a server.
+        ///     Must be unique within a server.
         /// </remarks>
         string ChannelId { get; }
+
+        /// <summary>
+        ///     Can be used to store information in the channel so that you can access it at later requests.
+        /// </summary>
+        /// <remarks>
+        ///     <para>All data is lost when the channel is closed.</para>
+        /// </remarks>
+        IChannelData Data { get; }
 
         /// <summary>
         ///     Assign a socket to this channel
@@ -86,23 +99,14 @@ namespace Griffin.Net.Channels
 
 
         /// <summary>
-        /// Can be used to store information in the channel so that you can access it at later requests.
-        /// </summary>
-        /// <remarks>
-        /// <para>All data is lost when the channel is closed.</para>
-        /// </remarks>
-        IChannelData Data { get; }
-
-        /// <summary>
-        /// Close channel
+        ///     Close channel
         /// </summary>
         void Close();
-    }
 
-    public interface IAutoConnectingTcpChannel
-    {
-        void Start();
-        bool IsReady { get; }
-
+        /// <summary>
+        ///     Close channel asynchronously
+        /// </summary>
+        /// <returns></returns>
+        Task CloseAsync();
     }
 }

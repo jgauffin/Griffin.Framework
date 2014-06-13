@@ -30,7 +30,7 @@ namespace Griffin.Net.Channels
         /// <summary>
         /// Leave empty to use the server certificate
         /// </summary>
-        public X509Certificate Certificate { get; private set; }
+        public X509Certificate Certificate { get; set; }
 
         /// <summary>
         /// Allowed SSL protocols

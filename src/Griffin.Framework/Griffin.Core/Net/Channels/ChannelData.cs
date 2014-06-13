@@ -40,7 +40,8 @@ namespace Griffin.Net.Channels
         {
             get
             {
-                return _items[key];
+                object item;
+                return _items.TryGetValue(key, out item) ? item : null;
             }
             set
             {

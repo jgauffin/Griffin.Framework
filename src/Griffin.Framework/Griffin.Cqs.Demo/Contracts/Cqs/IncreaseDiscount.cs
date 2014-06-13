@@ -1,4 +1,4 @@
-﻿namespace Griffin.Cqs.Demo.Command
+﻿namespace Griffin.Cqs.Demo.Contracts.Cqs
 {
     public class IncreaseDiscount : DotNetCqs.Command
     {

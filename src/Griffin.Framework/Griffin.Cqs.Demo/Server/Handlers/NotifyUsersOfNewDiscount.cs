@@ -2,8 +2,9 @@ using System;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Demo.Contracts.Cqs;
 
-namespace Griffin.Cqs.Demo.Event
+namespace Griffin.Cqs.Demo.Server.Handlers
 {
     [ContainerService]
     public class NotifyUsersOfNewDiscount : IApplicationEventSubscriber<DiscountUpdated>
@@ -17,7 +18,7 @@ namespace Griffin.Cqs.Demo.Event
         /// </returns>
         public async Task HandleAsync(DiscountUpdated e)
         {
-            Console.WriteLine("Send email to users for discount " + e.DiscountId);
+            Console.WriteLine("Server: Send email to users for discount " + e.DiscountId);
         }
     }
 }
