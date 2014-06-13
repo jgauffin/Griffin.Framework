@@ -22,12 +22,13 @@ Supports HTTP, STOMP and our own MicroMsg transport protocol.
 
 Full article: http://blog.gauffin.org/2014/06/easy-and-perfomant-clientserver-communication-with-protobuf-net-griffin-framework/
 
-# Griffin.Cqs
+## Griffin.Cqs
 
 Command/Query separation library will full support for inversion of control containers and client/server solutions.
 
 [More information](https://github.com/jgauffin/Griffin.Framework/tree/master/src/Griffin.Framework/Griffin.Cqs)
 
+-----------------------------------------------
 
 * Commercial support is available through Gauffin Interactive AB: support@gauffin.com.
 * Profiling tools provided by JetBrains (DotTrace)
