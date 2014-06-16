@@ -12,7 +12,7 @@
     /// <example>
     /// <para>Let's say that you have a service which reads from a message queue:</para>
     /// <code>
-    ///  public class RequestQueueReader : IApplicationService, IGuardedService
+    ///  public class RequestQueueReader : IApplicationService
     ///  {
     ///      private readonly ILog _logger = LogManager.GetLogger(typeof (RequestQueueReader));
     ///      private readonly IContainer _container;
@@ -42,14 +42,6 @@
     ///      public void Stop()
     ///      {
     ///          _reader.Stop();
-    ///      }
-    /// 
-    ///      public bool IsRunning
-    ///      {
-    ///          get
-    ///          {
-    ///              return _reader.IsRunning;
-    ///          }
     ///      }
     /// 
     ///      private void OnMessageRead(object sender, MessageReceivedEventArgs e)

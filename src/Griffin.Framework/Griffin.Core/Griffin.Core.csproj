@@ -317,6 +317,7 @@
     <Content Include="Net\cert\howto.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ApplicationServices\Docs\" />
     <Folder Include="Net\Protocols\MessageDeserializers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
