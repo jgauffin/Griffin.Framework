@@ -58,6 +58,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationServices\AppConfigServiceSettingsTests.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceManagerTests.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceThreadTests.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceTimerTests.cs" />
+    <Compile Include="ApplicationServices\BackgroundJobFailedEventArgsTests.cs" />
+    <Compile Include="ApplicationServices\BackgroundJobManagerTests.cs" />
+    <Compile Include="ApplicationServices\ScopeClosingEventArgsTests.cs" />
+    <Compile Include="ApplicationServices\ScopeCreatedEventArgsTests.cs" />
     <Compile Include="Data\AdoNetUnitOfWorkTests.cs" />
     <Compile Include="Data\CommandExtensionsTests.cs" />
     <Compile Include="Data\DateTimeExtensionsTests.cs" />
@@ -160,6 +168,7 @@
     <Content Include="Net\cert\GriffinNetworkingTemp.pfx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

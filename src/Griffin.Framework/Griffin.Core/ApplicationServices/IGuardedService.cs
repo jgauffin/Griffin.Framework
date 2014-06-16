@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Griffin.ApplicationServices
 {
     /// <summary>
-    /// Guarded services can be stopped/started/restarted by this library
+    /// Guarded services can be stopped/started/restarted by this library during runtime.
     /// </summary>
     public interface IGuardedService
     {

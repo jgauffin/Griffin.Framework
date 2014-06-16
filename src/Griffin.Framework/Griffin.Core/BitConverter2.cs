@@ -1,5 +1,10 @@
-﻿namespace Griffin
+﻿using System;
+
+namespace Griffin
 {
+    /// <summary>
+    /// Missing <see cref="BitConverter"/> methods.
+    /// </summary>
     public static class BitConverter2
     {
         public static void GetBytes(int value, byte[] destination, int offset)

@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
@@ -41,10 +42,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationServices\BackgroundJobRunner.cs" />
+    <Compile Include="ApplicationServices\AppConfigServiceSettings.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceFailedEventArgs.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceManager.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceThread.cs" />
+    <Compile Include="ApplicationServices\ApplicationServiceTimer.cs" />
+    <Compile Include="ApplicationServices\BackgroundJobFailedEventArgs.cs" />
+    <Compile Include="ApplicationServices\BackgroundJobManager.cs" />
+    <Compile Include="ApplicationServices\IApplicationService.cs" />
     <Compile Include="ApplicationServices\IBackgroundJob.cs" />
     <Compile Include="ApplicationServices\IGuardedService.cs" />
-    <Compile Include="ApplicationServices\IApplicationService.cs" />
+    <Compile Include="ApplicationServices\ISettingsRepository.cs" />
+    <Compile Include="ApplicationServices\NamespaceDoc.cs" />
+    <Compile Include="ApplicationServices\ScopeClosingEventArgs.cs" />
+    <Compile Include="ApplicationServices\ScopeCreatedEventArgs.cs" />
+    <Compile Include="ApplicationServices\StartServiceException.cs" />
     <Compile Include="BitConverter2.cs" />
     <Compile Include="ConstructorExtensions.cs" />
     <Compile Include="Container\ContainerLifetime.cs" />
