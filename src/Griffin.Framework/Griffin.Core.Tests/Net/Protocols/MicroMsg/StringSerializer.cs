@@ -46,7 +46,8 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         {
             var writer = new StreamWriter(destination);
             writer.Write(source);
-            contentType = "text/plain";
+            writer.Flush();
+            contentType = "text/plain;type=" + source.GetType();
         }
     }
 }

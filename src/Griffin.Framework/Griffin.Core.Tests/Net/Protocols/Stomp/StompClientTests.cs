@@ -136,7 +136,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp
             var transactionManager = Substitute.For<ITransactionManager>();
             var client = Substitute.For<IStompClient>();
             var subscription = new Subscription(client, "abc");
-            var frame = new BasicFrame("SEND");
+            var frame = new BasicFrame("MESSAGE");
             frame.AddHeader("message-id", "kdkd");
             subscription.AckType = "client-individual";
             subscription.Send(frame);

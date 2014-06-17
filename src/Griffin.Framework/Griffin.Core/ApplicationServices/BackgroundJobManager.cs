@@ -21,43 +21,15 @@ namespace Griffin.ApplicationServices
     ///     <para>
     ///         By subscribing on the event <see cref="ScopeClosing"/> you can for instance commit an unit of work everytime a job have been executed.
     ///     </para>
+    /// <para>
+    /// To be able to run every job in isolation (in an own scope) we need to be able to find all background jobs. To do that a temporary scope
+    /// is created during startup to resolve all jobs (<c><![CDATA[scope.ResolveAll<IBackgroundJob>()]]></c>. The jobs are not invoked but only located so that we can map all background job types. Then later
+    /// when we are going to execute each job we use <c><![CDATA[scope.Resolve(jobType)]]></c> for every job that is about to be executed.
+    /// </para>
     /// </remarks>
     /// <example>
-    /// <para>Start by creating a class:</para>
-    /// <code>
-    /// <![CDATA[
-    /// [ContainerService]
-    /// public class CleanUpOldFriendRequests : IBackgroundJob
-    /// {
-    ///     private readonly IUnitOfWork _uow;
-    ///     private static DateTime _lastExecutionTime;
-    /// 
-    ///     public CleanUpOldFriendRequests(IUnitOfWork uow)
-    ///     {
-    ///         if (uow == null) throw new ArgumentNullException("uow");
-    /// 
-    ///         _uow = uow;
-    ///     }
-    /// 
-    ///     public void Execute()
-    ///     {
-    ///         //run once a day
-    ///         if (_lastExecutionTime.Date >= DateTime.Today)
-    ///             return;
-    ///         _lastExecutionTime = DateTime.Today;
-    /// 
-    ///         using (var cmd = _uow.CreateCommand())
-    ///         {
-    ///             cmd.CommandText = "DELETE FROM FriendRequests WHERE CreatedAtUtc < @datum";
-    ///             cmd.AddParameter("datum", DateTime.Today.AddDays(-10));
-    ///             cmd.ExecuteNonQuery();
-    ///         }
-    ///     }
-    /// }
-    /// ]]>
-    /// </code>
     /// <para>
-    /// Windonws service class:
+    /// Example for a windows service class:
     /// </para>
     /// 
     ///     <code>
@@ -101,7 +73,6 @@ namespace Griffin.ApplicationServices
     /// </example>
     public class BackgroundJobManager : IDisposable
     {
-        private static DateTime _lastLogTime = DateTime.MinValue;
         private readonly IContainer _container;
         private readonly ILogger _logger = LogManager.GetLogger(typeof(BackgroundJobManager));
         private Timer _timer;
@@ -169,32 +140,20 @@ namespace Griffin.ApplicationServices
         /// <summary>
         ///     Start executing jobs (once the <see cref="StartInterval"/> have been passed).
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// 
+        /// </para>
+        /// </remarks>
         public void Start()
         {
-            if (_jobTypes.Count == 0)
-                FindAllJobs();
-            _timer.Change(StartInterval, ExecuteInterval);
-        }
-
-        private void FindAllJobs()
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            using (var scope = _container.CreateScope())
             {
-                if (assembly.IsDynamic)
-                    continue;
-
-                foreach (var type in assembly.GetTypes())
-                {
-                    if (type.IsAbstract || type.IsInterface)
-                        continue;
-
-                    var t = type.GetInterfaces().FirstOrDefault(x => x == typeof(IBackgroundJob));
-                    if (t == null)
-                        continue;
-
-                    _jobTypes.Add(type);
-                }
+                var jobs = scope.ResolveAll<IBackgroundJob>();
+                _jobTypes = jobs.Select(x => x.GetType()).ToList();
             }
+
+            _timer.Change(StartInterval, ExecuteInterval);
         }
 
         /// <summary>
@@ -229,9 +188,6 @@ namespace Griffin.ApplicationServices
                         {
                             var args = new BackgroundJobFailedEventArgs(job, exception);
                             JobFailed(this, args);
-                            if (!args.CanContinue)
-                                return;
-
                             ScopeClosing(this, new ScopeClosingEventArgs(scope, false) {Exception = exception});
                         }
 

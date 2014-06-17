@@ -25,6 +25,7 @@ namespace Griffin.Core.Tests.Net
         {
             Offset = offset;
             Count = count;
+            BytesTransferred = count;
         }
 
         public void SetBuffer(byte[] buffer, int offset, int count, int capacity)
@@ -33,6 +34,7 @@ namespace Griffin.Core.Tests.Net
             Count = count;
             Offset = offset;
             Capacity = capacity;
+            BytesTransferred = count;
         }
 
         public void SetBuffer(byte[] buffer, int offset, int count)
@@ -41,6 +43,7 @@ namespace Griffin.Core.Tests.Net
             Count = count;
             Offset = offset;
             Capacity = count;
+            BytesTransferred = count;
         }
     }
 }

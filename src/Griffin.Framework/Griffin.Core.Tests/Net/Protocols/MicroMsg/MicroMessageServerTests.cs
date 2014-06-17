@@ -10,7 +10,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         [Fact]
         public void Test()
         {
-            var sut = new MicroMessageTcpListener(new ChannelTcpListenerConfiguration(null, null));
+            var sut = new MicroMessageTcpListener();
         }
     }
 }

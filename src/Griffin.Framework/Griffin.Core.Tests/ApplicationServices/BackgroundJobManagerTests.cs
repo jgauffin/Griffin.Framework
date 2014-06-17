@@ -14,11 +14,15 @@ namespace Griffin.Core.Tests.ApplicationServices
     public class BackgroundJobManagerTests
     {
         [Fact]
-        public void anropar_ScopeCreated_eventet_när_jobben_ska_utföras()
+        public void trigger_ScopeCreated_event_before_running_the_job()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
             ScopeCreatedEventArgs actual = null;
+            var job = Substitute.For<IBackgroundJob>();
+            sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
 
             var sut = new BackgroundJobManager(sl);
             sut.ScopeCreated += (o, e) => actual = e;
@@ -31,11 +35,14 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void skapar_ett_IoC_scope_när_jobben_ska_utföras()
+        public void create_a_IoC_scope_before_running_a_job()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
             sl.CreateScope().Returns(scope);
+            var job = Substitute.For<IBackgroundJob>();
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
 
             var sut = new BackgroundJobManager(sl);
             sut.StartInterval = TimeSpan.FromSeconds(0);
@@ -43,17 +50,18 @@ namespace Griffin.Core.Tests.ApplicationServices
             Thread.Sleep(100);
 
 
-            sl.Received().CreateScope();
+            sl.Received(2).CreateScope();
         }
 
         [Fact]
-        public void exekverar_funnet_jobb()
+        public void execute_found_job()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
             var job = Substitute.For<IBackgroundJob>();
             sl.CreateScope().Returns(scope);
-            scope.ResolveAll<IBackgroundJob>().Returns<IEnumerable<IBackgroundJob>>(new[] {job});
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] {job});
 
             var sut = new BackgroundJobManager(sl);
             sut.StartInterval = TimeSpan.FromSeconds(0);
@@ -64,11 +72,14 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void anropar_scope_closed_när_jobbet_är_klart()
+        public void trigger_ScopeClosed_before_closing_it_after_job_Execution()
         {
             var sl = Substitute.For<IContainer>();
+            var job = Substitute.For<IBackgroundJob>();
             var scope = Substitute.For<IContainerScope>();
             sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
             ScopeClosingEventArgs actual = null;
 
             var sut = new BackgroundJobManager(sl);
@@ -81,12 +92,13 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void anropar_scope_closing_även_om_ett_jobb_kastar_ett_undantag()
+        public void trigger_ScopeClosed_before_closing_it_even_if_job_execution_fails()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
             var job = Substitute.For<IBackgroundJob>();
             sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
             scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
 
             var sut = new BackgroundJobManager(sl);
@@ -98,7 +110,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void fortsätt_med_nästa_jobb_om_ett_falerar()
+        public void run_next_job_even_if_first_fails()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -106,6 +118,8 @@ namespace Griffin.Core.Tests.ApplicationServices
             var job2 = Substitute.For<IBackgroundJob>();
             job.When(x => x.Execute()).Do(x => { throw new SqlNullValueException(); });
             sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.Resolve(job2.GetType()).Returns(job2);
             scope.ResolveAll<IBackgroundJob>().Returns(new[] { job, job2 });
 
             var sut = new BackgroundJobManager(sl);
@@ -116,8 +130,9 @@ namespace Griffin.Core.Tests.ApplicationServices
             job2.Received().Execute();
         }
 
+      
         [Fact]
-        public void avbryt_om_CanContinue_sätts_till_false()
+        public void consume_exceptions_thrown_by_event_subscribers()
         {
             var sl = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -126,27 +141,8 @@ namespace Griffin.Core.Tests.ApplicationServices
             job.When(x => x.Execute()).Do(x => { throw new SqlNullValueException(); });
             sl.CreateScope().Returns(scope);
             scope.ResolveAll<IBackgroundJob>().Returns(new[] { job, job2 });
-
-            var sut = new BackgroundJobManager(sl);
-            sut.StartInterval = TimeSpan.FromSeconds(0);
-            sut.JobFailed += (o, e) => e.CanContinue = false;
-            sut.Start();
-            Thread.Sleep(100);
-
-            job2.DidNotReceive().Execute();
-        }
-
-        // andra tråden skulle crasha om vi inte överlevde.
-        [Fact]
-        public void överlev_om_event_prenumreranterna_kastar_undantag()
-        {
-            var sl = Substitute.For<IContainer>();
-            var scope = Substitute.For<IContainerScope>();
-            var job = Substitute.For<IBackgroundJob>();
-            var job2 = Substitute.For<IBackgroundJob>();
-            job.When(x => x.Execute()).Do(x => { throw new SqlNullValueException(); });
-            sl.CreateScope().Returns(scope);
-            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job, job2 });
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.Resolve(job2.GetType()).Returns(job2);
 
             var sut = new BackgroundJobManager(sl);
             sut.StartInterval = TimeSpan.FromSeconds(0);
@@ -154,7 +150,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.Start();
             Thread.Sleep(100);
 
-            job2.DidNotReceive().Execute();
+            job2.Received().Execute();
         }
     }
 }

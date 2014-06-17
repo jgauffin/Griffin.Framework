@@ -216,44 +216,53 @@ namespace Griffin.ApplicationServices
         {
             try
             {
-                var services = _container.ResolveAll<IApplicationService>();
-                foreach (var service in services)
-                {
-                    var guarded = service as IGuardedService;
-                    if (guarded == null)
-                        continue;
-
-                    try
-                    {
-                        if (!Settings.IsEnabled(service.GetType()))
-                        {
-                            if (guarded.IsRunning)
-                            {
-                                _logger.Info("Stopping service that have been disabled '" + service.GetType().FullName +
-                                             "'.");
-                                service.Stop();
-                            }
-                            continue;
-                        }
-
-                        if (guarded.IsRunning)
-                            continue;
-
-                        _logger.Info("Starting service that should be running '" + service.GetType().FullName + "'.");
-                        service.Start();
-                    }
-                    catch (Exception exception)
-                    {
-                        var args = new ApplicationServiceFailedEventArgs(service, exception);
-                        ServiceStartFailed(this, args);
-                        if (!args.CanContinue)
-                            return;
-                    }
-                }
+                CheckServices();
             }
             catch (Exception exception)
             {
                 _logger.Warning("Failed to start one or more services.", exception);
+            }
+        }
+
+        /// <summary>
+        /// check services wether they should be started/stopped.
+        /// </summary>
+        /// <returns></returns>
+        internal void CheckServices()
+        {
+            var services = _container.ResolveAll<IApplicationService>();
+            foreach (var service in services)
+            {
+                var guarded = service as IGuardedService;
+                if (guarded == null)
+                    continue;
+
+                try
+                {
+                    if (!Settings.IsEnabled(service.GetType()))
+                    {
+                        if (guarded.IsRunning)
+                        {
+                            _logger.Info("Stopping service that have been disabled '" + service.GetType().FullName +
+                                         "'.");
+                            service.Stop();
+                        }
+                        continue;
+                    }
+
+                    if (guarded.IsRunning)
+                        continue;
+
+                    _logger.Info("Starting service that should be running '" + service.GetType().FullName + "'.");
+                    service.Start();
+                }
+                catch (Exception exception)
+                {
+                    var args = new ApplicationServiceFailedEventArgs(service, exception);
+                    ServiceStartFailed(this, args);
+                    if (!args.CanContinue)
+                        return;
+                }
             }
         }
     }

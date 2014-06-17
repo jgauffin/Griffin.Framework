@@ -42,10 +42,15 @@ namespace Griffin.ApplicationServices
     public class AppConfigServiceSettings : ISettingsRepository
     {
         /// <summary>
-        ///     Checks if a
+        ///     Check if a service/job should be running.
         /// </summary>
-        /// <param name="type">En typ som implementerar <see cref="IApplicationService" /></param>
-        /// <returns><c>true</c> om tjänsten ska vara uppe och snurra.;<c>false</c> om ska vara nedstängd.</returns>
+        /// <param name="type">
+        ///     A type that implements <see cref="IApplicationService" /> or <see cref="IBackgroundJob"/>.
+        /// </param>
+        /// <returns>
+        ///     <c>true</c> if the service/job should be running.;<c>false</c> if it should be shut down.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">type</exception>
         public bool IsEnabled(Type type)
         {
             if (type == null) throw new ArgumentNullException("type");

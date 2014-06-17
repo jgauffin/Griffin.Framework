@@ -13,7 +13,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         public void request_in_its_simplest_form()
         {
             var frame = new HttpRequestBase("POST", "/", "HTTP/1.1");
-            var expected = "POST / HTTP/1.1\r\nContent-Length:0\r\n\r\n";
+            var expected = "POST / HTTP/1.1\r\nContent-Length: 0\r\n\r\n";
             var buffer = new SocketBufferFake();
 
             var encoder = new HttpMessageEncoder();
@@ -32,7 +32,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.Body = new MemoryStream(Encoding.ASCII.GetBytes("hello queue a"));
-            var expected = "POST /?abc HTTP/1.1\r\nserver:Griffin.Networking\r\nX-Requested-With:XHttpRequest\r\nContent-Type:text/plain\r\nContent-Length:13\r\n\r\nhello queue a";
+            var expected = "POST /?abc HTTP/1.1\r\nserver: Griffin.Networking\r\nX-Requested-With: XHttpRequest\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nhello queue a";
             var buffer = new SocketBufferFake();
 
             var encoder = new HttpMessageEncoder();
@@ -65,7 +65,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.Body = new MemoryStream(Encoding.ASCII.GetBytes("hello queue a"));
-            var expected = string.Format("HTTP/1.1 404 Failed to find it dude\r\nServer:griffinframework.net\r\nDate:{0}\r\nContent-Type:text/plain\r\nX-Requested-With:XHttpRequest\r\nContent-Length:13\r\n\r\nhello queue a",
+            var expected = string.Format("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nDate: {0}\r\nContent-Type: text/plain\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a",
                 DateTime.UtcNow.ToString("R"));
             var buffer = new SocketBufferFake();
 

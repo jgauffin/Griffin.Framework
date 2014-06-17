@@ -19,7 +19,6 @@ namespace Griffin.Core.Tests.ApplicationServices
 
             args.Job.Should().Be(job);
             args.Exception.Should().Be(exception);
-            args.CanContinue.Should().BeTrue("Should continue with the rest of the jobs.");
         }
     }
 }

@@ -27,12 +27,12 @@
     /// <code>
     /// <![CDATA[
     /// [ContainerService]
-    /// public class RensaGamlaTåg : IBackgroundJob
+    /// public class CleanUpOldFriendRequests : IBackgroundJob
     /// {
     ///     private readonly IUnitOfWork _uow;
-    ///     private static DateTime _senastKörning;
+    ///     private static DateTime _lastExecutionTime;
     /// 
-    ///     public RensaGamlaTåg(IUnitOfWork uow)
+    ///     public CleanUpOldFriendRequests(IUnitOfWork uow)
     ///     {
     ///         if (uow == null) throw new ArgumentNullException("uow");
     /// 
@@ -41,13 +41,14 @@
     /// 
     ///     public void Execute()
     ///     {
-    ///         if (_senastKörning.Date >= DateTime.Today)
+    ///         //run once a day
+    ///         if (_lastExecutionTime.Date >= DateTime.Today)
     ///             return;
-    ///         _senastKörning = DateTime.Today;
+    ///         _lastExecutionTime = DateTime.Today;
     /// 
     ///         using (var cmd = _uow.CreateCommand())
     ///         {
-    ///             cmd.CommandText = "DELETE FROM Tåg WHERE SkapadTidpunkt < @datum";
+    ///             cmd.CommandText = "DELETE FROM FriendRequests WHERE CreatedAtUtc < @datum";
     ///             cmd.AddParameter("datum", DateTime.Today.AddDays(-10));
     ///             cmd.ExecuteNonQuery();
     ///         }

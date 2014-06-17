@@ -5,11 +5,6 @@ namespace Griffin.ApplicationServices
     /// <summary>
     ///     Failed to execute a job. 
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Assign <see cref="CanContinue" /> specify if the rest of the jobs can be executed. Default is <c>true</c>.
-    /// </para>
-    /// </remarks>
     public class BackgroundJobFailedEventArgs : EventArgs
     {
         /// <summary>
@@ -24,7 +19,6 @@ namespace Griffin.ApplicationServices
 
             Job = job;
             Exception = exception;
-            CanContinue = true;
         }
 
         /// <summary>
@@ -36,13 +30,5 @@ namespace Griffin.ApplicationServices
         ///     Exception that the job threw.
         /// </summary>
         public Exception Exception { get; private set; }
-
-        /// <summary>
-        ///     If we ca continue execute the rest of the jobs.
-        /// </summary>
-        /// <value>
-        ///     Default is <c>true</c>.
-        /// </value>
-        public bool CanContinue { get; set; }
     }
 }

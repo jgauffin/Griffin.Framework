@@ -12,13 +12,15 @@ namespace Griffin.Core.Tests.ApplicationServices
     public class ApplicationServiceManagerTests
     {
         [Fact]
-        public void fortsätt_även_om_en_tjänst_kastar_undantag()
+        public void collect_all_exceptions_during_Start_before_throwing()
         {
             var service = Substitute.For<IApplicationService>();
             service.When(x => x.Start()).Do(x => { throw new NotSupportedException(); });
+            var service2 = Substitute.For<IApplicationService>();
+            service2.When(x => x.Start()).Do(x => { throw new NotImplementedException(); });
             var okService = Substitute.For<IApplicationService>();
             var locator = Substitute.For<IContainer>();
-            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService, service2 });
             var settingsRepos = Substitute.For<ISettingsRepository>();
             settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
 
@@ -26,15 +28,31 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.Settings = settingsRepos;
             Action actual = sut.Start;
 
-            actual.ShouldThrow<AggregateException>();
+            actual.ShouldThrow<AggregateException>().And.InnerExceptions.Count.Should().Be(2);
             okService.Received().Start();
         }
 
         [Fact]
-        public void starta_inte_körande_tjänst()
+        public void do_not_start_running_service_during_service_check()
         {
-            var service = Substitute.For<IApplicationService>();
-            service.IsRunning.Returns(true);
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            var locator = Substitute.For<IContainer>();
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service });
+            var settingsRepos = Substitute.For<ISettingsRepository>();
+            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
+            ((IGuardedService)service).IsRunning.Returns(true);
+
+            var sut = new ApplicationServiceManager(locator);
+            sut.Settings = settingsRepos;
+            sut.CheckServices();
+
+            service.DidNotReceive().Start();
+        }
+
+        [Fact]
+        public void start_not_running_service_during_service_check()
+        {
+            var service = Substitute.For<IApplicationService, IGuardedService>();
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service });
             var settingsRepos = Substitute.For<ISettingsRepository>();
@@ -42,16 +60,65 @@ namespace Griffin.Core.Tests.ApplicationServices
 
             var sut = new ApplicationServiceManager(locator);
             sut.Settings = settingsRepos;
-            sut.Start();
+            sut.CheckServices();
+
+            service.Received().Start();
+        }
+
+        [Fact]
+        public void stop_running_service_if_its_been_disabled()
+        {
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            var locator = Substitute.For<IContainer>();
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service });
+            var settingsRepos = Substitute.For<ISettingsRepository>();
+            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(false);
+            ((IGuardedService)service).IsRunning.Returns(true);
+
+            var sut = new ApplicationServiceManager(locator);
+            sut.Settings = settingsRepos;
+            sut.CheckServices();
+
+            service.Received().Stop();
+        }
+
+        [Fact]
+        public void do_not_stop_running_service_if_its_enabled()
+        {
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            var locator = Substitute.For<IContainer>();
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service });
+            var settingsRepos = Substitute.For<ISettingsRepository>();
+            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
+            ((IGuardedService)service).IsRunning.Returns(true);
+
+            var sut = new ApplicationServiceManager(locator);
+            sut.Settings = settingsRepos;
+            sut.CheckServices();
+
+            service.DidNotReceive().Stop();
+        }
+
+        [Fact]
+        public void do_not_start_not_running_service_during_service_check_if_its_disabled()
+        {
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            var locator = Substitute.For<IContainer>();
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service });
+            var settingsRepos = Substitute.For<ISettingsRepository>();
+            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(false);
+
+            var sut = new ApplicationServiceManager(locator);
+            sut.Settings = settingsRepos;
+            sut.CheckServices();
 
             service.DidNotReceive().Start();
         }
 
         [Fact]
-        public void starta_inte_en_disablad_tjänst()
+        public void do_not_start_disabled_service()
         {
             var service = Substitute.For<IApplicationService>();
-            service.IsRunning.Returns(true);
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service });
             var settingsRepos = Substitute.For<ISettingsRepository>();
@@ -65,9 +132,25 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void start_kör_igång_timern()
+        public void start_enabled_service()
         {
             var service = Substitute.For<IApplicationService>();
+            var locator = Substitute.For<IContainer>();
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service });
+            var settingsRepos = Substitute.For<ISettingsRepository>();
+            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
+
+            var sut = new ApplicationServiceManager(locator);
+            sut.Settings = settingsRepos;
+            sut.Start();
+
+            service.Received().Start();
+        }
+
+        [Fact]
+        public void Start_should_activate_the_check_timer()
+        {
+            var service = Substitute.For<IApplicationService, IGuardedService>();
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service });
             var settingsRepos = Substitute.For<ISettingsRepository>();
@@ -86,8 +169,8 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void stop_stänger_av_den_regelbundna_kontrollen()
         {
-            var service = Substitute.For<IApplicationService>();
-            service.IsRunning.Returns(true);
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            ((IGuardedService)service).IsRunning.Returns(true);
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service });
             var settingsRepos = Substitute.For<ISettingsRepository>();
@@ -103,17 +186,16 @@ namespace Griffin.Core.Tests.ApplicationServices
             service.ClearReceivedCalls();
             Thread.Sleep(200);
 
-            var result = service.DidNotReceive().IsRunning;
+            var result = ((IGuardedService)service).DidNotReceive().IsRunning;
         }
 
         [Fact]
-        public void samla_fel_om_tjänster_kastar_undantag_under_nedstängning()
+        public void collect_errors_during_shutdown_and_allow_OK_services_to_shutdown_successfully()
         {
-            var service = Substitute.For<IApplicationService>();
-            service.IsRunning.Returns(true);
+            var service = Substitute.For<IApplicationService,IGuardedService>();
+            ((IGuardedService)service).IsRunning.Returns(true);
             service.When(x => x.Stop()).Do(x => { throw new NotSupportedException(); });
             var okService = Substitute.For<IApplicationService>();
-            okService.IsRunning.Returns(true);
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });
             var settingsRepos = Substitute.For<ISettingsRepository>();
@@ -127,82 +209,29 @@ namespace Griffin.Core.Tests.ApplicationServices
         }
 
         [Fact]
-        public void anropa_inte_stop_på_nedstängd_tjänst_i_timern()
+        public void do_not_call_stop_on_closed_services_during_check()
         {
-            var service = Substitute.For<IApplicationService>();
-            var okService = Substitute.For<IApplicationService>();
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            var okService = Substitute.For<IApplicationService, IGuardedService>();
             var locator = Substitute.For<IContainer>();
             var settingsRepos = Substitute.For<ISettingsRepository>();
-            service.IsRunning.Returns(false);
+            ((IGuardedService)service).IsRunning.Returns(false);
             locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });
             settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
 
             var sut = new ApplicationServiceManager(locator);
             sut.Settings = settingsRepos;
-            sut.CheckInterval = TimeSpan.FromMilliseconds(100);
-            sut.StartInterval = TimeSpan.FromMilliseconds(100);
-            sut.Start();
-            Thread.Sleep(200);
-            sut.Stop();
+            sut.CheckServices();
 
             okService.DidNotReceive().Stop();
         }
 
-        [Fact]
-        public void starta_nedstängd_tjänst_i_timern_om_den_är_enablad()
-        {
-            var started = new ManualResetEvent(false);
-            var service = Substitute.For<IApplicationService>();
-            var okService = Substitute.For<IApplicationService>();
-            var locator = Substitute.For<IContainer>();
-            var settingsRepos = Substitute.For<ISettingsRepository>();
-            service.IsRunning.Returns(false);
-            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });
-            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
-            service.When(x => x.Start())
-                .Do(x => started.Set());
-
-            var sut = new ApplicationServiceManager(locator);
-            sut.Settings = settingsRepos;
-            sut.StartInterval = TimeSpan.FromMilliseconds(0);
-            sut.CheckInterval = TimeSpan.FromMilliseconds(100);
-            sut.Start();
-            started.WaitOne(50).Should().BeTrue();
-            started.Reset();
-            
-            started.WaitOne(100).Should().BeTrue();
-        }
 
         [Fact]
-        public void stäng_av_tjänst_i_timern_om_den_har_blivit_disablad()
+        public void invoke_event_if_we_failed_to_start_service_during_check()
         {
-            var stopped = new ManualResetEvent(false);
-            var service = Substitute.For<IApplicationService>();
-            var okService = Substitute.For<IApplicationService>();
-            var locator = Substitute.For<IContainer>();
-            var settingsRepos = Substitute.For<ISettingsRepository>();
-            service.IsRunning.Returns(true);
-            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });
-            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
-            service.When(x => x.Stop()).Do(x => stopped.Set());
-
-            var sut = new ApplicationServiceManager(locator);
-            sut.Settings = settingsRepos;
-            sut.StartInterval = TimeSpan.FromMilliseconds(0);
-            sut.CheckInterval = TimeSpan.FromMilliseconds(100);
-            sut.Start();
-            Thread.Sleep(40);
-            settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(false);
-
-            stopped.WaitOne(100).Should().BeTrue();
-        }
-
-
-        [Fact]
-        public void trigga_händelsen_från_timern_om_en_tjänst_inte_går_att_starta()
-        {
-            var service = Substitute.For<IApplicationService>();
-            service.IsRunning.Returns(false);
+            var service = Substitute.For<IApplicationService, IGuardedService>();
+            ((IGuardedService)service).IsRunning.Returns(false);
             var okService = Substitute.For<IApplicationService>();
             var locator = Substitute.For<IContainer>();
             locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService });

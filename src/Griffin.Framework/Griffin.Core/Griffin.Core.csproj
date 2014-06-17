@@ -53,7 +53,6 @@
     <Compile Include="ApplicationServices\IBackgroundJob.cs" />
     <Compile Include="ApplicationServices\IGuardedService.cs" />
     <Compile Include="ApplicationServices\ISettingsRepository.cs" />
-    <Compile Include="ApplicationServices\NamespaceDoc.cs" />
     <Compile Include="ApplicationServices\ScopeClosingEventArgs.cs" />
     <Compile Include="ApplicationServices\ScopeCreatedEventArgs.cs" />
     <Compile Include="ApplicationServices\StartServiceException.cs" />

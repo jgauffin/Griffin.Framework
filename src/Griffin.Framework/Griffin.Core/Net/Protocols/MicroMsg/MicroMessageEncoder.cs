@@ -190,7 +190,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             BitConverter2.GetBytes((int)_bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
             BitConverter2.GetBytes((byte)contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
             Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
-
+            //headerSize (4), Version (1), BodyLength(4), TypeLength(1), TypeName(var)
             return _headerSize + 2;
         }
     }
