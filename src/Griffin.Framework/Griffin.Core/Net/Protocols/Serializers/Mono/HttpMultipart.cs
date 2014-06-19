@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text;
 
-namespace Griffin.Net.Protocols.Http.BodyDecoders.Mono
+namespace Griffin.Net.Protocols.Serializers.Mono
 {
     /// <summary>
     /// Stream-based multipart handling.

@@ -17,6 +17,13 @@ namespace Griffin.Net.Protocols.MicroMsg
     public class MicroMessageEncoder : IMessageEncoder
     {
         public const byte Version = MicroMessageDecoder.Version;
+        /// <summary>
+        /// Size of the fixed header: version (1), content length (4), type name length (1) = 8
+        /// </summary>
+        /// <remarks>
+        /// The header size field is not included in the actual header count as it always have to be read to 
+        /// get the actual header size.
+        /// </remarks>
         public const int FixedHeaderLength = MicroMessageDecoder.FixedHeaderLength;
         private readonly MemoryStream _internalStream = new MemoryStream();
         private readonly IMessageSerializer _serializer;
@@ -185,12 +192,15 @@ namespace Griffin.Net.Protocols.MicroMsg
             var sliceBuffer = _bufferSlice.Buffer;
             _bodyStream.Position = 0;
             _headerSize = FixedHeaderLength + contentType.Length;
-            BitConverter2.GetBytes(_headerSize, sliceBuffer, sliceOffset);
-            _bufferSlice.Buffer[_bufferSlice.Offset + 2] = Version;
+
+            BitConverter2.GetBytes((ushort)_headerSize, sliceBuffer, sliceOffset);
+            _bufferSlice.Buffer[sliceOffset + 2] = Version;
             BitConverter2.GetBytes((int)_bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
             BitConverter2.GetBytes((byte)contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
             Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
-            //headerSize (4), Version (1), BodyLength(4), TypeLength(1), TypeName(var)
+
+            // the header length field is not included in _headerSize as it's a header prefix.
+            // hence the +2
             return _headerSize + 2;
         }
     }

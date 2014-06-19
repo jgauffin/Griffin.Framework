@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Net;
 using Griffin.Net.Channels;
-using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.Http

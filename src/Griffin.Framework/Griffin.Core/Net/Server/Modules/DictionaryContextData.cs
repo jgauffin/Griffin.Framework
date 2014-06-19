@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Griffin.Cqs.Net.Modules
+namespace Griffin.Net.Server.Modules
 {
     /// <summary>
     /// Uses a dictionary to store information

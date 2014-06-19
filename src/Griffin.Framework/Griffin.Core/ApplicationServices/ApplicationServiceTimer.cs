@@ -70,6 +70,7 @@ namespace Griffin.ApplicationServices
             if (IsRunning)
                 throw new InvalidOperationException("Can not start a running timer");
 
+            Console.WriteLine("Starting");
             _timer.Change(FirstInterval, Interval);
             IsRunning = true;
         }
@@ -79,8 +80,12 @@ namespace Griffin.ApplicationServices
         /// </summary>
         public void Stop()
         {
+            if (!IsRunning)
+                throw new InvalidOperationException("Can not stop a service which is not running");
+
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             IsRunning = false;
+            Console.WriteLine("Stopping");
         }
 
         /// <summary>
@@ -126,11 +131,14 @@ namespace Griffin.ApplicationServices
         {
             try
             {
+                Console.WriteLine("Running");
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Execute();
+                Console.WriteLine("Completed");
             }
             catch (Exception exception)
             {
+                Console.WriteLine(exception);
                 LogFunc(exception.ToString());
             }
             finally

@@ -24,9 +24,13 @@ namespace Griffin.Net.Protocols.MicroMsg
         private readonly IMessageSerializer _serializer;
         public const byte Version = 1;
         /// <summary>
-        /// Size of the fixed header: (version, content length, type name length)
+        /// Size of the fixed header: version (1), content length (4), type name length (1) = 8
         /// </summary>
-        public const int FixedHeaderLength = sizeof (byte) + sizeof (int) + sizeof (byte);
+        /// <remarks>
+        /// The header size field is not included in the actual header count as it always have to be read to 
+        /// get the actual header size.
+        /// </remarks>
+        public const int FixedHeaderLength = sizeof(ushort) + sizeof (byte) + sizeof (int) + sizeof (byte);
         private int _bytesLeftForCurrentState;
         private int _contentLength;
         private byte _protocolVersion;

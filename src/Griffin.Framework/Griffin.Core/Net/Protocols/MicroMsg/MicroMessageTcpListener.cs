@@ -1,7 +1,6 @@
-﻿using Griffin.Net.Channels;
-using Griffin.Net.Protocols.Serializers;
+﻿using Griffin.Net.Protocols.Serializers;
 
-namespace Griffin.Net.Protocols.MicroMsg.Server
+namespace Griffin.Net.Protocols.MicroMsg
 {
     public class MicroMessageTcpListener : ChannelTcpListener
     {

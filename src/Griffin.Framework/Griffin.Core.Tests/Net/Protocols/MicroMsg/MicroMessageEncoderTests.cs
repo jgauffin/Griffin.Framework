@@ -56,6 +56,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         [Fact]
         public void write_a_complete_string_message_directly()
         {
+            var contentType = "text/plain;type=System.String";
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[65535], 0, 65535);
             var msg = "Hello world";
@@ -65,13 +66,13 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             sut.Prepare(msg);
             sut.Send(buffer);
 
-            var headerLen = MicroMessageEncoder.FixedHeaderLength + "string".Length;
-            buffer.Buffer[0].Should().Be((byte)headerLen);
+            var headerLen = MicroMessageEncoder.FixedHeaderLength + contentType.Length;
+            BitConverter.ToInt16(buffer.Buffer, 0).Should().Be((short)headerLen);
             buffer.Buffer[2].Should().Be(1, "first version");
             BitConverter.ToInt32(buffer.Buffer, 3).Should().Be(msg.Length);
-            buffer.Buffer[7].Should().Be((byte)"string".Length);
-            Encoding.ASCII.GetString(buffer.Buffer, 8, "string".Length).Should().Be("string");
-            Encoding.ASCII.GetString(buffer.Buffer, MicroMessageEncoder.FixedHeaderLength + "string".Length + 2, msg.Length)
+            buffer.Buffer[7].Should().Be((byte)contentType.Length);
+            Encoding.ASCII.GetString(buffer.Buffer, 8, contentType.Length).Should().Be(contentType);
+            Encoding.ASCII.GetString(buffer.Buffer, 2 + MicroMessageEncoder.FixedHeaderLength + contentType.Length, msg.Length)
                 .Should()
                 .Be(msg);
         }
@@ -79,6 +80,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         [Fact]
         public void partial_send__continue_sending_rest_of_the_buffer_before_doing_anything_else()
         {
+            var contentType = "text/plain;type=System.String";
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[65535], 0, 65535);
             var msg = "Hello world";
@@ -91,12 +93,13 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             sut.Send(buffer);
 
             buffer.Offset.Should().Be(10);
-            buffer.Count.Should().Be(2 + MicroMessageEncoder.FixedHeaderLength + "string".Length + msg.Length - 10, "2 for the header length");
+            buffer.Count.Should().Be(2+ MicroMessageEncoder.FixedHeaderLength + contentType.Length + msg.Length - 10);
         }
 
         [Fact]
         public void too_small_buffer_requires_multiple_sends()
         {
+            var contentType = "text/plain;type=System.String";
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[520], 0, 520);
             var msg = "Hello world".PadRight(520);
@@ -110,12 +113,13 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
 
             buffer.Offset.Should().Be(0);
             // headerlength + fixed header length + content type length + content type - sent in first batch
-            buffer.Count.Should().Be(2 + MicroMessageEncoder.FixedHeaderLength + "string".Length + msg.Length - 520);
+            buffer.Count.Should().Be(2 + MicroMessageEncoder.FixedHeaderLength + contentType.Length + msg.Length - 520);
         }
 
         [Fact]
         public void reset_after_each_successful_message()
         {
+            var contentType = "text/plain;type=System.String";
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[520], 0, 520);
             var msg = "Hello world";
@@ -126,7 +130,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             sut.Send(buffer);
             sut.OnSendCompleted(13);
             sut.Send(buffer);
-            sut.OnSendCompleted(2 + MicroMessageEncoder.FixedHeaderLength + "string".Length + msg.Length - 13);
+            sut.OnSendCompleted(2 + MicroMessageEncoder.FixedHeaderLength + contentType.Length + msg.Length - 13);
             sut.Prepare(msg);
             sut.Send(buffer);
             sut.OnSendCompleted(5);
@@ -134,7 +138,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             
 
             buffer.Offset.Should().Be(5);
-            buffer.Count.Should().Be(2 + MicroMessageEncoder.FixedHeaderLength + "string".Length + msg.Length - 5);
+            buffer.Count.Should().Be(2 + MicroMessageEncoder.FixedHeaderLength + contentType.Length + msg.Length - 5);
         }
     }
 }

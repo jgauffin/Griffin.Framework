@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Griffin.Cqs.Net.Modules;
 
 namespace Griffin.Net.Server.Modules
 {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Security.Principal;
-using Griffin.Cqs.Net.Modules;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Server.Modules

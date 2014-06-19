@@ -1,6 +1,6 @@
 ﻿using Griffin.Net;
 using Griffin.Net.Protocols;
-using Griffin.Net.Protocols.MicroMsg.Server;
+using Griffin.Net.Protocols.MicroMsg;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.MicroMsg

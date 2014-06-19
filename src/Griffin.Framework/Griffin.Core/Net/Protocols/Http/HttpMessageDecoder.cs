@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Griffin.Net.Channels;
-using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Http.Serializers;
 using Griffin.Net.Protocols.Serializers;

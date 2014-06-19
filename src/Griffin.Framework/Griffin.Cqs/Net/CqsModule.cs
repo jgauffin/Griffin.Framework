@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using DotNetCqs;
-using Griffin.Cqs.Net.Modules;
 using Griffin.Cqs.Simple;
 using Griffin.Net.Server;
 using Griffin.Net.Server.Modules;

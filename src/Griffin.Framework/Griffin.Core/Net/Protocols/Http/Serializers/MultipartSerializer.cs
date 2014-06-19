@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using Griffin.Net.Protocols.Http.BodyDecoders.Mono;
 using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Serializers;
+using Griffin.Net.Protocols.Serializers.Mono;
 
 namespace Griffin.Net.Protocols.Http.Serializers
 {

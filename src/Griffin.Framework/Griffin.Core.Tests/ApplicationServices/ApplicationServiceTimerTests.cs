@@ -34,6 +34,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         {
 
             var sut = new TestAppService();
+            sut.FirstInterval = TimeSpan.FromMilliseconds(0);
             sut.Start();
             sut.StartedEvent.WaitOne(100).Should().BeTrue();
             Action actual = sut.Start;
@@ -69,6 +70,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         {
 
             var sut = new TestAppService();
+            sut.FirstInterval = TimeSpan.FromMilliseconds(0);
             sut.Start();
             sut.StartedEvent.WaitOne(100);
             sut.Stop();
@@ -87,6 +89,7 @@ namespace Griffin.Core.Tests.ApplicationServices
 
 
             var sut = new TestAppService();
+            sut.FirstInterval = TimeSpan.FromMilliseconds(0);
             sut.Start();
             sut.StartedEvent.WaitOne(100);
             sut.Stop();

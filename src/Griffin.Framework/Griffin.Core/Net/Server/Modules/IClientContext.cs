@@ -2,7 +2,6 @@
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using Griffin.Cqs.Net.Modules;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Server.Modules

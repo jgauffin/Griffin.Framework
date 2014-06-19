@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
-using Griffin.Cqs.Net.Modules;
 using Griffin.Net.Server.Modules;
 
 namespace Griffin.Cqs.Net

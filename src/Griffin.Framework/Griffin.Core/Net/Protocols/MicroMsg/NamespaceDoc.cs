@@ -13,7 +13,7 @@ namespace Griffin.Net.Protocols.MicroMsg
     ///     <list type="table">
     ///         <item>
     ///             <term>Headerlength</term>
-    ///             <description><c>short</c>, number of bytes that are for the header. First byte is directly after this field. <para>This field was added
+    ///             <description><c>ushort</c>, number of bytes that are for the header. First byte is directly after this field. <para>This field was added
     /// to be able to include new features without affecting previous versions</para></description>
     ///         </item>
     ///         <item>
@@ -26,7 +26,7 @@ namespace Griffin.Net.Protocols.MicroMsg
     ///         </item>
     ///         <item>
     ///             <term>Typelength</term>
-    ///             <description><c>sbyte</c>, Defines the length of the next header value.</description>
+    ///             <description><c>ubyte</c>, Defines the length of the next header value.</description>
     ///         </item>
     ///         <item>
     ///             <term>TypeName</term>

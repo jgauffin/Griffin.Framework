@@ -1,4 +1,4 @@
-﻿namespace Griffin.Cqs.Net.Modules
+﻿namespace Griffin.Net.Server.Modules
 {
     /// <summary>
     /// Specifies how the modules want the current request to proceed

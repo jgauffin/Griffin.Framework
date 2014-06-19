@@ -24,8 +24,7 @@ namespace Griffin.Core.Tests.Data
         [Fact]
         public void conversion_from_int_unix()
         {
-            var expected = DateTime.UtcNow;
-            expected = expected.AddMilliseconds(0 - expected.Millisecond);
+            var expected = DateTime.UtcNow.TruncateMilliseconds();
             var unix = (int) expected.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             var actual = unix.FromUnixTime();
@@ -36,7 +35,7 @@ namespace Griffin.Core.Tests.Data
         [Fact]
         public void conversion_from_double_unix()
         {
-            var expected = DateTime.UtcNow;
+            var expected = DateTime.UtcNow.TruncateMilliseconds();
             var unix = expected.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             var actual = unix.FromUnixTime();

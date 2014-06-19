@@ -10,6 +10,16 @@ namespace Griffin.Data.Mapper
         public static readonly DateTime UnixDate = new DateTime(1970, 1, 1);
 
         /// <summary>
+        /// Will remove milliseconds from the the date tiime
+        /// </summary>
+        /// <param name="source">Time with milliseconds.</param>
+        /// <returns>Date/Time without ms</returns>
+        public static DateTime TruncateMilliseconds(this DateTime source)
+        {
+            return new DateTime(source.Ticks - (source.Ticks % TimeSpan.TicksPerSecond),source.Kind);
+        }
+
+        /// <summary>
         /// Convert a date to unix epoch
         /// </summary>
         /// <param name="dateUtc">MUST be in UTC. Either use <c>DateTime.UtcNow</c> or convert the local time to UTC time.</param>

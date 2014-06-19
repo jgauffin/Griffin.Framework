@@ -6,10 +6,13 @@
 //
 //--------------------------------------------------------------------------
 
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace System.Collections.Concurrent
+namespace Griffin.Net.Protocols.Http.External
 {
     /// <summary>Provides a thread-safe priority queue data structure.</summary>
     /// <typeparam name="TKey">Specifies the type of keys used to prioritize values.</typeparam>

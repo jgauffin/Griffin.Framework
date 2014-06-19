@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Griffin.Net.Protocols.Http.External;
 
 namespace Griffin.Net.Protocols.Http
 {

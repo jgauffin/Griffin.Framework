@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Griffin.Cqs.Net.Modules;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Serializers;

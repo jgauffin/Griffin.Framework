@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using Griffin.Net.Channels;
 
-namespace Griffin.Net.Protocols
+namespace Griffin.Net
 {
     /// <summary>
     ///     Message encoders are used to convert objects into binary form so that they can be transferred over a socket.

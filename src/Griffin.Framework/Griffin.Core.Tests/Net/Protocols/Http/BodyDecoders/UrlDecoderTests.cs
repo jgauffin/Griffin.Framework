@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Griffin.Net.Protocols.Http;
-using Griffin.Net.Protocols.Http.BodyDecoders;
 using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Http.Serializers;
-using Griffin.Net.Protocols.Serializers;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders

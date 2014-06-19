@@ -1,4 +1,4 @@
-﻿namespace Griffin.Cqs.Net.Modules
+﻿namespace Griffin.Net.Server.Modules
 {
     /// <summary>
     /// Used to be able to store information while the current message is being processed.

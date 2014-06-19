@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Griffin.Net.Server.Modules;
 
-namespace Griffin.Net.Server.Modules
+namespace Griffin.Net.Server
 {
     /// <summary>
     ///     Build a handler pipeline used to identify the user and then take care of the incoming message
