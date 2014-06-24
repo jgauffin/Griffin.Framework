@@ -1,134 +1,27 @@
 ﻿# Application services
 
-When you are running windows services or similar applications you typically have classes that need to run
-as long as the application. We call them application services. This library can manage those classes. 
+Sometimes you need to be able to execute things in the background or periodically. To do that you have Timers, Threads and Tasks in .NET.
 
-## Controlling services.
+They all require you do so some manual handling to start/restart and shutdown them when your application is started/stopped. This library
+has two different alternatives.
 
-The classes are controlled by the [ApplicationServiceManager](ApplicationServiceManager.cs). It can both
-use your favorite IoC container (through the adapter contracts) or by using assembly scanning.
+Both alternatives have support for inversion of control containers. You either have to install one of our IoC adapter packages from nuget
+or implement [two interfaces](../Container) for your favorite container.
 
-Using assembly scanning (searches for `ApplicationService` implementations)
+# IApplicationService
 
-```csharp
-// find your application services
-var serviceLocator = new AssemblyScanner();
-serviceLocator.Scan(Assembly.GetExecutingAssembly());
+This contract allows you to start background services when your application starts and stop them when the application ends. They are treated
+as single instances and are also monitored by this library.
 
-// run the services
-_serviceManager = new ApplicationServiceManager(serviceLocator);
-_serviceManager.Start();
-```
+The [ApplicationServiceManager](ApplicationServiceManager.cs) also have the ability to restart services that crashes.
 
-Using autofac (requires the nuget package *griffin.framework.autofac*):
+[Read more here](Docs/ApplicationServices.md).
 
-```csharp
-// autofac
-var builder = new ContainerBuilder();
-builder.Register<YourServiceClass>().AsImplementedInterfaces().SingleInstance();
-var autofac = builder.Build();
+# IBackgroundJob
 
-// griffin library
-var container = new AutofacAdapter(autofac);
-_serviceManager = new ApplicationServiceManager(container);
-_serviceManager.Start();
+Do you have jobs which need to be run in the background by still need short lived objects like transactions or database connections?
 
+The background jobs are executed in isolated container life times which means that you can use transactions etc for them without affecting 
+the rest of your application.
 
-// .. when the application is shut down..
-_serviceManager.Stop();
-```
-
-### Detecting failures
-
-The ApplicationServiceManager will restart service which have failed (as long as they implement `IGuardedService`). But you
-probably want to be able to log all failures. This can be done with the help of the `ServiceStartFailed` event:
-
-```csharp
-public class Program
-{
-	public static void Main(string[] argv)
-	{
-		// [.. other initializations ..]]
-		_appServiceManager.ServiceStartFailed += OnServiceFailure;
-
-	}
-
-
-   public static void OnServiceFailure(object sender, ApplicationServiceFailedEventArgs e)
-   {
-       _logger.Error("Service " + e.ApplicationService.GetType().Name + " failed", e.Exception);
-   }
-
-}
-```
-
-
-## Creating services
-
-To get started with the library you need to create a class that either implement [IApplicationService](IApplicationService.cs)
-or  [IGuardedService](IGuardedService.cs). They contain methods which are used to start/stop the services. 
-
-However, if you implement the interfaces directly you need to make sure that your classes do not crash. If you want 
-this library to take care of everything you need to inherit one of the following classes:
-
-### ApplicationServiceThread
-
-[ApplicationServiceThread](ApplicationServiceThread.cs) is running as a background thread and is great for everything that requires to run
-as long as your application. Any uncaught exception will temporarily shutdown the service (until the 
-service manager restarts it).
-
-That means that you do not have to be afraid of that a bug in a service will consume all the CPU
-or not be started again.
-
-Example service:
-
-```csharp
-public class YourService : ApplicationserviceThread
-{
-	protected void Run(WaitHandle shutdownHandle)
-	{
-		while (true)
-		{
-			try
-			{
-				// pause 100ms between each loop iteration.
-				// you can specify 0 too
-				if (shutdownHandle.WaitOne(100))
-					break;
-
-				// do actual logic here.
-			} 
-			catch (DataException ex)
-			{
-				// no need for try/catch, but we only want the service
-				// to get automatically restarted when DataException is thrown
-				throw;
-			}
-			catch (Exception ex)
-			{
-				_log.Error("Opps", ex);
-            }
-		}
-	}
-}
-```
-
-### ApplicationServiceTimer
-
-[ApplicationServiceTimer](ApplicationServiceTimer.cs) allows you to execute 
-
-
-## Starting/stopping services.
-
-The services can for instance be started/stopped using the application
-config. To activate a service you just set the appSetting `<add key="YourClass.Enabled" value="true" />` and
-to disable it you set the same key to `false`. This can also be done during runtime if your services implement [IGuardedService](IGuardedService.cs).
-
-
-
-
-
-
-The library do also take care of services which fail.
-This will contain services for applications so that you can easier control what's running and when.
-
+[Read more here](Docs/BackgroundJobs.md).
