@@ -12,33 +12,18 @@ namespace Griffin.ApplicationServices
     ///         Do note that this implementation do not wait on completion when being shut down using <c>Stop()</c>.
     ///     </para>
     /// </remarks>
-    public abstract class ApplicationServiceTimer : IApplicationService
+    public abstract class ApplicationServiceTimer : IGuardedService
     {
         private readonly Timer _timer;
-        private ILogger _logger = LogManager.GetLogger<ApplicationServiceTimer>();
-        private Action<string> _logFunc;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationServiceTimer"/> class.
+        /// </summary>
         protected ApplicationServiceTimer()
         {
             _timer = new Timer(OnTimer);
             FirstInterval = TimeSpan.FromMilliseconds(500);
             Interval = TimeSpan.FromSeconds(5);
-            LogFunc = s => _logger.Error(GetType().FullName + " failed: " + s);
-        }
-
-        /// <summary>
-        ///     Can be used to log errors to a log file
-        /// </summary>
-        public Action<string> LogFunc
-        {
-            get { return _logFunc; }
-            set
-            {
-                if (value == null)
-                    _logFunc = s => _logger.Error(GetType().FullName + " failed: " + s);
-                else
-                    _logFunc = value;
-            }
         }
 
         /// <summary>
@@ -70,7 +55,6 @@ namespace Griffin.ApplicationServices
             if (IsRunning)
                 throw new InvalidOperationException("Can not start a running timer");
 
-            Console.WriteLine("Starting");
             _timer.Change(FirstInterval, Interval);
             IsRunning = true;
         }
@@ -85,8 +69,12 @@ namespace Griffin.ApplicationServices
 
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
             IsRunning = false;
-            Console.WriteLine("Stopping");
         }
+
+        /// <summary>
+        /// Service failed to execute.
+        /// </summary>
+        public event EventHandler<ApplicationServiceFailedEventArgs> Failed=delegate {};
 
         /// <summary>
         ///     Used to do work periodically.
@@ -111,15 +99,12 @@ namespace Griffin.ApplicationServices
         {
             try
             {
-                Console.WriteLine("Running");
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Execute();
-                Console.WriteLine("Completed");
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
-                LogFunc(exception.ToString());
+                Failed(this, new ApplicationServiceFailedEventArgs(this, exception));
             }
             finally
             {

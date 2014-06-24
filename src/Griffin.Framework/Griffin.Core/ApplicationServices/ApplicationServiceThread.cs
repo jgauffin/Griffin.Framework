@@ -48,30 +48,28 @@ namespace Griffin.ApplicationServices
     /// }
     /// </code>
     /// </example>
-    public abstract class ApplicationServiceThread : IApplicationService
+    public abstract class ApplicationServiceThread : IGuardedService
     {
         private readonly ManualResetEvent _shutDownEvent = new ManualResetEvent(false);
         private Thread _workThread;
         private Action<string> _logFunc;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationServiceThread"/> class.
+        /// </summary>
         protected ApplicationServiceThread()
         {
             IsRunning = false;
             StopWaitTime = TimeSpan.FromMinutes(1);
-            LogFunc = logEntry => { };
         }
 
         /// <summary>
-        ///     Can be used to log errors to a log file
+        ///     Failed to execute service.
         /// </summary>
         /// <remarks>
         /// <para>The string is the log entry to write to the log.</para>
         /// </remarks>
-        public Action<string> LogFunc
-        {
-            get { return _logFunc; }
-            set { _logFunc = value ?? delegate { }; }
-        }
+        public event EventHandler<ApplicationServiceFailedEventArgs> Failed = delegate{};
 
         /// <summary>
         ///     How long to wait on the thread for completion before terminating it.
@@ -110,9 +108,11 @@ namespace Griffin.ApplicationServices
                 if (!_workThread.Join(StopWaitTime))
                 {
                     _workThread.Abort();
-                    if (LogFunc != null)
-                        LogFunc("Failed to stop thread '" + GetType().FullName + "' within the given timespan of " +
-                                StopWaitTime);
+                    Failed(this,
+                        new ApplicationServiceFailedEventArgs(this,
+                            new Exception("Failed to stop thread '" + GetType().FullName +
+                                          "' within the given timespan of " +
+                                          StopWaitTime)));
                 }
             }
             finally
@@ -165,7 +165,7 @@ namespace Griffin.ApplicationServices
             }
             catch (Exception exception)
             {
-                LogFunc(exception.ToString());
+                Failed(this, new ApplicationServiceFailedEventArgs(this, exception));
             }
             finally
             {
@@ -173,4 +173,5 @@ namespace Griffin.ApplicationServices
             }
         }
     }
+
 }

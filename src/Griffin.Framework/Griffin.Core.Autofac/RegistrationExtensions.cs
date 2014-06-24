@@ -91,13 +91,13 @@ namespace Griffin.Core.Autofac
                 switch (lifetime)
                 {
                     case ContainerLifetime.Scoped:
-                        builder.RegisterType(concrete).AsImplementedInterfaces().OwnedByLifetimeScope();
+                        builder.RegisterType(concrete).AsImplementedInterfaces().AsSelf().OwnedByLifetimeScope();
                         break;
                     case ContainerLifetime.SingleInstance:
-                        builder.RegisterType(concrete).AsImplementedInterfaces().SingleInstance();
+                        builder.RegisterType(concrete).AsImplementedInterfaces().AsSelf().SingleInstance();
                         break;
                     case ContainerLifetime.Transient:
-                        builder.RegisterType(concrete).AsImplementedInterfaces();
+                        builder.RegisterType(concrete).AsImplementedInterfaces().AsSelf();
                         break;
                 }
 

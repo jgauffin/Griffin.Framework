@@ -84,8 +84,8 @@ namespace Griffin.ApplicationServices
     public class ApplicationServiceManager
     {
         private readonly ConcurrentDictionary<string, bool> _configOverrides = new ConcurrentDictionary<string, bool>();
-        private readonly IAppServiceLocator _serviceLocator;
         private readonly ILogger _logger = LogManager.GetLogger<ApplicationServiceManager>();
+        private readonly IAppServiceLocator _serviceLocator;
         private readonly Timer _timer;
         private TimeSpan _checkInterval;
         private ISettingsRepository _settings = new AppConfigServiceSettings();
@@ -159,6 +159,13 @@ namespace Griffin.ApplicationServices
         ///     Failed to start a service (no matter if it's for the first time or later on)
         /// </summary>
         public event EventHandler<ApplicationServiceFailedEventArgs> ServiceStartFailed = delegate { };
+
+
+        /// <summary>
+        ///     Service failed to execute properly (an unhandled exception was caught).
+        /// </summary>
+        public event EventHandler<ApplicationServiceFailedEventArgs> ServiceFailed = delegate { };
+
 
         /// <summary>
         ///     Disable service (so it will be shut down during the next service check).
@@ -251,6 +258,10 @@ namespace Griffin.ApplicationServices
             var services = _serviceLocator.GetServices();
             foreach (var service in services)
             {
+                var guarded = service as IGuardedService;
+                if (guarded != null)
+                    guarded.Failed += OnServiceFailed;
+
                 if (!IsEnabled(service.GetType()))
                 {
                     _logger.Debug("Service is disabled '" + service.GetType().FullName + "'.");
@@ -273,6 +284,11 @@ namespace Griffin.ApplicationServices
                 throw new AggregateException(exceptions);
         }
 
+        private void OnServiceFailed(object sender, ApplicationServiceFailedEventArgs e)
+        {
+            ServiceFailed(this, e);
+        }
+
         /// <summary>
         ///     Will shut down all services and stop checking their health.
         /// </summary>
@@ -286,6 +302,8 @@ namespace Griffin.ApplicationServices
             foreach (var service in services)
             {
                 var guarded = service as IGuardedService;
+                if (guarded != null)
+                    guarded.Failed -= OnServiceFailed;
                 if (guarded != null && !guarded.IsRunning)
                     continue;
 

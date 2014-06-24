@@ -1,4 +1,6 @@
-﻿namespace Griffin.ApplicationServices
+﻿using System;
+
+namespace Griffin.ApplicationServices
 {
     /// <summary>
     ///     A service which are doing some kind of work during the entire application lifetime (i.e. sort of an instance service).
@@ -52,34 +54,6 @@
     ///      }
     ///  }
     /// </code>
-    /// <para>
-    /// För att kontrollera om tjänsten snurrar eller inte så använder du app/web.config (du kan när som helst under körning ändra flaggan för att starta/stoppa utskickaren):
-    /// </para>
-    /// <code>
-    /// <![CDATA[
-    /// <configuration>
-    ///  <appSettings>
-    ///    <add key="AnnoMessageSSBThread.Enabled" value="true"/>
-    ///  <appSettings>
-    /// </configuration>
-    /// ]]>
-    /// </code>
-    /// <para>
-    /// Sedan så skapar vi vår service manager (hur du konfar autofac får du läsa på nätet):
-    /// </para>
-    /// <code>
-    /// // container = autofac.
-    /// var rootLocator = new AutofacServiceLocator(container);
-    /// 
-    /// // vid uppstart skapar du managern och startar tjänsterna
-    /// _serviceManager = new ApplicationServiceManager(rootLocator);
-    /// _serviceManager.Start();
-    /// 
-    /// 
-    /// // .. och sedan där du stänger ned din applikation så anropar du:
-    /// _serviceManager.Stop();
-    /// </code>
-    /// 
     /// </example>
     /// <seealso cref="ApplicationServiceManager"/>
     public interface IApplicationService
