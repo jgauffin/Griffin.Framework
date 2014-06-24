@@ -50,7 +50,7 @@ public class YourService : ApplicationserviceThread
 
 # IBackgroundJob
 
-Do you have jobs which need to be run in the background by still need short lived objects like transactions or database connections?
+Do you have jobs which need to be run in the background but still need short lived objects like transactions or database connections?
 
 The background jobs are executed in isolated container life times which means that you can use transactions etc for them without affecting 
 the rest of your application.

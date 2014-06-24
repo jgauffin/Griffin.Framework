@@ -42,13 +42,13 @@ public class Service1 : ServiceBase
     public void CreateContainer()
     {
         // create your favorite container (this example uses autofac)
-		// and register your services in it.
-		var builder = new Containerbuilder();
+        // and register your services in it.
+        var builder = new Containerbuilder();
         builder.Register<DeleteOldMessages>().AsImplementedInterfaces().SingleInstance();
 
-		// and then create the griffin adapter
-		var autofac = builder.Build();
-		_container = new AutofacAdapter(autofac);
+        // and then create the griffin adapter
+        var autofac = builder.Build();
+        _container = new AutofacAdapter(autofac);
     }
 
     // so that we can commit the transaction
