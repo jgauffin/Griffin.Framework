@@ -50,8 +50,10 @@
     <Compile Include="ApplicationServices\BackgroundJobFailedEventArgs.cs" />
     <Compile Include="ApplicationServices\BackgroundJobManager.cs" />
     <Compile Include="ApplicationServices\IApplicationService.cs" />
+    <Compile Include="ApplicationServices\IAppServiceLocator.cs" />
     <Compile Include="ApplicationServices\IBackgroundJob.cs" />
     <Compile Include="ApplicationServices\IGuardedService.cs" />
+    <Compile Include="ApplicationServices\IocAppServiceLocator.cs" />
     <Compile Include="ApplicationServices\ISettingsRepository.cs" />
     <Compile Include="ApplicationServices\ScopeClosingEventArgs.cs" />
     <Compile Include="ApplicationServices\ScopeCreatedEventArgs.cs" />
@@ -300,6 +302,8 @@
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ApplicationServices\Docs\ApplicationServices.md" />
+    <None Include="ApplicationServices\Docs\Backgroundjobs.md" />
     <None Include="ApplicationServices\ReadMe.md" />
     <None Include="Container\ReadMe.md" />
     <None Include="Data\ReadMe.md" />
@@ -316,7 +320,6 @@
     <Content Include="Net\cert\howto.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ApplicationServices\Docs\" />
     <Folder Include="Net\Protocols\MessageDeserializers\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

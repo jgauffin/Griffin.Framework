@@ -5,6 +5,10 @@ namespace Griffin.ApplicationServices
     /// <summary>
     ///     Settings used by <see cref="ApplicationServiceManager" /> and <see cref="BackgroundJobManager"/>.
     /// </summary>
+    /// <remarks>
+    /// <para>This contract represents a configuration source. It might be your app/web.config or a database table.</para>
+    /// </remarks>
+    /// <seealso cref="AppConfigServiceSettings"/>
     public interface ISettingsRepository
     {
         /// <summary>

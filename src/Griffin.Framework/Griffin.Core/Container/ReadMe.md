@@ -23,11 +23,10 @@ Example for Autofac (requires the nuget package `griffin.framework.autofac`).
 ```csharp
 var cb = new ContainerBuilder();
 cb.RegisterServices(typeof(SomeService).Assembly);
-
-var container = cb.Build();
+var autofac = cb.Build();
 
 // the adapter which can be used by Griffin.Framework
-var griffinAdapter = new AutofacContainer(container);
+var container = new AutofacAdapter(autofac);
 ```
 
 Do not get fooled by the `typeof(SomeService).Assembly`. 

@@ -38,6 +38,8 @@ _serviceManager.Start();
 _serviceManager.Stop();
 ```
 
+By using a container you can also use dependency injection in your services.
+
 ### Detecting failures
 
 The ApplicationServiceManager will restart service which have failed (as long as they implement `IGuardedService`). But you
@@ -46,12 +48,12 @@ probably want to be able to log all failures. This can be done with the help of 
 ```csharp
 public class Program
 {
-	public static void Main(string[] argv)
-	{
-		// [.. other initializations ..]]
-		_appServiceManager.ServiceStartFailed += OnServiceFailure;
+    public static void Main(string[] argv)
+    {
+        // [.. other initializations ..]]
+        _appServiceManager.ServiceStartFailed += OnServiceFailure;
 
-	}
+    }
 
 
    public static void OnServiceFailure(object sender, ApplicationServiceFailedEventArgs e)
@@ -61,6 +63,12 @@ public class Program
 
 }
 ```
+
+### Starting/stopping services.
+
+The services can for instance be started/stopped using the application
+config. To activate a service you just set the appSetting `<add key="YourClass.Enabled" value="true" />` and
+to disable it you set the same key to `false`. This can also be done during runtime if your services implement [IGuardedService](IGuardedService.cs).
 
 
 ## Creating services
@@ -85,50 +93,56 @@ Example service:
 ```csharp
 public class YourService : ApplicationserviceThread
 {
-	protected void Run(WaitHandle shutdownHandle)
-	{
-		while (true)
-		{
-			try
-			{
-				// pause 100ms between each loop iteration.
-				// you can specify 0 too
-				if (shutdownHandle.WaitOne(100))
-					break;
+    protected void Run(WaitHandle shutdownHandle)
+    {
+        while (true)
+        {
+            try
+            {
+                // pause 100ms between each loop iteration.
+                // you can specify 0 too
+                if (shutdownHandle.WaitOne(100))
+                    break;
 
-				// do actual logic here.
-			} 
-			catch (DataException ex)
-			{
-				// no need for try/catch, but we only want the service
-				// to get automatically restarted when DataException is thrown
-				throw;
-			}
-			catch (Exception ex)
-			{
-				_log.Error("Opps", ex);
+                // do actual logic here.
+            } 
+            catch (DataException ex)
+            {
+                // no need for try/catch, but we only want the service
+                // to get automatically restarted when DataException is thrown
+                throw;
             }
-		}
-	}
+            catch (Exception ex)
+            {
+                _log.Error("Opps", ex);
+            }
+        }
+    }
 }
 ```
 
 ### ApplicationServiceTimer
 
-[ApplicationServiceTimer](ApplicationServiceTimer.cs) allows you to execute 
+[ApplicationServiceTimer](ApplicationServiceTimer.cs) allows you to execute jobs in the background without
+having to deal with unhandled exceptions.
 
+Do note that instances of this class are also treated as single instances.
 
-## Starting/stopping services.
+```csharp
+public class DeleteOldMessages : ApplicationServiceTimer
+{
+    public override void Execute()
+    {
+        using (var connection = new SqlConnection("..."))
+        {
+            using (var transaction = connection.BeginTransaction())
+            {
+                //delete query.
+            }
+        }
+    }
+}
+```
 
-The services can for instance be started/stopped using the application
-config. To activate a service you just set the appSetting `<add key="YourClass.Enabled" value="true" />` and
-to disable it you set the same key to `false`. This can also be done during runtime if your services implement [IGuardedService](IGuardedService.cs).
-
-
-
-
-
-
-The library do also take care of services which fail.
-This will contain services for applications so that you can easier control what's running and when.
-
+However, if you are using timers that requires a container scope  (lifetime scope) you might want to use
+[IBackgroundJob](../IBackgroundJob.cs) instead. Read the [documentation](backgroundjobs.md) for more information.

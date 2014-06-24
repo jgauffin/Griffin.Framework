@@ -9,7 +9,7 @@ This namespace enables you to easily register all your CQS handlers in autofac a
 ```csharp
 public class CompositionRoot
 {
-	private static AutofacContainer _griffinContainer;
+	private static AutofacAdapter _container;
 
 	public static void Register()
 	{
@@ -25,12 +25,12 @@ public class CompositionRoot
 		cb.RegisterType<ContainerRequestReplyBus>().As<IRequestReplyBus>().SingleInstance();
 
 		// Lazy load the container.
-		cb.Register(x => _griffinContainer).AsImplementedInterfaces().SingleInstance();
+		cb.Register(x => _container).AsImplementedInterfaces().SingleInstance();
 
 		// [.. your other registrations ..]
 
 		var container = cb.Build();
-		_griffinContainer = new AutofacContainer(container);
+		_container = new AutofacAdapter(container);
 	}
 }
 ```

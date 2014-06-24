@@ -99,29 +99,9 @@ namespace Griffin.ApplicationServices
         /// </remarks>
         /// <example>
         ///     <code>
-        /// protected void Run(WaitHandle shutdownHandle)
+        /// protected override void Execute()
         /// {
-        ///     while (true)
-        ///     {
-        ///         try
-        ///         {
-        ///             // pause 100ms between each loop iteration.
-        ///             // you can specify 0 too
-        ///             if (shutdownHandle.Wait(100))
-        ///                 break;
-        /// 
-        ///             // do actual logic here.
-        ///         } 
-        ///         catch (Exception ex)
-        ///         {
-        ///             // shutdown thread if it's a DB exception
-        ///             // thread will be started again by the ApplicationServiceManager
-        ///             if (Exception is DataException)
-        ///                 throw;
-        /// 
-        ///             _log.Error("Opps", ex);
-        ///         }
-        ///     }
+        ///    //Do some work.
         /// }
         /// </code>
         /// </example>

@@ -12,7 +12,7 @@ namespace Griffin.ApplicationServices
     ///         running or not. <see cref="IApplicationService" />. The name
     ///         should be "ClassName.Enabled". For instance if you have a class named "StatisticsGenerator" the key should be
     ///         named "StatisticsGenerator.Enabled":
-    ///         <c><![CDATA[<add key="StatisticsGenerator.Enabled.Enabled" value="true" />]]></c>
+    ///         <c><![CDATA[<add key="StatisticsGenerator.Enabled" value="true" />]]></c>
     ///     </para>
     ///     <para>
     ///         Services which keys are not found are interpreted as being disabled.
@@ -33,7 +33,7 @@ namespace Griffin.ApplicationServices
     /// <![CDATA[
     /// <configuration>
     ///  <appSettings>
-    ///    <add key="StatisticsGenerator.Enabled.Enabled" value="true"/>
+    ///    <add key="StatisticsGenerator.Enabled" value="true"/>
     ///  <appSettings>
     /// </configuration>
     /// ]]>

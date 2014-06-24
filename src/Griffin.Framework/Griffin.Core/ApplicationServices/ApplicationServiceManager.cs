@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,7 +17,7 @@ namespace Griffin.ApplicationServices
     ///         Services that have been enabled/disabled during runtime will be started/stopped automatically by this library
     ///         if they
     ///         implement <see cref="IGuardedService" />. Same goes for services which have crashed.
-    /// Otherwise they will only be started/stopped when <c>Start()</c>/<c>Stop()</c> is invoked on this manager.
+    ///         Otherwise they will only be started/stopped when <c>Start()</c>/<c>Stop()</c> is invoked on this manager.
     ///     </para>
     ///     <para>
     ///         You can also start/stop services at runtime using your config file (app/web.config) if you use the
@@ -66,18 +67,15 @@ namespace Griffin.ApplicationServices
     ///         Finally you have to create the service manager:
     ///     </para>
     ///     <code>
-    /// // Example using Autofac
-    /// var builder = new ContainerBuilder();
+    /// // Discover all classes that implement IApplicationservice
+    /// var serviceLocator = new AssemblyScanner();
+    /// serviceLocator.Scan(Assembly.GetExecutingAssembly());
     /// 
-    /// // register using the [ContainerService] attribut in this library, see the "Container" namespace.
-    /// builder.RegisterServices(Assembly.GetExecutingAssembly());
-    /// 
-    /// var container = new AutofacServiceLocator(container);
-    /// 
-    /// // Create manager and start all services.
-    /// _serviceManager = new ApplicationServiceManager(container);
+    /// //run the services.
+    /// _serviceManager = new ApplicationServiceManager(serviceLocator);
     /// _serviceManager.Start();
     /// 
+    /// // [...]
     /// 
     /// // .. when the application is shut down..
     /// _serviceManager.Stop();
@@ -85,7 +83,8 @@ namespace Griffin.ApplicationServices
     /// </example>
     public class ApplicationServiceManager
     {
-        private readonly IContainer _container;
+        private readonly ConcurrentDictionary<string, bool> _configOverrides = new ConcurrentDictionary<string, bool>();
+        private readonly IAppServiceLocator _serviceLocator;
         private readonly ILogger _logger = LogManager.GetLogger<ApplicationServiceManager>();
         private readonly Timer _timer;
         private TimeSpan _checkInterval;
@@ -100,11 +99,27 @@ namespace Griffin.ApplicationServices
         {
             if (container == null) throw new ArgumentNullException("container");
 
-            _container = container;
+            _serviceLocator = new IocAppServiceLocator(container);
             CheckInterval = TimeSpan.FromSeconds(30);
             StartInterval = TimeSpan.FromSeconds(5);
             _timer = new Timer(OnCheckServices, null, Timeout.Infinite, Timeout.Infinite);
         }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ApplicationServiceManager" /> class.
+        /// </summary>
+        /// <param name="serviceLocator">Implementation used to find all registered services.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
+        public ApplicationServiceManager(IAppServiceLocator serviceLocator)
+        {
+            if (serviceLocator == null) throw new ArgumentNullException("serviceLocator");
+
+            _serviceLocator = serviceLocator;
+            CheckInterval = TimeSpan.FromSeconds(30);
+            StartInterval = TimeSpan.FromSeconds(5);
+            _timer = new Timer(OnCheckServices, null, Timeout.Infinite, Timeout.Infinite);
+        }
+
 
         /// <summary>
         ///     Used to be able to determine which services should be running
@@ -146,6 +161,84 @@ namespace Griffin.ApplicationServices
         public event EventHandler<ApplicationServiceFailedEventArgs> ServiceStartFailed = delegate { };
 
         /// <summary>
+        ///     Disable service (so it will be shut down during the next service check).
+        /// </summary>
+        /// <param name="className">Name of class (with or without namespace)</param>
+        /// <remarks>
+        ///     <para>
+        ///         Requires that the service implements <see cref="IGuardedService" />.
+        ///     </para>
+        ///     <para>
+        ///         This will override the setting in the configuration file.
+        ///     </para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// serviceManager.Settings.Disable("YourClassName");
+        /// </code>
+        /// </example>
+        public void Disable(string className)
+        {
+            _configOverrides[className] = false;
+        }
+
+        /// <summary>
+        ///     Disable service (so it will be shut down during the next service check)
+        /// </summary>
+        /// <param name="type">Type to disable</param>
+        /// <remarks>
+        ///     <para>
+        ///         Requires that the service implements <see cref="IGuardedService" />.
+        ///     </para>
+        ///     <para>
+        ///         This will override the setting in the configuration file.
+        ///     </para>
+        /// </remarks>
+        public void Disable(Type type)
+        {
+            _configOverrides[type.FullName] = false;
+        }
+
+        /// <summary>
+        ///     Enable a service (so that it will be started during the next service check)
+        /// </summary>
+        /// <param name="className">Name of class (with or without namespace)</param>
+        /// <remarks>
+        ///     <para>
+        ///         Requires that the service implements <see cref="IGuardedService" />.
+        ///     </para>
+        ///     <para>
+        ///         This will override the setting in the configuration file.
+        ///     </para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// serviceManager.Settings.Disable("YourClassName");
+        /// </code>
+        /// </example>
+        public void Enable(string className)
+        {
+            _configOverrides[className] = true;
+        }
+
+        /// <summary>
+        ///     Enable service (so it will be started during the next service check)
+        /// </summary>
+        /// <param name="type">Type to disable</param>
+        /// <remarks>
+        ///     <para>
+        ///         Requires that the service implements <see cref="IGuardedService" />.
+        ///     </para>
+        ///     <para>
+        ///         This will override the setting in the configuration file.
+        ///     </para>
+        /// </remarks>
+        public void Enable(Type type)
+        {
+            _configOverrides[type.FullName] = true;
+        }
+
+        /// <summary>
         ///     Start all services and start monitoring them.
         /// </summary>
         /// <exception cref="System.AggregateException">
@@ -155,10 +248,10 @@ namespace Griffin.ApplicationServices
         public void Start()
         {
             var exceptions = new List<Exception>();
-            var services = _container.ResolveAll<IApplicationService>();
+            var services = _serviceLocator.GetServices();
             foreach (var service in services)
             {
-                if (!Settings.IsEnabled(service.GetType()))
+                if (!IsEnabled(service.GetType()))
                 {
                     _logger.Debug("Service is disabled '" + service.GetType().FullName + "'.");
                     continue;
@@ -189,7 +282,7 @@ namespace Griffin.ApplicationServices
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
             var exceptions = new List<Exception>();
-            var services = _container.ResolveAll<IApplicationService>();
+            var services = _serviceLocator.GetServices();
             foreach (var service in services)
             {
                 var guarded = service as IGuardedService;
@@ -212,25 +305,13 @@ namespace Griffin.ApplicationServices
                 throw new AggregateException(exceptions);
         }
 
-        private void OnCheckServices(object state)
-        {
-            try
-            {
-                CheckServices();
-            }
-            catch (Exception exception)
-            {
-                _logger.Warning("Failed to start one or more services.", exception);
-            }
-        }
-
         /// <summary>
-        /// check services wether they should be started/stopped.
+        ///     check services wether they should be started/stopped.
         /// </summary>
         /// <returns></returns>
         internal void CheckServices()
         {
-            var services = _container.ResolveAll<IApplicationService>();
+            var services = _serviceLocator.GetServices();
             foreach (var service in services)
             {
                 var guarded = service as IGuardedService;
@@ -239,7 +320,7 @@ namespace Griffin.ApplicationServices
 
                 try
                 {
-                    if (!Settings.IsEnabled(service.GetType()))
+                    if (!IsEnabled(service.GetType()))
                     {
                         if (guarded.IsRunning)
                         {
@@ -263,6 +344,29 @@ namespace Griffin.ApplicationServices
                     if (!args.CanContinue)
                         return;
                 }
+            }
+        }
+
+        private bool IsEnabled(Type type)
+        {
+            var enabled = false;
+            if (_configOverrides.TryGetValue(type.FullName, out enabled))
+                return enabled;
+            if (_configOverrides.TryGetValue(type.Name, out enabled))
+                return enabled;
+
+            return _settings.IsEnabled(type);
+        }
+
+        private void OnCheckServices(object state)
+        {
+            try
+            {
+                CheckServices();
+            }
+            catch (Exception exception)
+            {
+                _logger.Warning("Failed to start one or more services.", exception);
             }
         }
     }
