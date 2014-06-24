@@ -145,4 +145,4 @@ public class DeleteOldMessages : ApplicationServiceTimer
 ```
 
 However, if you are using timers that requires a container scope  (lifetime scope) you might want to use
-[IBackgroundJob](../IBackgroundJob.cs) instead. Read the [documentation](backgroundjobs.md) for more information.
+[IBackgroundJob](../IBackgroundJob.cs) instead. Read the [documentation](Backgroundjobs.md) for more information.

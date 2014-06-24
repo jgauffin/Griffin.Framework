@@ -65,7 +65,7 @@ public class Service1 : ServiceBase
 In the `BackgroundJobManager` there are two properties which controls the lifetime
 
 Name			| Description
-------------------
+---------------| ---------
 StartInterval	| Amount of time before the jobs are executed for the first time (after `Start()` have been invoked).
 ExecuteInterval | Interval between every job execution (for a single job). The interval is reseted when until the job returns.
 
