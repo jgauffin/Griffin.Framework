@@ -11,6 +11,10 @@ using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Cqs.Net
 {
+    enum AuthenticateStep
+    {
+        
+    }
     public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
     {
         private readonly Timer _cleanuptimer;
@@ -43,6 +47,11 @@ namespace Griffin.Cqs.Net
             get { return _client.Certificate; }
             set { _client.Certificate = value; }
         }
+
+        /// <summary>
+        /// Credentials used to login.
+        /// </summary>
+        public ICredentials Credentials { get; set; }
 
 
         public async Task ExecuteAsync<T>(T command) where T : Command

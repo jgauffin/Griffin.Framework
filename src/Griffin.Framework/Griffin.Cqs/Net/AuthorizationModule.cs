@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using Griffin.Cqs.Authorization;
 using Griffin.Net.Server.Modules;
 
 namespace Griffin.Cqs.Net
@@ -23,19 +24,40 @@ namespace Griffin.Cqs.Net
 
         public async Task<ModuleResult> ProcessAsync(IClientContext context)
         {
-            var attribute = context.RequestMessage.GetType().GetCustomAttribute<AuthorizeAttribute>();
-            if (attribute == null)
-                return ModuleResult.Continue;
-
-            if (attribute.Roles.Any(role => Thread.CurrentPrincipal.IsInRole(role)))
+            var attributes = context.RequestMessage.GetType().GetCustomAttributes<AuthorizeAttribute>();
+            foreach (var attribute in attributes)
             {
-                return ModuleResult.Continue;
-            }
+                var entityWithRoles = context.RequestMessage as IEntityWithRoles;
+                if (entityWithRoles != null)
+                {
+                    foreach (var role in entityWithRoles.Roles)
+                    {
+                        if (Thread.CurrentPrincipal.IsInRole(role))
+                            continue;
 
-            context.ResponseMessage =
-                new AuthenticationException(string.Format("You are not allowed to invoke '{0}'.",
-                    context.RequestMessage.GetType().Name));
-            return ModuleResult.SendResponse;
+                        context.ResponseMessage =
+                            new AuthenticationException(
+                                string.Format(
+                                    "You are not allowed to invoke '{0}', as you are not part of role '{1}'.",
+                                    context.RequestMessage.GetType().Name, role));
+                        return ModuleResult.SendResponse;
+                    }
+                }
+
+                foreach (var role in attribute.Roles)
+                {
+                    if (Thread.CurrentPrincipal.IsInRole(role))
+                        continue;
+
+                    context.ResponseMessage =
+                                new AuthenticationException(
+                                    string.Format(
+                                        "You are not allowed to invoke '{0}', as you are not part of role '{1}'.",
+                                        context.RequestMessage.GetType().Name, role));
+                    return ModuleResult.SendResponse;
+                }
+            }
+            return ModuleResult.Continue;
         }
     }
 }

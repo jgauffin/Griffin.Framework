@@ -14,6 +14,7 @@ namespace Griffin.Net.Server.Modules
 
         public ClientContext(ITcpChannel channel, object message)
         {
+            if (channel == null) throw new ArgumentNullException("channel");
             _channel = channel;
             RequestMessage = message;
             ChannelData = Channel.Data;

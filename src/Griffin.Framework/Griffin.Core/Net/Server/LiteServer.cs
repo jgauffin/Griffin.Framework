@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
-using Griffin.Net.Protocols.Serializers;
 using Griffin.Net.Server.Modules;
 
 namespace Griffin.Net.Server
@@ -32,6 +31,8 @@ namespace Griffin.Net.Server
                     new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(configuration.Certificate));
 
             _listener.MessageReceived = OnClientMessage;
+            _listener.ClientConnected += OnClientConnect;
+            _listener.ClientDisconnected += OnClientDisconnect;
         }
 
         /// <summary>
@@ -56,13 +57,66 @@ namespace Griffin.Net.Server
             }
         }
 
+        private async Task ExecuteConnectModules(ITcpChannel channel, ClientContext context)
+        {
+            var result = ModuleResult.Continue;
+
+            for (var i = 0; i < _modules.Length; i++)
+            {
+                var connectMod = _modules[i] as IConnectionEvents;
+                if (connectMod == null)
+                    continue;
+
+                try
+                {
+                    result = await connectMod.OnClientConnected(context);
+                }
+                catch (Exception exception)
+                {
+                    context.Error = exception;
+                    result = ModuleResult.SendResponse;
+                }
+
+                if (result != ModuleResult.Continue)
+                    break;
+            }
+
+            switch (result)
+            {
+                case ModuleResult.Disconnect:
+                    channel.Close();
+                    break;
+                case ModuleResult.SendResponse:
+                    channel.Send(context.ResponseMessage);
+                    break;
+            }
+        }
+
+        private async Task ExecuteDisconnectModules(ITcpChannel channel, ClientContext context)
+        {
+            for (var i = 0; i < _modules.Length; i++)
+            {
+                var connectMod = _modules[i] as IConnectionEvents;
+                if (connectMod == null)
+                    continue;
+
+                try
+                {
+                    await connectMod.OnClientDisconnect(context);
+                }
+                catch (Exception exception)
+                {
+                    //TODO: Alert user of failure
+                }
+            }
+        }
+
         private async Task ExecuteModules(ITcpChannel channel, ClientContext context)
         {
             var result = ModuleResult.Continue;
 
             for (var i = 0; i < _modules.Length; i++)
             {
-                var failed = false;
                 try
                 {
                     await _modules[i].BeginRequestAsync(context);
@@ -115,10 +169,22 @@ namespace Griffin.Net.Server
             }
         }
 
+        private void OnClientConnect(object sender, ClientConnectedEventArgs e)
+        {
+            var context = new ClientContext(e.Channel, null);
+            ExecuteConnectModules(e.Channel, context).Wait();
+        }
+
+        private void OnClientDisconnect(object sender, ClientDisconnectedEventArgs e)
+        {
+            var context = new ClientContext(e.Channel, null);
+            ExecuteDisconnectModules(e.Channel, context).Wait();
+        }
+
         private void OnClientMessage(ITcpChannel channel, object message)
         {
             var context = new ClientContext(channel, message);
-            ExecuteModules(channel, context);
+            ExecuteModules(channel, context).Wait();
         }
     }
 }

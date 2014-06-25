@@ -45,7 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AuthorizeAttribute.cs" />
+    <Compile Include="Authorization\AuthorizeAttribute.cs" />
+    <Compile Include="Authorization\IEntityWithRoles.cs" />
     <Compile Include="BusFailedEventArgs.cs" />
     <Compile Include="CommandHandlerFailedEventArgs.cs" />
     <Compile Include="ICommandExecutor.cs" />
@@ -65,6 +66,15 @@
     <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
     <Compile Include="IQueryExecutor.cs" />
     <Compile Include="IRequestReplyExecutor.cs" />
+    <Compile Include="Net\Authentication\AuthenticationModule.cs" />
+    <Compile Include="Net\Authentication\GenericPrincipalFactory.cs" />
+    <Compile Include="Net\Authentication\IAuthenticationMessageFactory.cs" />
+    <Compile Include="Net\Authentication\IInitalizeAuthentication.cs" />
+    <Compile Include="Net\Authentication\IPasswordHasher.cs" />
+    <Compile Include="Net\Authentication\IPrincipalFactory.cs" />
+    <Compile Include="Net\Authentication\IUserAccount.cs" />
+    <Compile Include="Net\Authentication\IUserFetcher.cs" />
+    <Compile Include="Net\Authentication\PasswordHasher.cs" />
     <Compile Include="Net\AuthorizationModule.cs" />
     <Compile Include="Net\ClientResponse.cs" />
     <Compile Include="Net\CqsClient.cs" />
@@ -93,7 +103,9 @@
     <None Include="ReadMe.md" />
     <None Include="Simple\ReadMe.md" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Net\Authentication\NewFolder1\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

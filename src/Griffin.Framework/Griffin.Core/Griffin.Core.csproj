@@ -290,6 +290,7 @@
     <Compile Include="Net\Server\Modules\ClientContext.cs" />
     <Compile Include="Net\Server\Modules\DictionaryContextData.cs" />
     <Compile Include="Net\Server\Modules\IClientContext.cs" />
+    <Compile Include="Net\Server\Modules\IConnectionEvents.cs" />
     <Compile Include="Net\Server\Modules\IContextData.cs" />
     <Compile Include="Net\Server\Modules\IServerModule.cs" />
     <Compile Include="Net\Server\ModulePipeBuilder.cs" />
