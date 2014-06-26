@@ -10,13 +10,12 @@ namespace Griffin.Cqs.Net.Authentication
     /// <summary>
     /// Uses RNGCryptoServiceProvider to generate the salt and Rfc2898DeriveBytes for hashing.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Uses the class defined here: https://crackstation.net/hashing-security.htm#aspsourcecode
-    /// </para>
-    /// </remarks>
     public class PasswordHasher : IPasswordHasher
     {
+        /// <summary>
+        /// Uses <c>RNGCryptoServiceProvider</c> to generate a 24 byte long salt which is then base64 encoded.
+        /// </summary>
+        /// <returns>Base64 encoded salt</returns>
         public string CreateSalt()
         {
             var salt = new byte[24];
@@ -27,6 +26,15 @@ namespace Griffin.Cqs.Net.Authentication
             return Convert.ToBase64String(salt);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="salt">Typically created with <see cref="CreateSalt"/></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// <para>The hash is generated from "password:salt" which is then hashed using <c>Rfc2898DeriveBytes</c> and 1000 iterations.</para>
+        /// </remarks>
         public string HashPassword(string password, string salt)
         {
             var hashWithSalt = password + ":" + salt;
@@ -35,6 +43,12 @@ namespace Griffin.Cqs.Net.Authentication
                 return Convert.ToBase64String(rfc2898DeriveBytes.GetBytes(256));
         }
 
+        /// <summary>
+        /// Compares two passwords using a compare in length-constant time.
+        /// </summary>
+        /// <param name="hashedPassword1">First hash</param>
+        /// <param name="hashedPassword2">Second hash</param>
+        /// <returns><c>true</c> if they are equal; otherwise false.</returns>
         public bool Compare(string hashedPassword1, string hashedPassword2)
         {
             var hash1 = Convert.FromBase64String(hashedPassword1);

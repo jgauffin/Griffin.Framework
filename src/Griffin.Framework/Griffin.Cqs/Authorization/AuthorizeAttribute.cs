@@ -47,6 +47,11 @@ namespace Griffin.Cqs.Authorization
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class AuthorizeAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizeAttribute"/> class.
+        /// </summary>
+        /// <param name="roles">user roles.</param>
+        /// <exception cref="System.ArgumentNullException">roles</exception>
         public AuthorizeAttribute(params string[] roles)
         {
             if (roles == null) throw new ArgumentNullException("roles");

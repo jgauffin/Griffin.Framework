@@ -3,6 +3,7 @@ using System.Security.Authentication;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Griffin.Cqs.Net.Authentication.Messages;
 using Griffin.Net.Server.Modules;
 
 namespace Griffin.Cqs.Net.Authentication
@@ -112,12 +113,11 @@ namespace Griffin.Cqs.Net.Authentication
                     return ModuleResult.SendResponse;
                 }
 
-                user = await _fetcher.GetAsync(preRequest.UserName);
+                user = await _fetcher.FindUserAsync(preRequest.UserName);
                 var msg = _authenticationMessageFactory.CreateServerPreAuthentication(user);
                 context.ResponseMessage = msg;
                 context.ChannelData["SessionSalt"] = msg.SessionSalt;
                 context.ChannelData["AuthenticationUser"] = user;
-                context.ChannelData["AuthenticationStep"] = 1;
                 return ModuleResult.SendResponse;
             }
             else
@@ -147,9 +147,6 @@ namespace Griffin.Cqs.Net.Authentication
                 }
 
                 var msg = _authenticationMessageFactory.CreateServerPreAuthentication(user);
-                context.ChannelData["SessionSalt"] = msg.SessionSalt;
-                context.ChannelData["AuthenticationStep"] = 1;
-
                 context.ResponseMessage = msg;
                 return ModuleResult.SendResponse;
             }

@@ -38,6 +38,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,9 +70,12 @@
     <Compile Include="Net\Authentication\AuthenticationModule.cs" />
     <Compile Include="Net\Authentication\GenericPrincipalFactory.cs" />
     <Compile Include="Net\Authentication\IAuthenticationMessageFactory.cs" />
-    <Compile Include="Net\Authentication\IInitalizeAuthentication.cs" />
+    <Compile Include="Net\Authentication\Messages\ClientAuthentication.cs" />
+    <Compile Include="Net\Authentication\Messages\IClientAuthentication.cs" />
+    <Compile Include="Net\Authentication\Messages\IClientPreAuthentication.cs" />
     <Compile Include="Net\Authentication\IPasswordHasher.cs" />
     <Compile Include="Net\Authentication\IPrincipalFactory.cs" />
+    <Compile Include="Net\Authentication\Messages\IServerPreAuthentication.cs" />
     <Compile Include="Net\Authentication\IUserAccount.cs" />
     <Compile Include="Net\Authentication\IUserFetcher.cs" />
     <Compile Include="Net\Authentication\PasswordHasher.cs" />
@@ -103,9 +107,7 @@
     <None Include="ReadMe.md" />
     <None Include="Simple\ReadMe.md" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Net\Authentication\NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
