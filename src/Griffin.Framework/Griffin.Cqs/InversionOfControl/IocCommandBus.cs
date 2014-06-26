@@ -20,6 +20,11 @@ namespace Griffin.Cqs.InversionOfControl
     {
         private readonly IContainer _container;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IocCommandBus"/> class.
+        /// </summary>
+        /// <param name="container">Used to lookup <see cref="ICommandHandler{TCommand}"/>.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
         public IocCommandBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");

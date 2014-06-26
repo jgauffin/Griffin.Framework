@@ -7,12 +7,20 @@ namespace Griffin.Cqs.Net
     /// </summary>
     public class ClientResponse
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientResponse"/> class.
+        /// </summary>
+        /// <param name="identifier">Identifier for the incoming message.</param>
+        /// <param name="body">The body, may be null.</param>
         public ClientResponse(Guid identifier, object body)
         {
             Identifier = identifier;
             Body = body;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClientResponse"/> class.
+        /// </summary>
         protected ClientResponse()
         {
             

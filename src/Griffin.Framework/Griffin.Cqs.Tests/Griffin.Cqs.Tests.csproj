@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotNetCqs">
+      <HintPath>..\packages\DotNetCqs.1.0.0\lib\net45\DotNetCqs.dll</HintPath>
+    </Reference>
     <Reference Include="FluentAssertions">
       <HintPath>..\packages\FluentAssertions.3.0.107\lib\net45\FluentAssertions.dll</HintPath>
     </Reference>
@@ -54,11 +57,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\AuthorizeAttributeTests.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="InversionOfControl\CommandInvokedEventArgsTests.cs" />
+    <Compile Include="InversionOfControl\IocRequestReplyBusTests.cs" />
+    <Compile Include="InversionOfControl\IocQueryBusTests.cs" />
+    <Compile Include="InversionOfControl\IocEventBusTests.cs" />
+    <Compile Include="InversionOfControl\IocCommandBusTests.cs" />
+    <Compile Include="InversionOfControl\MemoryQueueTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
+      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
+      <Name>Griffin.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Griffin.Cqs\Griffin.Cqs.csproj">
+      <Project>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</Project>
+      <Name>Griffin.Cqs</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

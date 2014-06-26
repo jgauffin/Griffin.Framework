@@ -17,6 +17,11 @@ namespace Griffin.Data.Mapper.CommandBuilders
         private readonly string _tableName;
         private readonly List<IPropertyMapping> _values = new List<IPropertyMapping>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommandBuilder"/> class.
+        /// </summary>
+        /// <param name="mapper">The mapper.</param>
+        /// <exception cref="System.ArgumentNullException">mapper</exception>
         public CommandBuilder(IEntityMapper mapper)
         {
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -32,6 +37,9 @@ namespace Griffin.Data.Mapper.CommandBuilders
             }
         }
 
+        /// <summary>
+        /// Gets table that the mapping is for
+        /// </summary>
         public string TableName
         {
             get { return _tableName; }
@@ -43,6 +51,17 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// </summary>
         public virtual char ParameterPrefix { get { return '@'; }}
 
+        /// <summary>
+        /// Generate an insert command, should end with a command that returns the insert identity.
+        /// </summary>
+        /// <param name="command">Command to add the query to</param>
+        /// <param name="entity">Entity to store</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// command
+        /// or
+        /// entity
+        /// </exception>
+        /// <exception cref="System.Data.DataException">No values were added to the query for  + entity</exception>
         public virtual void InsertCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
@@ -75,6 +94,20 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 values.Remove(values.Length - 2, 2));
         }
 
+        /// <summary>
+        /// Create an update query from the entity.
+        /// </summary>
+        /// <param name="command">Command to modify</param>
+        /// <param name="entity">Entity to update</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// command
+        /// or
+        /// entity
+        /// </exception>
+        /// <exception cref="System.Data.DataException">
+        /// At least one property (other than primary keys) must be specified.
+        /// or
+        /// </exception>
         public void UpdateCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
@@ -106,6 +139,17 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 @where.Remove(@where.Length - 5, 5));
         }
 
+        /// <summary>
+        /// Modifies the command to execute a DELETE statement
+        /// </summary>
+        /// <param name="command">Command that will be executed after this method call</param>
+        /// <param name="entity">Only primary key properties are used in the WHERE clause</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// command
+        /// or
+        /// entity
+        /// </exception>
+        /// <exception cref="System.Data.DataException"></exception>
         public void DeleteCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
@@ -127,6 +171,14 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 @where.Remove(@where.Length - 5, 5));
         }
 
+        /// <summary>
+        /// Truncate all rows in a table
+        /// </summary>
+        /// <param name="command">Command that will be executed after this method call</param>
+        /// <exception cref="System.ArgumentNullException">command</exception>
+        /// <remarks>
+        /// Will do a DELETE statement
+        /// </remarks>
         public virtual void TruncateCommand(IDbCommand command)
         {
             if (command == null) throw new ArgumentNullException("command");

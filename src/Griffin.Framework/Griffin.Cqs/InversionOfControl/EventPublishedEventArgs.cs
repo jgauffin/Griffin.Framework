@@ -9,6 +9,17 @@ namespace Griffin.Cqs.InversionOfControl
     /// </summary>
     public class EventPublishedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventPublishedEventArgs"/> class.
+        /// </summary>
+        /// <param name="scope">Scope used to resolve subscribers.</param>
+        /// <param name="applicationEvent">Published event.</param>
+        /// <param name="successful">All handlers processed the event successfully.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// scope
+        /// or
+        /// applicationEvent
+        /// </exception>
         public EventPublishedEventArgs(IContainerScope scope, ApplicationEvent applicationEvent, bool successful)
         {
             if (scope == null) throw new ArgumentNullException("scope");
@@ -19,7 +30,14 @@ namespace Griffin.Cqs.InversionOfControl
             Successful = successful;
         }
 
+        /// <summary>
+        /// Scope used to resolve subscribers
+        /// </summary>
         public IContainerScope Scope { get; private set; }
+
+        /// <summary>
+        /// Published event
+        /// </summary>
         public ApplicationEvent ApplicationEvent { get; private set; }
 
         /// <summary>

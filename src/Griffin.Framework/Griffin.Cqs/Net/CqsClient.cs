@@ -11,10 +11,9 @@ using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Cqs.Net
 {
-    enum AuthenticateStep
-    {
-        
-    }
+    /// <summary>
+    /// Client used to talk with the server defined in the <c>Griffin.Cqs.Server</c> nuget package.
+    /// </summary>
     public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
     {
         private readonly Timer _cleanuptimer;
@@ -22,6 +21,9 @@ namespace Griffin.Cqs.Net
         private readonly ConcurrentDictionary<Guid, Waiter> _response = new ConcurrentDictionary<Guid, Waiter>();
         private IPEndPoint _endPoint;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CqsClient"/> class.
+        /// </summary>
         public CqsClient()
         {
             _client = new ChannelTcpClient<object>(
@@ -31,6 +33,10 @@ namespace Griffin.Cqs.Net
             _cleanuptimer = new Timer(OnCleanup, 0, 10000, 10000);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CqsClient"/> class.
+        /// </summary>
+        /// <param name="serializer">Serializer to be used for the transported messages.</param>
         public CqsClient(Func<IMessageSerializer> serializer)
         {
             _client = new ChannelTcpClient<object>(new MicroMessageEncoder(serializer()),
@@ -53,7 +59,12 @@ namespace Griffin.Cqs.Net
         /// </summary>
         public ICredentials Credentials { get; set; }
 
-
+        /// <summary>
+        /// Execute a command and wait for result (i.e. exception for failure or just return for success)
+        /// </summary>
+        /// <typeparam name="T">Type of command</typeparam>
+        /// <param name="command">command object</param>
+        /// <returns>completion task</returns>
         public async Task ExecuteAsync<T>(T command) where T : Command
         {
             await EnsureConnected();
@@ -71,6 +82,12 @@ namespace Griffin.Cqs.Net
             _cleanuptimer.Dispose();
         }
 
+        /// <summary>
+        /// Publishes an application event (at server side)
+        /// </summary>
+        /// <typeparam name="TApplicationEvent">The type of the application event.</typeparam>
+        /// <param name="e">event to publish.</param>
+        /// <returns>completion task</returns>
         public async Task PublishAsync<TApplicationEvent>(TApplicationEvent e)
             where TApplicationEvent : ApplicationEvent
         {
@@ -81,6 +98,12 @@ namespace Griffin.Cqs.Net
             await waiter.Task;
         }
 
+        /// <summary>
+        /// Queries the asynchronous.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="query">query to get a response for.</param>
+        /// <returns>completion task</returns>
         public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
         {
             await EnsureConnected();
@@ -91,6 +114,12 @@ namespace Griffin.Cqs.Net
             return ((dynamic) waiter.Task).Result;
         }
 
+        /// <summary>
+        /// Execute a request and wait for the reply
+        /// </summary>
+        /// <typeparam name="TReply">The type of the reply.</typeparam>
+        /// <param name="request">Request to get a reply for.</param>
+        /// <returns>completion task</returns>
         public async Task<TReply> ExecuteAsync<TReply>(Request<TReply> request)
         {
             await EnsureConnected();
@@ -101,6 +130,12 @@ namespace Griffin.Cqs.Net
             return ((dynamic) waiter.Task).Result;
         }
 
+        /// <summary>
+        /// Start client (will autoconnect if getting disconnected)
+        /// </summary>
+        /// <param name="address">The address for the CQS server.</param>
+        /// <param name="port">The port that the CQS server is listening on.</param>
+        /// <returns></returns>
         public async Task StartAsync(IPAddress address, int port)
         {
             _endPoint = new IPEndPoint(address, port);

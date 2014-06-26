@@ -26,6 +26,20 @@ namespace Griffin.Data.Mapper
         private IDataReader _reader;
         private bool _hasRead = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdoNetEntityEnumerator{TEntity}"/> class.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="reader">The reader.</param>
+        /// <param name="mapper">The mapper.</param>
+        /// <param name="ownsConnection">if set to <c>true</c> [owns connection].</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// command
+        /// or
+        /// reader
+        /// or
+        /// mapper
+        /// </exception>
         public AdoNetEntityEnumerator(IDbCommand command, IDataReader reader, IEntityMapper mapper, bool ownsConnection)
         {
             if (command == null) throw new ArgumentNullException("command");

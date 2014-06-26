@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -19,6 +20,11 @@ namespace Griffin.Cqs.InversionOfControl
     {
         private readonly IContainer _container;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IocEventBus"/> class.
+        /// </summary>
+        /// <param name="container">Used to resolve <c><![CDATA[IApplicationEventSubscriber<TApplicationEvent>]]></c>.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
         public IocEventBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");
@@ -41,18 +47,31 @@ namespace Griffin.Cqs.InversionOfControl
             {
                 var implementations = scope.ResolveAll<IApplicationEventSubscriber<TApplicationEvent>>();
                 var tasks = implementations.Select(x => x.HandleAsync(e));
+                Task task = null;
                 try
                 {
-                    await Task.WhenAll(tasks);
+                    task = Task.WhenAll(tasks);
+                    await task;
                     EventPublished(this, new EventPublishedEventArgs(scope, e, true));
                 }
-                catch
+                catch (Exception exception)
                 {
                     EventPublished(this, new EventPublishedEventArgs(scope, e, false));
-                    throw;
+                    throw task.Exception;
                 }
             }
         }
+
+      
+        /// <summary>
+        ///     A specific handler failed to consume the application event.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         We will not try to invoke the event again as one or more handlers may have consumed the event successfully.
+        ///     </para>
+        /// </remarks>
+        public event EventHandler<EventHandlerFailedEventArgs> HandlerFailed = delegate { };
 
         /// <summary>
         ///     Event have been executed and the scope will be disposed after this event has been triggered.

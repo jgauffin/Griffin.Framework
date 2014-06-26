@@ -22,6 +22,11 @@ namespace Griffin.Cqs.InversionOfControl
     {
         private readonly IContainer _container;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IocRequestReplyBus"/> class.
+        /// </summary>
+        /// <param name="container">Used to resolve <c><![CDATA[IRequestHandler<,>]]></c>.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
         public IocRequestReplyBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");

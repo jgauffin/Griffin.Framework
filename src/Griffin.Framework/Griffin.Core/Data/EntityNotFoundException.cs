@@ -17,6 +17,12 @@ namespace Griffin.Data
         private readonly string _commandText;
         private readonly string _parameters;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityNotFoundException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="command">The command that was executed to find an entity.</param>
+        /// <exception cref="System.ArgumentNullException">command</exception>
         public EntityNotFoundException(string message, IDbCommand command)
             : base(message)
         {
@@ -28,6 +34,17 @@ namespace Griffin.Data
                     .Select(x => x.ParameterName + "=" + x.Value));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityNotFoundException"/> class.
+        /// </summary>
+        /// <param name="description">The description.</param>
+        /// <param name="command">The command.</param>
+        /// <param name="inner">The inner.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// description
+        /// or
+        /// inner
+        /// </exception>
         public EntityNotFoundException(string description, IDbCommand command, Exception inner)
             : base(description, inner)
         {
@@ -40,6 +57,11 @@ namespace Griffin.Data
                     .Select(x => x.ParameterName + "=" + x.Value));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityNotFoundException"/> class.
+        /// </summary>
+        /// <param name="info">The data necessary to serialize or deserialize an object.</param>
+        /// <param name="context">Description of the source and destination of the specified serialized stream.</param>
         public EntityNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

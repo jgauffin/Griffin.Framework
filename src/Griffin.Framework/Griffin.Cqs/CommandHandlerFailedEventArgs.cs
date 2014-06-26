@@ -9,6 +9,19 @@ namespace Griffin.Cqs
     /// </summary>
     public class CommandHandlerFailedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommandHandlerFailedEventArgs"/> class.
+        /// </summary>
+        /// <param name="command">command that was invoked.</param>
+        /// <param name="handler">handler that failed.</param>
+        /// <param name="exception">exception that the handler threw.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// command
+        /// or
+        /// handler
+        /// or
+        /// exception
+        /// </exception>
         public CommandHandlerFailedEventArgs(Command command, object handler, Exception exception)
         {
             if (command == null) throw new ArgumentNullException("command");

@@ -12,6 +12,11 @@ namespace Griffin.Core.Unity
     {
         private readonly IUnityContainer _unityChildContainer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnityChildContainerAdapter"/> class.
+        /// </summary>
+        /// <param name="unityChildContainer">The unity child container.</param>
+        /// <exception cref="System.ArgumentNullException">unityChildContainer</exception>
         public UnityChildContainerAdapter(IUnityContainer unityChildContainer)
         {
             if (unityChildContainer == null) throw new ArgumentNullException("unityChildContainer");

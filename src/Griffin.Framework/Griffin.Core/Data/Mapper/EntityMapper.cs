@@ -76,6 +76,10 @@ namespace Griffin.Data.Mapper
         private readonly IDictionary<string, IPropertyMapping> _keys = new Dictionary<string, IPropertyMapping>();
         private ICommandBuilder _builder = null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityMapper{TEntity}"/> class.
+        /// </summary>
+        /// <param name="tableName">Name of the table.</param>
         public EntityMapper(string tableName)
         {
             _factoryMethod = CreateInstanceFactory();
@@ -259,6 +263,11 @@ namespace Griffin.Data.Mapper
             return _factoryMethod();
         }
 
+        /// <summary>
+        /// Generate a delegate which can create the entity blasingly fast (compared to <c>Activator.CreateInstance()</c>).
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Griffin.Data.Mapper.MappingException">Failed to find a default constructor for ' + typeof (TEntity).FullName + '.</exception>
         public static Func<TEntity> CreateInstanceFactory()
         {
             //credits: http://stackoverflow.com/questions/6582259/fast-creation-of-objects-instead-of-activator-createinstancetype

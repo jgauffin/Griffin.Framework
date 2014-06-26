@@ -17,6 +17,11 @@ namespace Griffin.ApplicationServices
     {
         private readonly IContainer _container;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IocAppServiceLocator"/> class.
+        /// </summary>
+        /// <param name="container">Used to resolve <see cref="IApplicationService"/>.</param>
+        /// <exception cref="System.ArgumentNullException">container</exception>
         public IocAppServiceLocator(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");

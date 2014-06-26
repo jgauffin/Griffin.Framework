@@ -10,12 +10,21 @@ namespace Griffin.Cqs
     [Serializable]
     public class CqsHandlerMissingException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CqsHandlerMissingException"/> class.
+        /// </summary>
+        /// <param name="type">message that a handler was not found for.</param>
         public CqsHandlerMissingException(Type type)
             : base(string.Format("Missing a handler for '{0}'.", type.FullName))
         {
             CqsType = type.FullName;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CqsHandlerMissingException"/> class.
+        /// </summary>
+        /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>
+        /// <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.</param>
         protected CqsHandlerMissingException(
             SerializationInfo info,
             StreamingContext context)

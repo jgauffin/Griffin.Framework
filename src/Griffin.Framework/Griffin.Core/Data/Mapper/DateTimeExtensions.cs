@@ -7,6 +7,9 @@ namespace Griffin.Data.Mapper
     /// </summary>
     public static class DateTimeExtensions
     {
+        /// <summary>
+        /// Unix epoch time
+        /// </summary>
         public static readonly DateTime UnixDate = new DateTime(1970, 1, 1);
 
         /// <summary>

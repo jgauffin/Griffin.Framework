@@ -8,6 +8,12 @@ namespace Griffin.ApplicationServices
     /// </summary>
     public class ScopeClosingEventArgs : EventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScopeClosingEventArgs"/> class.
+        /// </summary>
+        /// <param name="scope">scope that is being closed.</param>
+        /// <param name="successful">job was executed successfully.</param>
+        /// <exception cref="System.ArgumentNullException">scope</exception>
         public ScopeClosingEventArgs(IContainerScope scope, bool successful)
         {
             if (scope == null) throw new ArgumentNullException("scope");

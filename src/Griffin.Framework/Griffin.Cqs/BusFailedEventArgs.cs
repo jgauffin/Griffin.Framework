@@ -14,6 +14,11 @@ namespace Griffin.Cqs
     {
         private readonly Exception _exception;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BusFailedEventArgs"/> class.
+        /// </summary>
+        /// <param name="exception">exception that the bus threw.</param>
+        /// <exception cref="System.ArgumentNullException">exception</exception>
         public BusFailedEventArgs(Exception exception)
         {
             if (exception == null) throw new ArgumentNullException("exception");

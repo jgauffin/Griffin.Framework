@@ -89,7 +89,6 @@
     <Compile Include="Data\Mapper\EntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMapperBase.cs" />
     <Compile Include="Data\Mapper\EntityMappingProvider.cs" />
-    <Compile Include="Data\Mapper\ICrudMapper.cs" />
     <Compile Include="Data\Mapper\IEntityMapper.cs" />
     <Compile Include="Data\Mapper\IMappingProvider.cs" />
     <Compile Include="Data\Mapper\IPropertyMapping.cs" />
@@ -285,16 +284,6 @@
     <Compile Include="Net\Protocols\Strings\StringEncoder.cs" />
     <Compile Include="Net\Channels\TcpChannelFactory.cs" />
     <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
-    <Compile Include="Net\Server\LiteServerConfiguration.cs" />
-    <Compile Include="Net\Server\LiteServer.cs" />
-    <Compile Include="Net\Server\Modules\ClientContext.cs" />
-    <Compile Include="Net\Server\Modules\DictionaryContextData.cs" />
-    <Compile Include="Net\Server\Modules\IClientContext.cs" />
-    <Compile Include="Net\Server\Modules\IConnectionEvents.cs" />
-    <Compile Include="Net\Server\Modules\IContextData.cs" />
-    <Compile Include="Net\Server\Modules\IServerModule.cs" />
-    <Compile Include="Net\Server\ModulePipeBuilder.cs" />
-    <Compile Include="Net\Server\Modules\ModuleResult.cs" />
     <Compile Include="ObjectExtensions.cs" />
     <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

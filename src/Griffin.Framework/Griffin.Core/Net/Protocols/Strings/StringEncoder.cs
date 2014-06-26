@@ -34,7 +34,7 @@ namespace Griffin.Net.Protocols.Strings
         /// </summary>
         /// <param name="buffer">
         ///     Do note that there are not buffer attached to the structure, you have to assign one yourself using
-        ///     <see cref="ISocketBuffer.SetBuffer" />. This choice was made
+        ///     <see cref="ISocketBuffer.SetBuffer(int,int)" />. This choice was made
         ///     to prevent unnecessary copy operations.
         /// </param>
         /// <remarks>
