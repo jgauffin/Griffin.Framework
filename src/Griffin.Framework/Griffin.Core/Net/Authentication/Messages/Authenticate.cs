@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
+namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
     /// Step three, Used by the client to prove that it knows the password (i.e. is who it states that it is)
@@ -10,7 +10,7 @@ namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
     /// <para>Uses the data contract attributes</para>
     /// </remarks>
     [DataContract, Serializable]
-    public class ClientAuthentication : IClientAuthentication
+    public class Authenticate : IAuthenticate
     {
         /// <summary>
         /// On the client, salt the password with the account salt and hash it (keep this as " client shared secret"),
@@ -18,5 +18,16 @@ namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
         /// </summary>
         [DataMember(Order = 1)]
         public string AuthenticationToken { get; set; }
+
+        /// <summary>
+        ///     Salt that the client want the server to use to prove it's identity
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         The server must hash the password hash with this hash to prove that it's the real server.
+        ///     </para>
+        /// </remarks>
+        [DataMember(Order = 2)]
+        public string ClientSalt { get; set; }
     }
 }

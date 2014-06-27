@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
+namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
     ///     Default implementation supporting data contracts
     /// </summary>
     [DataContract, Serializable]
-    public class ServerPreAuthentication : IServerPreAuthentication
+    public class AuthenticationHandshakeReply : IAuthenticationHandshakeReply
     {
         /// <summary>
         ///     Salt that you have used to salt the password before storing it in the database.

@@ -1,4 +1,6 @@
-﻿namespace Griffin.Net.LiteServer.Modules.Authentication
+﻿using Griffin.Security;
+
+namespace Griffin.Net.Authentication
 {
     /// <summary>
     ///     Implement this class with your own user account class.

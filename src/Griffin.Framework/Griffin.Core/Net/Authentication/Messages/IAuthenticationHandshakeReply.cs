@@ -1,12 +1,12 @@
-﻿namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
+﻿namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
     /// Step two, server responds with salts.
     /// </summary>
     /// <remarks>
-    /// Should be the reply from the server on the <see cref="IClientPreAuthentication"/> message.
+    /// Should be the reply from the server on the <see cref="IAuthenticationHandshake"/> message.
     /// </remarks>
-    public interface IServerPreAuthentication
+    public interface IAuthenticationHandshakeReply
     {
         /// <summary>
         /// Salt that you have used to salt the password before storing it in the database.

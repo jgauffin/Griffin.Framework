@@ -86,7 +86,14 @@ namespace Griffin
             if (type.Assembly.IsDynamic)
                 throw new InvalidOperationException("Can't use dynamic assemblies.");
 
-            return string.Format(type.FullName + ", " + type.Assembly.GetName().Name);
+            int pos = type.AssemblyQualifiedName.IndexOf(',');
+            if (pos == -1)
+                return type.AssemblyQualifiedName;
+            pos = type.AssemblyQualifiedName.IndexOf(',', pos + 1);
+            if (pos == -1)
+                return type.AssemblyQualifiedName;
+
+            return type.AssemblyQualifiedName.Substring(0, pos);
         }
 
         /// <summary>
@@ -97,7 +104,18 @@ namespace Griffin
         public static string GetSimplifiedAssemblyQualifiedName(this Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
-            return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
+            if (type.Assembly.IsDynamic)
+                throw new InvalidOperationException("Can't use dynamic assemblies.");
+
+            return type.AssemblyQualifiedName;
+            int pos = type.AssemblyQualifiedName.IndexOf(',');
+            if (pos == -1)
+                return type.AssemblyQualifiedName;
+            pos = type.AssemblyQualifiedName.IndexOf(',', pos + 1);
+            if (pos == -1)
+                return type.AssemblyQualifiedName;
+
+            return type.AssemblyQualifiedName.Substring(0, pos);
         }
     }
 }

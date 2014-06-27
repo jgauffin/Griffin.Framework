@@ -13,8 +13,12 @@ namespace Griffin.Net
     /// <summary>
     ///     Can talk with messaging servers (i.e. servers based on <see cref="ChannelTcpListener" />).
     /// </summary>
-    /// <typeparam name="T">Type of message to receive</typeparam>
-    public class ChannelTcpClient<T> : IDisposable
+    /// <remarks>
+    /// <para>
+    /// You can use the <see cref="Filter"/> property if you want to have a callback for incoming messages.
+    /// </para>
+    /// </remarks>
+    public class ChannelTcpClient : IDisposable
     {
         private readonly SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
         private readonly SemaphoreSlim _connectSemaphore = new SemaphoreSlim(0, 1);
@@ -32,7 +36,7 @@ namespace Griffin.Net
         private Exception _sendException;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ChannelTcpClient{T}" /> class.
+        ///     Initializes a new instance of the <see cref="ChannelTcpClient" /> class.
         /// </summary>
         /// <param name="encoder">Used to encode outbound messages.</param>
         /// <param name="decoder">Used to decode inbound messages.</param>
@@ -42,7 +46,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ChannelTcpClient{T}" /> class.
+        ///     Initializes a new instance of the <see cref="ChannelTcpClient" /> class.
         /// </summary>
         /// <param name="encoder">Used to encode outbound messages.</param>
         /// <param name="decoder">Used to decode inbound messages.</param>
@@ -78,7 +82,7 @@ namespace Griffin.Net
         /// </summary>
         public bool IsConnected
         {
-            get { return _channel.IsConnected; }
+            get { return _channel != null && _channel.IsConnected; }
         }
 
         /// <summary>
@@ -190,9 +194,25 @@ namespace Griffin.Net
         ///     Receive a message
         /// </summary>
         /// <returns>Decoded message</returns>
-        public Task<T> ReceiveAsync()
+        public Task<object> ReceiveAsync()
         {
             return ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
+        }
+
+        /// <summary>
+        ///     Receive a message
+        /// </summary>
+        /// <returns>Decoded message</returns>
+        public async Task<T> ReceiveAsync<T>() where  T : class
+        {
+            var item = await ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
+            if (item == null)
+                return null;
+            var casted = item as T;
+            if (casted == null)
+                throw new InvalidCastException(string.Format("Failed to cast '{0}' as '{1}'.", item.GetType().FullName, typeof(T).FullName));
+
+            return casted;
         }
 
         /// <summary>
@@ -202,7 +222,7 @@ namespace Griffin.Net
         /// <returns>
         ///     Decoded message if successful; <c>default(T)</c> if cancellation is requested.
         /// </returns>
-        public Task<T> ReceiveAsync(CancellationToken cancellation)
+        public Task<object> ReceiveAsync(CancellationToken cancellation)
         {
             return ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
         }
@@ -216,7 +236,7 @@ namespace Griffin.Net
         ///     Was signalled that something have been recieved, but found nothing in
         ///     the in queue
         /// </exception>
-        public Task<T> ReceiveAsync(TimeSpan timeout)
+        public Task<object> ReceiveAsync(TimeSpan timeout)
         {
             return ReceiveAsync(timeout, CancellationToken.None);
         }
@@ -233,11 +253,11 @@ namespace Griffin.Net
         ///     Was signalled that something have been recieved, but found nothing in
         ///     the in queue
         /// </exception>
-        public async Task<T> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
+        public async Task<object> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
         {
             await _readSemaphore.WaitAsync(timeout, cancellation);
             if (cancellation.IsCancellationRequested)
-                return default(T);
+                return null;
 
             object item;
             var gotItem = _readItems.TryDequeue(out item);
@@ -253,7 +273,7 @@ namespace Griffin.Net
             if (_readItems.Count > 0)
                 _readSemaphore.Release();
 
-            return (T) item;
+            return item;
         }
 
         /// <summary>
@@ -302,7 +322,7 @@ namespace Griffin.Net
             }
 
 
-            _readItems.Enqueue((T) message);
+            _readItems.Enqueue(message);
             _readSemaphore.Release();
         }
 

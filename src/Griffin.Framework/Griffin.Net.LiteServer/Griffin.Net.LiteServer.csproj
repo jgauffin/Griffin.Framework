@@ -43,24 +43,10 @@
     <Compile Include="LiteServer.cs" />
     <Compile Include="LiteServerConfiguration.cs" />
     <Compile Include="ModulePipeBuilder.cs" />
-    <Compile Include="Modules\Authentication\AuthenticationMessageFactory.cs" />
     <Compile Include="Modules\Authentication\AuthenticationModule.cs" />
     <Compile Include="Modules\Authentication\GenericPrincipalFactory.cs" />
-    <Compile Include="Modules\Authentication\IAuthenticationMessageFactory.cs" />
-    <Compile Include="Modules\Authentication\IPasswordHasher.cs" />
     <Compile Include="Modules\Authentication\IPrincipalFactory.cs" />
-    <Compile Include="Modules\Authentication\IUserAccount.cs" />
     <Compile Include="Modules\Authentication\IUserFetcher.cs" />
-    <Compile Include="Modules\Authentication\Messages\AuthenticationResult.cs" />
-    <Compile Include="Modules\Authentication\Messages\AuthenticationResultState.cs" />
-    <Compile Include="Modules\Authentication\Messages\ClientAuthentication.cs" />
-    <Compile Include="Modules\Authentication\Messages\ClientPreAuthentication.cs" />
-    <Compile Include="Modules\Authentication\Messages\IAuthenticationResult.cs" />
-    <Compile Include="Modules\Authentication\Messages\IClientAuthentication.cs" />
-    <Compile Include="Modules\Authentication\Messages\IClientPreAuthentication.cs" />
-    <Compile Include="Modules\Authentication\Messages\IServerPreAuthentication.cs" />
-    <Compile Include="Modules\Authentication\Messages\ServerPreAuthentication.cs" />
-    <Compile Include="Modules\Authentication\PasswordHasher.cs" />
     <Compile Include="Modules\ClientContext.cs" />
     <Compile Include="Modules\DictionaryContextData.cs" />
     <Compile Include="Modules\IClientContext.cs" />
@@ -71,7 +57,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Modules\Authentication\Messages\ReadMe.md" />
     <None Include="Modules\Authentication\ReadMe.md" />
   </ItemGroup>
   <ItemGroup>

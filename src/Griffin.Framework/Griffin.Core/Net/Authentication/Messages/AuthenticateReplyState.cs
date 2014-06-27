@@ -1,9 +1,9 @@
-﻿namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
+﻿namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
-    /// State for <see cref="IAuthenticationResult"/>
+    /// State for <see cref="IAuthenticateReply"/>
     /// </summary>
-    public enum AuthenticationResultState
+    public enum AuthenticateReplyState
     {
         /// <summary>
         /// Successful login

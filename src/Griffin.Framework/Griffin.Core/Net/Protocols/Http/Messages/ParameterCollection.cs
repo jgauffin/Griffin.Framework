@@ -81,12 +81,17 @@ namespace Griffin.Net.Protocols.Http.Messages
 
             var name = "";
             var oldPos = 0;
+            bool gotEquals = false;
             while (index < value.Length)
             {
                 var ch = value[index];
                 switch (ch)
                 {
                     case '=':
+                        if (gotEquals)
+                            break;
+
+                        gotEquals = true;
                         if (lastCh != '\\')
                         {
                             name = value.Substring(oldPos, index - oldPos).Trim(' ');
@@ -94,6 +99,7 @@ namespace Griffin.Net.Protocols.Http.Messages
                         }
                         break;
                     case ',':
+                        gotEquals = false;
                         if (lastCh != '\\')
                         {
                             target.Add(name, value.Substring(oldPos, index - oldPos).Trim(' ', '"'));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Griffin.Net.Authentication;
 
 namespace Griffin.Net.LiteServer.Modules.Authentication
 {

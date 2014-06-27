@@ -1,7 +1,6 @@
 ﻿Messages
 ===========
 
-
 These messages are the ones that are transferred between the client/server to be able to authenticate.
 
 The authentication process works like this:

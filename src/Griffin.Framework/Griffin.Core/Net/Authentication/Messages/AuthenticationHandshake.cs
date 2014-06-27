@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Griffin.Net.LiteServer.Modules.Authentication.Messages
+namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
     /// Default implementation supporting both DataContract and the old .NET serializers.
     /// </summary>
     [DataContract, Serializable]
-    public class ClientPreAuthentication : IClientPreAuthentication
+    public class AuthenticationHandshake : IAuthenticationHandshake
     {
         /// <summary>
         /// Name of the user that would like to authenticate

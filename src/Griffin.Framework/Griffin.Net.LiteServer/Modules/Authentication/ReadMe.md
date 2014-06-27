@@ -65,6 +65,12 @@ If you are building your own project you can use our hasher directly when your u
 
 This authentication module uses the authentication mechanism [described here](http://stackoverflow.com/q/12254710/70386).
 
+## Definitions
+
+Name | Description
+---- | -----------
+PasswordHash | 
+
 ![Login process image](http://i.stack.imgur.com/cS3Fc.png)
 
 The actual messages have been abstracted away and being created by a factory so that the can be adapted for different types of transport protocols.

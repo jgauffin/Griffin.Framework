@@ -2,15 +2,15 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Griffin.Net.LiteServer.Modules.Authentication
+namespace Griffin.Security
 {
     /// <summary>
-    /// Uses RNGCryptoServiceProvider to generate the salt and Rfc2898DeriveBytes for hashing.
+    ///     Uses <c>RNGCryptoServiceProvider</c> to generate the salt and <c>Rfc2898DeriveBytes</c> for hashing.
     /// </summary>
-    public class PasswordHasher : IPasswordHasher
+    public class PasswordHasherRfc2898 : IPasswordHasher
     {
         /// <summary>
-        /// Uses <c>RNGCryptoServiceProvider</c> to generate a 24 byte long salt which is then base64 encoded.
+        ///     Uses <c>RNGCryptoServiceProvider</c> to generate a 24 byte long salt which is then base64 encoded.
         /// </summary>
         /// <returns>Base64 encoded salt</returns>
         public string CreateSalt()
@@ -24,24 +24,27 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
         }
 
         /// <summary>
-        /// 
+        ///     Hashes password using 1000 iterations
         /// </summary>
-        /// <param name="password"></param>
-        /// <param name="salt">Typically created with <see cref="CreateSalt"/></param>
+        /// <param name="password">Password to hash</param>
+        /// <param name="salt">Typically created with <see cref="CreateSalt" /></param>
         /// <returns></returns>
         /// <remarks>
-        /// <para>The hash is generated from "password:salt" which is then hashed using <c>Rfc2898DeriveBytes</c> and 1000 iterations.</para>
+        ///     <para>
+        ///         The hash is generated from "password:salt" which is then hashed using <c>Rfc2898DeriveBytes</c> and 1000
+        ///         iterations.
+        ///     </para>
         /// </remarks>
         public string HashPassword(string password, string salt)
         {
-            var hashWithSalt = password + ":" + salt;
+            var hashWithSalt = string.Format("{0}:{1}", password, salt);
             var saltBytes = Encoding.UTF8.GetBytes(hashWithSalt);
             using (var rfc2898DeriveBytes = new Rfc2898DeriveBytes(password, saltBytes, 1000))
                 return Convert.ToBase64String(rfc2898DeriveBytes.GetBytes(256));
         }
 
         /// <summary>
-        /// Compares two passwords using a compare in length-constant time.
+        ///     Compares two passwords using a compare in length-constant time.
         /// </summary>
         /// <param name="hashedPassword1">First hash</param>
         /// <param name="hashedPassword2">Second hash</param>
@@ -54,21 +57,21 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
         }
 
         /// <summary>
-        /// Compares two byte arrays in length-constant time. This comparison
-        /// method is used so that password hashes cannot be extracted from
-        /// on-line systems using a timing attack and then attacked off-line.
+        ///     Compares two byte arrays in length-constant time. This comparison
+        ///     method is used so that password hashes cannot be extracted from
+        ///     on-line systems using a timing attack and then attacked off-line.
         /// </summary>
         /// <param name="a">The first byte array.</param>
         /// <param name="b">The second byte array.</param>
         /// <returns>True if both byte arrays are equal. False otherwise.</returns>
         /// <remarks>
-        /// Credits: https://crackstation.net/hashing-security.htm#aspsourcecode
+        ///     Credits: https://crackstation.net/hashing-security.htm#aspsourcecode
         /// </remarks>
-        private static bool SlowEquals(byte[] a, byte[] b)
+        public static bool SlowEquals(byte[] a, byte[] b)
         {
-            uint diff = (uint)a.Length ^ (uint)b.Length;
-            for (int i = 0; i < a.Length && i < b.Length; i++)
-                diff |= (uint)(a[i] ^ b[i]);
+            var diff = (uint) a.Length ^ (uint) b.Length;
+            for (var i = 0; i < a.Length && i < b.Length; i++)
+                diff |= (uint) (a[i] ^ b[i]);
             return diff == 0;
         }
     }

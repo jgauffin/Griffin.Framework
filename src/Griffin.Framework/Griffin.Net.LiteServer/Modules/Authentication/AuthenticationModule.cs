@@ -3,7 +3,9 @@ using System.Security.Authentication;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Griffin.Net.LiteServer.Modules.Authentication.Messages;
+using Griffin.Net.Authentication;
+using Griffin.Net.Authentication.Messages;
+using Griffin.Security;
 
 namespace Griffin.Net.LiteServer.Modules.Authentication
 {
@@ -14,7 +16,7 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
     {
         private readonly IUserFetcher _fetcher;
         private IAuthenticationMessageFactory _authenticationMessageFactory;
-        private IPasswordHasher _passwordHasher = new PasswordHasher();
+        private IPasswordHasher _passwordHasher = new PasswordHasherRfc2898();
         private IPrincipalFactory _principalFactory;
 
         /// <summary>
@@ -134,7 +136,7 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
             var user = context.ChannelData["AuthenticationUser"] as IUserAccount;
             if (user == null)
             {
-                var preRequest = context.RequestMessage as IClientPreAuthentication;
+                var preRequest = context.RequestMessage as IAuthenticationHandshake;
                 if (preRequest == null)
                 {
                     context.ResponseMessage =
@@ -152,7 +154,7 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
             }
 
 
-            var authenticateRequest = context.RequestMessage as IClientAuthentication;
+            var authenticateRequest = context.RequestMessage as IAuthenticate;
             if (authenticateRequest == null)
             {
                 context.ResponseMessage =
@@ -177,21 +179,22 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
         }
 
         private async Task<object> AuthenticateUser(IClientContext context, IUserAccount user, string sessionSalt,
-            IClientAuthentication authenticateRequest)
+            IAuthenticate authenticateRequest)
         {
             object response;
             if (user.IsLocked)
-                response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticationResultState.Locked);
+                response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticateReplyState.Locked, null);
             else
             {
                 var serverHash = _passwordHasher.HashPassword(user.HashedPassword, sessionSalt);
                 if (_passwordHasher.Compare(serverHash, authenticateRequest.AuthenticationToken))
                 {
                     context.ChannelData["Principal"] = await PrincipalFactory.CreatePrincipalAsync(user);
-                    response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticationResultState.Success);
+                    var proof = _passwordHasher.HashPassword(user.HashedPassword, authenticateRequest.ClientSalt);
+                    response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticateReplyState.Success, proof);
                 }
                 else
-                    response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticationResultState.IncorrectLogin);
+                    response = _authenticationMessageFactory.CreateAuthenticationResult(AuthenticateReplyState.IncorrectLogin, null);
             }
             return response;
         }

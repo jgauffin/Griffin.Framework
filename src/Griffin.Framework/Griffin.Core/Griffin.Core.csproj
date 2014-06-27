@@ -135,6 +135,18 @@
     <Compile Include="Logging\Providers\NoFilter.cs" />
     <Compile Include="Logging\Providers\NullLogProvider.cs" />
     <Compile Include="MethodInfoExtensions.cs" />
+    <Compile Include="Net\Authentication\IUserAccount.cs" />
+    <Compile Include="Net\Authentication\Messages\Authenticate.cs" />
+    <Compile Include="Net\Authentication\Messages\AuthenticateReply.cs" />
+    <Compile Include="Net\Authentication\Messages\AuthenticateReplyState.cs" />
+    <Compile Include="Net\Authentication\Messages\AuthenticationMessageFactory.cs" />
+    <Compile Include="Net\Authentication\Messages\AuthenticationHandshake.cs" />
+    <Compile Include="Net\Authentication\Messages\AuthenticationHandshakeReply.cs" />
+    <Compile Include="Net\Authentication\Messages\IAuthenticate.cs" />
+    <Compile Include="Net\Authentication\Messages\IAuthenticateReply.cs" />
+    <Compile Include="Net\Authentication\Messages\IAuthenticationMessageFactory.cs" />
+    <Compile Include="Net\Authentication\Messages\IAuthenticationHandshake.cs" />
+    <Compile Include="Net\Authentication\Messages\IAuthenticationHandshakeReply.cs" />
     <Compile Include="Net\ChannelException.cs" />
     <Compile Include="Net\ChannelTcpClient.cs" />
     <Compile Include="Net\Buffers\BufferSlice.cs" />
@@ -288,6 +300,8 @@
     <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueFullException.cs" />
+    <Compile Include="Security\IPasswordHasher.cs" />
+    <Compile Include="Security\PasswordHasherRfc2898.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>
@@ -298,6 +312,7 @@
     <None Include="Container\ReadMe.md" />
     <None Include="Data\ReadMe.md" />
     <None Include="Logging\ReadMe.md" />
+    <None Include="Net\Authentication\Messages\ReadMe.md" />
     <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
     <None Include="Net\Channels\ReadMe.md" />
     <None Include="Net\Protocols\MicroMsg\ReadMe.md" />
