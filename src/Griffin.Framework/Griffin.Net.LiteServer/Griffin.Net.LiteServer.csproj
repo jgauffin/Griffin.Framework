@@ -43,7 +43,7 @@
     <Compile Include="LiteServer.cs" />
     <Compile Include="LiteServerConfiguration.cs" />
     <Compile Include="ModulePipeBuilder.cs" />
-    <Compile Include="Modules\Authentication\AuthenticationModule.cs" />
+    <Compile Include="Modules\Authentication\HashAuthenticationModule.cs" />
     <Compile Include="Modules\Authentication\GenericPrincipalFactory.cs" />
     <Compile Include="Modules\Authentication\IPrincipalFactory.cs" />
     <Compile Include="Modules\Authentication\IUserFetcher.cs" />

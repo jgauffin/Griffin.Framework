@@ -9,8 +9,10 @@ using DotNetCqs;
 using Griffin.Cqs.Net;
 using Griffin.Net;
 using Griffin.Net.Authentication;
+using Griffin.Net.Authentication.HashAuthenticator;
 using Griffin.Net.Channels;
 using Griffin.Net.LiteServer;
+using Griffin.Net.LiteServer.Modules;
 using Griffin.Net.LiteServer.Modules.Authentication;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Http;
@@ -35,12 +37,13 @@ namespace HttpServerTests
             var certificate = new X509Certificate2("GriffinNetworkingTemp.pfx", "mamma");
 
             var config = new LiteServerConfiguration();
-            config.Modules.AddAuthentication(new AuthenticationModule(new FakeFetcher()));
+            config.Modules.AddAuthentication(new HashAuthenticationModule(new FakeFetcher()));
+            config.Modules.AddAuthorization(new MustAlwaysAuthenticate());
             var server = new LiteServer(config);
             server.Start(IPAddress.Loopback, 0);
 
             var client = new CqsClient(() => new DataContractMessageSerializer());
-            client.Credential = new NetworkCredential("jonas", "mamma");
+            client.Authenticator = new HashClientAuthenticator(new NetworkCredential("jonas", "mamma"));
             client.StartAsync(IPAddress.Loopback, server.LocalPort).Wait();
             client.ExecuteAsync(new HelloWorld()).Wait();
 
@@ -107,6 +110,24 @@ namespace HttpServerTests
             if (request.HttpVersion == "HTTP/1.0")
                 channel.Close();
 
+        }
+    }
+
+    internal class MustAlwaysAuthenticate : IServerModule
+    {
+        public async Task BeginRequestAsync(IClientContext context)
+        {
+            
+        }
+
+        public async Task EndRequest(IClientContext context)
+        {
+        }
+
+        public async Task<ModuleResult> ProcessAsync(IClientContext context)
+        {
+            context.ResponseMessage = new AuthenticationRequiredException("Must authenticate");
+            return ModuleResult.SendResponse;
         }
     }
 

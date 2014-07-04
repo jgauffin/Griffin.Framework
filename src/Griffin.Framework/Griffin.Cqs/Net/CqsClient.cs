@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Net;
+using Griffin.Net.Authentication;
 using Griffin.Net.Authentication.Messages;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.MicroMsg;
@@ -27,6 +28,8 @@ namespace Griffin.Cqs.Net
         private NetworkCredential _credentials;
         private IPasswordHasher _hasher;
         private IAuthenticationMessageFactory _authenticationMessageFactory = new AuthenticationMessageFactory();
+        private bool _continueAuthenticate;
+        private object _lastSentItem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CqsClient"/> class.
@@ -62,48 +65,21 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        /// Used to build messages that are being sent over the network for authentication.
+        ///     Set if you want to authenticate against a server.
         /// </summary>
-        /// <seealso cref="EnableAuthentication"/>
-        public IAuthenticationMessageFactory AuthenticationMessageFactory
+        public IClientAuthenticator Authenticator
         {
-            get { return _authenticationMessageFactory; }
-            set { _authenticationMessageFactory = value; }
+            get { return _client.Authenticator; }
+            set { _client.Authenticator = value; }
         }
 
-        /// <summary>
-        /// Use this method if you want to use the built in authentication library.
-        /// </summary>
-        /// <param name="credential">Credential used by the user to authenticate.</param>
-        /// <remarks>
-        /// <para>
-        /// To make this work you need to have stored passwords in your database by hashing them with a salt. The hash must have been
-        /// created using <c>Rfc2898DeriveBytes</c> with 1000 iterations upon the string "password:hash". You you are using another 
-        /// way of storing passwords in your DB you need to configure the authentication process using <see cref="ConfigureAuthentication"/>.
-        /// </para>
-        /// </remarks>
-        public NetworkCredential Credential
+        private int AuthenticateBytes(ITcpChannel channel, ISocketBuffer buffer)
         {
-            get { return _credentials; }
-            set
-            {
-                if (value == null) throw new ArgumentNullException("value");
-                _credentials = value;
-            }
-        }
-
-        /// <summary>
-        /// Used to configure how passwords are being hashed and which messages should be used when transfering authentication information
-        /// over the network.
-        /// </summary>
-        /// <param name="hasher">Password hasher, the dault one is <see cref="PasswordHasherRfc2898"/>.</param>
-        /// <param name="messageFactory">Message factory, the default on is <see cref="AuthenticationMessageFactory"/>.</param>
-        public void ConfigureAuthentication(IPasswordHasher hasher, IAuthenticationMessageFactory messageFactory)
-        {
-            if (hasher == null) throw new ArgumentNullException("hasher");
-            if (messageFactory == null) throw new ArgumentNullException("messageFactory");
-            _authenticationMessageFactory = messageFactory;
-            _hasher = hasher;
+            bool completed;
+            var bytesProcessed = Authenticator.Process(channel, buffer, out completed);
+            if (completed)
+                channel.BufferPreProcessor = null;
+            return bytesProcessed;
         }
 
 
@@ -118,7 +94,7 @@ namespace Griffin.Cqs.Net
             await EnsureConnected();
             var waiter = new Waiter<T>(command.CommandId);
             _response[command.CommandId] = waiter;
-            await _client.SendAsync(command);
+            await SendItem(command);
             await waiter.Task;
         }
 
@@ -142,7 +118,7 @@ namespace Griffin.Cqs.Net
             await EnsureConnected();
             var waiter = new Waiter<TApplicationEvent>(e.EventId);
             _response[e.EventId] = waiter;
-            await _client.SendAsync(e);
+            await SendItem(e);
             await waiter.Task;
         }
 
@@ -157,7 +133,7 @@ namespace Griffin.Cqs.Net
             await EnsureConnected();
             var waiter = new Waiter<TResult>(query.QueryId);
             _response[query.QueryId] = waiter;
-            await _client.SendAsync(query);
+            await SendItem(query);
             await waiter.Task;
             return ((dynamic)waiter.Task).Result;
         }
@@ -173,9 +149,15 @@ namespace Griffin.Cqs.Net
             await EnsureConnected();
             var waiter = new Waiter<TReply>(request.RequestId);
             _response[request.RequestId] = waiter;
-            await _client.SendAsync(request);
+            await SendItem(request);
             await waiter.Task;
             return ((dynamic)waiter.Task).Result;
+        }
+
+        private Task SendItem(object item)
+        {
+            _lastSentItem = item;
+            return _client.SendAsync(item);
         }
 
         /// <summary>
@@ -188,10 +170,6 @@ namespace Griffin.Cqs.Net
         {
             _endPoint = new IPEndPoint(address, port);
             await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
-            if (_credentials != null)
-            {
-                await Authenticate();
-            }
         }
 
         private async Task EnsureConnected()
@@ -202,33 +180,7 @@ namespace Griffin.Cqs.Net
                     throw new InvalidOperationException("Call 'Start()' first.");
 
                 await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
-                if (_credentials != null)
-                {
-                    await Authenticate();
-                }
             }
-        }
-
-        private async Task Authenticate()
-        {
-            var handshake = _authenticationMessageFactory.CreateHandshake(_credentials.UserName);
-            await _client.SendAsync(handshake);
-            var handshakeReply = await _client.ReceiveAsync<AuthenticationHandshakeReply>();
-            var passwordHash = _hasher.HashPassword(_credentials.Password, handshakeReply.AccountSalt);
-            var token = _hasher.HashPassword(passwordHash, handshakeReply.SessionSalt);
-            var auth = _authenticationMessageFactory.CreateAuthentication(token);
-            var clientSalt = auth.ClientSalt;
-            await _client.SendAsync(auth);
-            var result = await _client.ReceiveAsync<AuthenticateReply>();
-            if (result.State == AuthenticateReplyState.Success)
-            {
-                var ourToken = _hasher.HashPassword(passwordHash, clientSalt);
-                if (!_hasher.Compare(ourToken, result.AuthenticationToken))
-                    throw new AuthenticationException(
-                        "Server failed to prove it's identity. The hashed token do not match ours.");
-            }
-            else
-                throw new AuthenticationException("We failed to authenticate with the server. Result: " + result.State);
         }
 
         private void OnCleanup(object state)
@@ -257,6 +209,29 @@ namespace Griffin.Cqs.Net
         /// <returns></returns>
         private ClientFilterResult OnMessageReceived(ITcpChannel channel, object message)
         {
+            if (message is AuthenticationRequiredException || _continueAuthenticate)
+            {
+                var authenticator = Authenticator;
+                if (authenticator != null)
+                {
+                    if (!authenticator.AuthenticationFailed)
+                    {
+                        if (authenticator.RequiresRawData)
+                            channel.BufferPreProcessor = AuthenticateBytes;
+                        else
+                        {
+                            _continueAuthenticate = authenticator.Process(channel, message);
+                            if (!_continueAuthenticate)
+                            {
+                                if (_lastSentItem != null)
+                                    channel.Send(_lastSentItem);
+                            }
+                                
+                        }
+                    }
+                }
+            }
+
             //currently authentication etc are not wrapped, so we need to do it like this.
             var result = message as ClientResponse;
             if (result == null)
