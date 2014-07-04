@@ -62,6 +62,17 @@ namespace Griffin.Net.Protocols.MicroMsg
             return _channel;
         }
 
+        /// <summary>
+        /// Connect to server
+        /// </summary>
+        /// <param name="address">The address.</param>
+        /// <param name="port">The port.</param>
+        /// <returns></returns>
+        /// <exception cref="System.InvalidOperationException">
+        /// Socket is already connected
+        /// or
+        /// There is already a pending connect.
+        /// </exception>
         public Task ConnectAsync(IPAddress address, int port)
         {
             if (_socket != null)
@@ -82,7 +93,10 @@ namespace Griffin.Net.Protocols.MicroMsg
             return _connectCompletionSource.Task;
         }
 
-
+        /// <summary>
+        /// Receive an object
+        /// </summary>
+        /// <returns>completion task</returns>
         public Task<Object> ReceiveAsync()
         {
             if (_readCompletionSource != null)
@@ -94,6 +108,14 @@ namespace Griffin.Net.Protocols.MicroMsg
             return _readCompletionSource.Task;
         }
 
+        /// <summary>
+        /// Send an object
+        /// </summary>
+        /// <param name="message">Message to send</param>
+        /// <returns>completion task (completed once the message have been delivered).</returns>
+        /// <remarks>
+        /// <para>All objects are enqueued and sent in order as soon as possible</para>
+        /// </remarks>
         public Task SendAsync(object message)
         {
             if (message == null) throw new ArgumentNullException("message");

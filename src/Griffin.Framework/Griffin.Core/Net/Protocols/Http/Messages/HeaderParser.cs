@@ -215,6 +215,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             _parserMethod = FirstLine;
         }
 
+        /// <summary>
+        /// Resets the line parsing so that a new header can be parsed.
+        /// </summary>
         protected void ResetLineParsing()
         {
             _headerName.Clear();
@@ -223,7 +226,18 @@ namespace Griffin.Net.Protocols.Http.Messages
 
     }
 
+    /// <summary>
+    /// Callback for <see cref="HeaderParser"/>
+    /// </summary>
+    /// <param name="name">The name.</param>
+    /// <param name="value">The value.</param>
     public delegate void MessageHeaderHandler(string name, string value);
 
+    /// <summary>
+    /// Callback for <see cref="HeaderParser"/> when a HTTP status line have been received.
+    /// </summary>
+    /// <param name="part1">HttpVerb or HttpVersion depending on if it's a request or a response</param>
+    /// <param name="part2">PathAndQuery or StatusCode depending on if it's a request or a response.</param>
+    /// <param name="part3">HttpVersion or StatusDescription depending on if it's a request or a response</param>
     public delegate void MessageNameHandler(string part1, string part2, string part3);
 }

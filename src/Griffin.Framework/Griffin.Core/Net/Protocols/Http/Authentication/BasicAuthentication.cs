@@ -5,13 +5,28 @@ using Griffin.Net.Protocols.Http.Authentication.Digest;
 
 namespace Griffin.Net.Protocols.Http.Authentication
 {
+    /// <summary>
+    /// Basic aithentication
+    /// </summary>
     public class BasicAuthentication : IAuthenticator
     {
         private readonly string _realm;
         private readonly IAccountService _userService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BasicAuthentication" /> class.
+        /// </summary>
+        /// <param name="userService">The user service.</param>
+        /// <param name="realm">The realm.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// userService
+        /// or
+        /// realm
+        /// </exception>
         public BasicAuthentication(IAccountService userService, string realm)
         {
+            if (userService == null) throw new ArgumentNullException("userService");
+            if (realm == null) throw new ArgumentNullException("realm");
             _userService = userService;
             _realm = realm;
         }

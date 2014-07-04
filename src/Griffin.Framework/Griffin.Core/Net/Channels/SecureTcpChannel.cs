@@ -33,6 +33,7 @@ namespace Griffin.Net.Channels
         private Socket _socket;
         private SslStream _stream;
         private SocketBuffer _writeBuffer;
+        private BufferPreProcessorHandler _bufferPreProcessor;
 
         /// <summary>
         /// 
@@ -198,6 +199,26 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public IChannelData Data { get; private set; }
 
+
+        /// <summary>
+        /// Pre processes incoming bytes before they are passed to the message builder.
+        /// </summary>
+        /// <remarks>
+        /// Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        /// bytes.
+        /// </remarks>
+        public BufferPreProcessorHandler BufferPreProcessor
+        {
+            get { return _bufferPreProcessor; }
+            set { _bufferPreProcessor = value; }
+        }
+
+        /// <summary>
+        /// Queue used to store messages that are going to be sent to the remote end point.
+        /// </summary>
+        /// <remarks>
+        /// <para>We use a queue so that the caller can fire and forget. We send all messages in order as soon as possible.</para>
+        /// </remarks>
         public IMessageQueue OutboundMessageQueue { get; set; }
 
         /// <summary>
@@ -289,10 +310,17 @@ namespace Griffin.Net.Channels
             _readBuffer.BytesTransferred = readBytes;
             _readBuffer.Offset = _readBuffer.BaseOffset;
             _readBuffer.Count = readBytes;
+            if (_bufferPreProcessor != null)
+            {
+                var read = _bufferPreProcessor(this, _readBuffer);
+                _readBuffer.Count -= read;
+                _readBuffer.Offset += read;
+            }
 
             try
             {
-                _decoder.ProcessReadBytes(_readBuffer);
+                if (_readBuffer.Count > 0)
+                    _decoder.ProcessReadBytes(_readBuffer);
             }
             catch (Exception exception)
             {

@@ -18,6 +18,9 @@ namespace Griffin.Net.Protocols.Http
         private int _totalAmountToSend;
         private readonly StreamWriter _writer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpMessageEncoder"/> class.
+        /// </summary>
         public HttpMessageEncoder()
         {
             _stream = new MemoryStream(_buffer);

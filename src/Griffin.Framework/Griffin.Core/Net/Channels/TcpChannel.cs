@@ -11,6 +11,9 @@ using Griffin.Net.Protocols;
 
 namespace Griffin.Net.Channels
 {
+    /// <summary>
+    /// Represents a socket connection between two end points.
+    /// </summary>
     public class TcpChannel : ITcpChannel
     {
         private static readonly object CloseMessage = new object();
@@ -29,6 +32,7 @@ namespace Griffin.Net.Channels
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
         private bool _connected = false;
+        private BufferPreProcessorHandler _bufferPreProcessor;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="TcpChannel" /> class.
@@ -233,6 +237,19 @@ namespace Griffin.Net.Channels
         public IChannelData Data { get; set; }
 
         /// <summary>
+        /// Pre processes incoming bytes before they are passed to the message builder.
+        /// </summary>
+        /// <remarks>
+        /// Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        /// bytes.
+        /// </remarks>
+        public BufferPreProcessorHandler BufferPreProcessor
+        {
+            get { return _bufferPreProcessor; }
+            set { _bufferPreProcessor = value; }
+        }
+
+        /// <summary>
         ///     Signal channel to close.
         /// </summary>
         /// <remarks>
@@ -325,9 +342,23 @@ namespace Griffin.Net.Channels
                 return;
             }
 
+            if (_bufferPreProcessor != null)
+            {
+                var read = _bufferPreProcessor(this, _readArgsWrapper);
+                if (read > 0)
+                {
+                    var newCount = _readArgsWrapper.BytesTransferred - read;
+                    var newOffset = _readArgsWrapper.Offset + read;
+                    _readArgsWrapper.SetBuffer(newOffset, newCount);
+                    _readArgsWrapper.BytesTransferred -= read;
+                }
+            }
+
             try
             {
-                _decoder.ProcessReadBytes(_readArgsWrapper);
+                // pre processor can have read everything
+                if (_readArgsWrapper.BytesTransferred > 0)
+                    _decoder.ProcessReadBytes(_readArgsWrapper);
             }
             catch (Exception exception)
             {

@@ -11,6 +11,16 @@ namespace Griffin.Net.Protocols.Http.Messages
     {
         private readonly List<string> _values = new List<string>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Parameter"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// name
+        /// or
+        /// value
+        /// </exception>
         public Parameter(string name, string value)
         {
             if (name == null) throw new ArgumentNullException("name");

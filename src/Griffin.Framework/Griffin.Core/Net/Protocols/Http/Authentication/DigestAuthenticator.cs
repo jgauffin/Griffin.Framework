@@ -105,6 +105,14 @@ namespace Griffin.Net.Protocols.Http.Authentication
             get { return "digest"; }
         }
 
+        /// <summary>
+        /// Authorize a request.
+        /// </summary>
+        /// <param name="request">Request being authenticated</param>
+        /// <returns>
+        /// UserName if successful; otherwise null.
+        /// </returns>
+        /// <exception cref="HttpException">Invalid nonce/nc.</exception>
         public string Authenticate(IHttpRequest request)
         {
             var authHeader = request.Headers["Authorization"];
@@ -189,6 +197,13 @@ namespace Griffin.Net.Protocols.Http.Authentication
             return GetMd5HashBinHex(unhashedDigest);
         }
 
+        /// <summary>
+        /// Generate a HA1 hash
+        /// </summary>
+        /// <param name="realm">Realm that the user want to authenticate in</param>
+        /// <param name="userName">USername</param>
+        /// <param name="password">Password</param>
+        /// <returns></returns>
         public static string GetHa1(string realm, string userName, string password)
         {
             return GetMd5HashBinHex(String.Format("{0}:{1}:{2}", userName, realm, password));

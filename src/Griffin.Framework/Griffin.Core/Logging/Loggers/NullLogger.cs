@@ -117,6 +117,10 @@ namespace Griffin.Logging.Loggers
             
         }
 
+        /// <summary>
+        /// Write a previously created log instance.
+        /// </summary>
+        /// <param name="entry">Entry to write to the logfile.</param>
         public void Write(LogEntry entry)
         {
         }

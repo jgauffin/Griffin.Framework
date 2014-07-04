@@ -49,6 +49,28 @@ namespace Griffin.Data.Mapper
             return genericMapper;
         }
 
+         /// <summary>
+        /// Get mapping for the specified entity type
+        /// </summary>
+        /// <typeparam name="T">Type of entity</typeparam>
+        /// <returns>Mapper</returns>
+        /// <exception cref="NotSupportedException">The specified entity type is not supported.</exception>
+        public IEntityMapperBase GetBase<TEntity>()
+        {
+            object mapper;
+            if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+            {
+                if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof(TEntity));
+            }
+
+            var genericMapper = mapper as IEntityMapperBase<TEntity>;
+            if (genericMapper == null)
+                throw new MappingException(typeof(TEntity), "The mapper for '" + typeof(TEntity).FullName + "' must implement the generic interface 'IEntityMapperBase<T>' for this method to work.");
+
+            return genericMapper;
+        }
+
         /// <summary>
         ///     Retrieve a mapper.
         /// </summary>

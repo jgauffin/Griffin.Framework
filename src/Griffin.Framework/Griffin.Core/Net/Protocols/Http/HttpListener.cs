@@ -46,6 +46,11 @@ namespace Griffin.Net.Protocols.Http
         /// </remarks>
         public IMessageSerializer BodyDecoder { get; set; }
 
+        /// <summary>
+        /// A client have connected (nothing have been sent or received yet)
+        /// </summary>
+        /// <param name="channel">Channel which we created for the remote socket.</param>
+        /// <returns></returns>
         protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)
         {
             channel.ChannelFailure = OnDecoderFailure;
@@ -76,8 +81,13 @@ namespace Griffin.Net.Protocols.Http
             channel.Close();
         }
 
-        
 
+
+        /// <summary>
+        /// Receive a new message from the specified client
+        /// </summary>
+        /// <param name="source">Channel for the client</param>
+        /// <param name="msg">Message (as decoded by the specified <see cref="IMessageDecoder" />).</param>
         protected override void OnMessage(ITcpChannel source, object msg)
         {
             var message = (IHttpMessage) msg;

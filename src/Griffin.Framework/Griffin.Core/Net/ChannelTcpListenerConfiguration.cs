@@ -9,6 +9,16 @@ namespace Griffin.Net
     /// </summary>
     public class ChannelTcpListenerConfiguration
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelTcpListenerConfiguration"/> class.
+        /// </summary>
+        /// <param name="decoderFactory">Used to create an decoder for every new accepted connection.</param>
+        /// <param name="encoderFactory">Used to create an encoder for every new accepted connection.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// decoderFactory
+        /// or
+        /// encoderFactory
+        /// </exception>
         public ChannelTcpListenerConfiguration(Func<IMessageDecoder> decoderFactory, Func<IMessageEncoder> encoderFactory)
         {
             if (decoderFactory == null) throw new ArgumentNullException("decoderFactory");

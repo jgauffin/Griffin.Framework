@@ -46,13 +46,22 @@ namespace Griffin.Net.Protocols.MicroMsg
         private Action<object> _messageReceived;
         private short _headerSize;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MicroMessageDecoder" /> class.
+        /// </summary>
+        /// <param name="serializer">The serializer used to decode the message that is being transported with MicroMsg.</param>
+        /// <exception cref="System.ArgumentNullException">serializer</exception>
         public MicroMessageDecoder(IMessageSerializer serializer)
         {
+            if (serializer == null) throw new ArgumentNullException("serializer");
             _serializer = serializer;
             _bytesLeftForCurrentState = sizeof(short);
             _stateMethod = ReadHeaderLength;
         }
 
+        /// <summary>
+        /// Reset the decoder so that we can parse a new message
+        /// </summary>
         public void Clear()
         {
             _bytesLeftForCurrentState = sizeof(short);
@@ -83,7 +92,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             }
         }
 
-        public bool ReadHeaderLength(ISocketBuffer e)
+        private bool ReadHeaderLength(ISocketBuffer e)
         {
             if (!CopyBytes(e))
                 return false;
@@ -113,7 +122,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             return _bytesLeftForCurrentState == 0;
         }
 
-        public bool ProcessFixedHeader(ISocketBuffer e)
+        private bool ProcessFixedHeader(ISocketBuffer e)
         {
             if (!CopyBytes(e))
                 return false;
@@ -168,6 +177,10 @@ namespace Griffin.Net.Protocols.MicroMsg
             return true;
         }
 
+        /// <summary>
+        /// Process bytes that we've received on the socket.
+        /// </summary>
+        /// <param name="buffer">Buffer to process.</param>
         public void ProcessReadBytes(ISocketBuffer buffer)
         {
             _bytesLeftInSocketBuffer = buffer.BytesTransferred;

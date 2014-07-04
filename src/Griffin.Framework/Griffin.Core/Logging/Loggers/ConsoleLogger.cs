@@ -56,8 +56,12 @@ namespace Griffin.Logging.Loggers
             return new StackFrame(_frameSkipCount);
         }
 
-   
-       
+
+
+        /// <summary>
+        /// Write entry to the destination.
+        /// </summary>
+        /// <param name="entry">Entry to write</param>
         public override void Write(LogEntry entry)
         {
             string caller;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Griffin.Net.Channels
 {
@@ -9,6 +11,7 @@ namespace Griffin.Net.Channels
     public class SocketAsyncEventArgsWrapper : ISocketBuffer
     {
         private readonly SocketAsyncEventArgs _args;
+        private readonly MethodInfo _transferSetMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketAsyncEventArgsWrapper"/> class.
@@ -22,7 +25,9 @@ namespace Griffin.Net.Channels
             _args = args;
             Capacity = args.Count;
             BaseOffset = args.Offset;
-            
+            _transferSetMethod = args.GetType()
+                .GetProperty("BytesTransferred")
+                .GetSetMethod(true);
         }
 
         /// <summary>
@@ -35,7 +40,9 @@ namespace Griffin.Net.Channels
         /// </summary>
         public int BytesTransferred
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return _args.BytesTransferred; }
+            internal set { _transferSetMethod.Invoke(_args, new object[] { value }); }
         }
 
         /// <summary>
@@ -43,6 +50,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         public int Count
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return _args.Count; }
         }
 
@@ -56,6 +64,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         public byte[] Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return _args.Buffer; }
         }
 
@@ -69,6 +78,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         public int Offset
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return _args.Offset; }
         }
 

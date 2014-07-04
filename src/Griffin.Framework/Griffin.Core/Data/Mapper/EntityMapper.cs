@@ -88,7 +88,7 @@ namespace Griffin.Data.Mapper
             TableName = tableName;
         }
 
-        object IEntityMapper.Create(IDataRecord record)
+        object IEntityMapperBase.Create(IDataRecord record)
         {
             return Create(record);
         }
@@ -98,7 +98,7 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <param name="source">Record from the DB</param>
         /// <param name="destination">Entity to fill with information</param>
-        void IEntityMapper.Map(IDataRecord source, object destination)
+        void IEntityMapperBase.Map(IDataRecord source, object destination)
         {
             Map(source, (TEntity) destination);
         }

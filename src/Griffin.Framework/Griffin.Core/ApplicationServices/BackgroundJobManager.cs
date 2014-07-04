@@ -76,7 +76,8 @@ namespace Griffin.ApplicationServices
         private readonly IContainer _container;
         private readonly ILogger _logger = LogManager.GetLogger(typeof(BackgroundJobManager));
         private Timer _timer;
-        private List<Type> _jobTypes = new List<Type>();
+        private List<Type> _syncJobTypes = new List<Type>();
+        private List<Type> _asyncJobTypes = new List<Type>();
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="BackgroundJobManager" /> class.
@@ -142,7 +143,8 @@ namespace Griffin.ApplicationServices
         /// </summary>
         /// <remarks>
         /// <para>
-        /// 
+        /// Will do one initial resolve on al jobs in the container to be able to discover their <c>Type</c>. Without this check it would not be
+        /// possible to run each job in an isolated scope.
         /// </para>
         /// </remarks>
         public void Start()
@@ -150,7 +152,13 @@ namespace Griffin.ApplicationServices
             using (var scope = _container.CreateScope())
             {
                 var jobs = scope.ResolveAll<IBackgroundJob>();
-                _jobTypes = jobs.Select(x => x.GetType()).ToList();
+                _syncJobTypes = jobs.Select(x => x.GetType()).ToList();
+            }
+
+            using (var scope = _container.CreateScope())
+            {
+                var jobs = scope.ResolveAll<IBackgroundJobAsync>();
+                _asyncJobTypes = jobs.Select(x => x.GetType()).ToList();
             }
 
             _timer.Change(StartInterval, ExecuteInterval);
@@ -169,7 +177,7 @@ namespace Griffin.ApplicationServices
             // the catch block is outermost as all jobs
             // will share the same transaction
 
-            Parallel.ForEach(_jobTypes, jobType =>
+            Parallel.ForEach(_syncJobTypes, jobType =>
             {
                 IBackgroundJob job = null;
                 try
@@ -200,6 +208,41 @@ namespace Griffin.ApplicationServices
                 }
 
             });
+
+            var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
+            Task.WhenAll(tasks).Wait();
+        }
+
+        private async Task ExecuteAsyncJob(Type jobType)
+        {
+            IBackgroundJobAsync job = null;
+            try
+            {
+                using (var scope = _container.CreateScope())
+                {
+                    try
+                    {
+                        job = (IBackgroundJobAsync)scope.Resolve(jobType);
+                        ScopeCreated(this, new ScopeCreatedEventArgs(scope));
+                        await job.ExecuteAsync();
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
+
+                    }
+                    catch (Exception exception)
+                    {
+                        var args = new BackgroundJobFailedEventArgs(job, exception);
+                        JobFailed(this, args);
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
+                    }
+
+                }
+            }
+            catch (Exception exception)
+            {
+                JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(exception), exception));
+                _logger.Error("Failed to execute job: " + job, exception);
+            }
+
         }
 
         private class NoJob : IBackgroundJob

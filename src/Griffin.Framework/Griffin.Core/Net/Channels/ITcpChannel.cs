@@ -69,6 +69,17 @@ namespace Griffin.Net.Channels
         IChannelData Data { get; }
 
         /// <summary>
+        ///     Pre processes incoming bytes before they are passed to the message builder.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        ///         bytes instead of deserialized messages.
+        ///     </para>
+        /// </remarks>
+        BufferPreProcessorHandler BufferPreProcessor { get; set; }
+
+        /// <summary>
         ///     Assign a socket to this channel
         /// </summary>
         /// <param name="socket">Connected socket</param>
@@ -92,11 +103,10 @@ namespace Griffin.Net.Channels
         ///     </para>
         ///     <para>
         ///         You may enqueue <c>byte[]</c> arrays or <see cref="Stream" />  objects. They will not be serialized but
-        ///         MicroMessage framed directly.
+        ///         sent directly with the transport protocol (like HTTP or MicroMsg).
         ///     </para>
         /// </remarks>
         void Send(object message);
-
 
         /// <summary>
         ///     Close channel

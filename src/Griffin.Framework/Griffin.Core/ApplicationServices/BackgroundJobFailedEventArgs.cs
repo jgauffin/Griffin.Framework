@@ -12,7 +12,7 @@ namespace Griffin.ApplicationServices
         /// </summary>
         /// <param name="job">Job that failed</param>
         /// <param name="exception">Exception that the job threw.</param>
-        public BackgroundJobFailedEventArgs(IBackgroundJob job, Exception exception)
+        public BackgroundJobFailedEventArgs(object job, Exception exception)
         {
             if (job == null) throw new ArgumentNullException("job");
             if (exception == null) throw new ArgumentNullException("exception");
@@ -24,7 +24,10 @@ namespace Griffin.ApplicationServices
         /// <summary>
         ///     Job that failed.
         /// </summary>
-        public IBackgroundJob Job { get; private set; }
+        /// <remarks>
+        /// <para>An object which implementsa either <c>IBackgroundJob</c> or <c>IBackgroundJobAsync</c>.</para>
+        /// </remarks>
+        public object Job { get; private set; }
 
         /// <summary>
         ///     Exception that the job threw.

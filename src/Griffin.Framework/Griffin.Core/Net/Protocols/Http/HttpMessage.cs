@@ -16,6 +16,9 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public const string PipelineIndexKey = "X-Pipeline-Index";
 
+        /// <summary>
+        /// 8559-1 encoding
+        /// </summary>
         protected static Encoding Iso85591 = Encoding.GetEncoding("ISO-8859-1");
 
         private readonly HeaderCollection _headers;
@@ -73,6 +76,12 @@ namespace Griffin.Net.Protocols.Http
             _headers.Add(name, value);
         }
 
+        /// <summary>
+        /// All HTTP headers.
+        /// </summary>
+        /// <remarks>
+        /// Missing headers will return <c>null</c> as value
+        /// </remarks>
         public IHeaderCollection Headers
         {
             get { return _headers; }

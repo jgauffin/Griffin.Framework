@@ -15,6 +15,7 @@ namespace Griffin.Core.Tests.Data
         [Fact]
         public void no_factory_assigned_should_throw_an_exception_explaining_that()
         {
+            UnitOfWorkFactory.SetFactoryMethod(UnitOfWorkFactory.ClearAssignment);
 
             Action actual = () => UnitOfWorkFactory.Create();
 

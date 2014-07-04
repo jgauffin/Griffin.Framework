@@ -33,6 +33,9 @@ namespace Griffin.Logging.Loggers
             get { return _loggedType; }
         }
 
+        /// <summary>
+        /// Used to determine if a log entry can be written to the log or not.
+        /// </summary>
         public ILogEntryFilter LogFilter
         {
             get { return _logFilter; }

@@ -11,6 +11,11 @@ namespace Griffin.Net.Channels
     {
         private readonly ISslStreamBuilder _sslStreamBuilder;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SecureTcpChannelFactory"/> class.
+        /// </summary>
+        /// <param name="sslStreamBuilder">The SSL stream builder.</param>
+        /// <exception cref="System.ArgumentNullException">sslStreamBuilder</exception>
         public SecureTcpChannelFactory(ISslStreamBuilder sslStreamBuilder)
         {
             if (sslStreamBuilder == null) throw new ArgumentNullException("sslStreamBuilder");

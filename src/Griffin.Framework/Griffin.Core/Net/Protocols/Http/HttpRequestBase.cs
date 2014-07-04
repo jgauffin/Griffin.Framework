@@ -94,6 +94,14 @@ namespace Griffin.Net.Protocols.Http
             return response;
         }
 
+        /// <summary>
+        /// Invoked every time a HTTP header is modified.
+        /// </summary>
+        /// <param name="name">Header name</param>
+        /// <param name="value">Value</param>
+        /// <remarks>
+        /// Used to build the URI when the HOST header comes.
+        /// </remarks>
         protected override void OnHeaderSet(string name, string value)
         {
             if (name.Equals("host", StringComparison.OrdinalIgnoreCase))

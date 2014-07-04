@@ -15,6 +15,13 @@ namespace Griffin.Net.Protocols.Http
     {
         private string _reasonPhrase;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpResponseBase"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="reasonPhrase">The reason phrase.</param>
+        /// <param name="httpVersion">The HTTP version.</param>
+        /// <exception cref="System.ArgumentNullException">reasonPhrase</exception>
         public HttpResponseBase(int statusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
@@ -26,6 +33,13 @@ namespace Griffin.Net.Protocols.Http
             Headers["Content-Type"] = "text/html";
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpResponseBase"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="reasonPhrase">The reason phrase.</param>
+        /// <param name="httpVersion">The HTTP version.</param>
+        /// <exception cref="System.ArgumentNullException">reasonPhrase</exception>
         public HttpResponseBase(HttpStatusCode statusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");

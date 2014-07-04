@@ -2,10 +2,24 @@
 
 namespace Griffin.Data.Mapper
 {
+    /// <summary>
+    /// Mapping for a class property
+    /// </summary>
     public interface IPropertyMapping
     {
+        /// <summary>
+        /// Can write to property (i.e. update it from the table column)
+        /// </summary>
         bool CanWrite { get; }
+
+        /// <summary>
+        /// Can read from the property (i.e. create UPDATE/INSERT queries)
+        /// </summary>
         bool CanRead { get; }
+
+        /// <summary>
+        /// Used when fetching items
+        /// </summary>
         bool IsPrimaryKey { get; set; }
 
         /// <summary>

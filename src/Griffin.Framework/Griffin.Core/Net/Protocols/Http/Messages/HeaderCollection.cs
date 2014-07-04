@@ -90,6 +90,14 @@ namespace Griffin.Net.Protocols.Http.Messages
             _headerSetCallback(name, value);
         }
 
+        /// <summary>
+        /// Checks if the specified header exists in the collection
+        /// </summary>
+        /// <param name="name">Name, case insensitive</param>
+        /// <returns>
+        ///   <c>true</c> if found; otherwise <c>false</c>.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">name</exception>
         public bool Contains(string name)
         {
             if (name == null) throw new ArgumentNullException("name");

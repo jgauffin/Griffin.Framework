@@ -74,6 +74,14 @@ namespace Griffin.Net.Channels
             return stream;
         }
 
+        /// <summary>
+        /// Used to validate the certificate that the server have provided.
+        /// </summary>
+        /// <param name="sender">Server.</param>
+        /// <param name="certificate">The certificate.</param>
+        /// <param name="chain">The chain.</param>
+        /// <param name="sslpolicyerrors">The sslpolicyerrors.</param>
+        /// <returns><c>true</c> if the certificate will be allowed, otherwise <c>false</c>.</returns>
         protected virtual bool OnRemoteCertifiateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslpolicyerrors)
         {
             return (Certificate != null && certificate == null) || (Certificate == null && certificate != null);

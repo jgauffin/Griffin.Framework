@@ -12,6 +12,11 @@ namespace Griffin.Net.Channels
     /// </summary>
     public class ServerSideSslStreamBuilder : ISslStreamBuilder
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerSideSslStreamBuilder"/> class.
+        /// </summary>
+        /// <param name="certificate">The certificate.</param>
+        /// <exception cref="System.ArgumentNullException">certificate</exception>
         public ServerSideSslStreamBuilder(X509Certificate certificate)
         {
             if (certificate == null) throw new ArgumentNullException("certificate");

@@ -2,8 +2,16 @@
 
 namespace Griffin.Net.Protocols.Stomp.Broker
 {
+    /// <summary>
+    /// Extension methods for frames
+    /// </summary>
     public static class FrameExtensions
     {
+        /// <summary>
+        /// Check if the 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public static IFrame CreateReceiptIfRequired(this IFrame request)
         {
             var receipt = request.Headers["receipt"];

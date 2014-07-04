@@ -53,7 +53,28 @@ namespace Griffin.Data.Mapper
                 ((AssemblyScanningMappingProvider) _provider).Scan();
             }
 
-            var mapper= (IEntityMapper<TEntity>) _provider.Get<TEntity>();
+            var mapperFound=  _provider.Get<TEntity>();
+            var mapper=  mapperFound as IEntityMapper<TEntity>;
+            if (mapper == null)
+                throw new MappingException(typeof(TEntity), "Expected to find a IEntityMapper but only found a IEntityMapperBase for the requested operation to work. Found mapper: " + mapperFound.GetType().FullName);
+            return mapper;
+        }
+
+        /// <summary>
+        ///     Get a mapper.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to get a mapper for.</typeparam>
+        /// <exception cref="MappingNotFoundException">Did not find a mapper for the specified entity.</exception>
+        /// <returns></returns>
+        public static IEntityMapperBase<TEntity> GetBaseMapper<TEntity>()
+        {
+            if (!_scanned && _provider is AssemblyScanningMappingProvider)
+            {
+                _scanned = true;
+                ((AssemblyScanningMappingProvider)_provider).Scan();
+            }
+
+            var mapper = (IEntityMapperBase<TEntity>)_provider.Get<TEntity>();
             return mapper;
         }
     }

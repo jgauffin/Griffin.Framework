@@ -32,6 +32,9 @@ namespace Griffin.Net.Protocols.Http.Authentication
         public string CookieName { get; set; }
 
 
+        /// <summary>
+        /// TODO: why do we use an encoding and not Base64?
+        /// </summary>
         public Encoding Encoding { get; set; }
 
         /// <summary>
@@ -82,6 +85,13 @@ namespace Griffin.Net.Protocols.Http.Authentication
             return cookie.Value.Substring(pos + 1);
         }
 
+        /// <summary>
+        /// Create a new cookie
+        /// </summary>
+        /// <param name="remoteEndPoint">End point that want's an authentication cookie</param>
+        /// <param name="userName">User name of the authenticated user</param>
+        /// <param name="isPersistent">Store cookie for 60 days</param>
+        /// <returns><c>HttpResponseCookie</c></returns>
         public HttpResponseCookie CreateCookie(EndPoint remoteEndPoint, string userName, bool isPersistent)
         {
             return new HttpResponseCookie(CookieName, Encode(remoteEndPoint) + ";" + userName)
@@ -93,6 +103,11 @@ namespace Griffin.Net.Protocols.Http.Authentication
             };
         }
 
+        /// <summary>
+        /// Hash end point
+        /// </summary>
+        /// <param name="remoteEndPoint">Endpoint to hash</param>
+        /// <returns></returns>
         public string Encode(EndPoint remoteEndPoint)
         {
             var crypto = new HMACSHA256(Encoding.GetBytes(HashKey));

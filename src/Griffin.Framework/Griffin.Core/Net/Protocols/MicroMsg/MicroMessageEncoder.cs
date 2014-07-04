@@ -83,6 +83,10 @@ namespace Griffin.Net.Protocols.MicroMsg
             _headerIsSent = false;
         }
 
+        /// <summary>
+        /// Serialize message and sent it add it to the buffer
+        /// </summary>
+        /// <param name="args">Socket buffer</param>
         public void Send(ISocketBuffer args)
         {
             if (_bytesTransferred < _bytesEnqueued)

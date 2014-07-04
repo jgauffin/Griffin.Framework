@@ -14,14 +14,14 @@ namespace Griffin.Data.Mapper
         ///     Fetches the first row if found.
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
-        /// <param name="constraints">Command to invoke <c>ExecuteReaderAsync()</c> on.</param>
+        /// <param name="connection">Connection to invoke <c>ExecuteReaderAsync()</c> on.</param>
         /// <param name="constraints">dynamic specifying the properties to use. All parameters are joined with "AND" in the resulting SQL query. Any parameter with '%' in the value will be using LIKE instead of '='</param>
         /// <returns>
         ///     Entity if found; otherwise <c>null</c>.
         /// </returns>
         /// <remarks>
         ///     <para>Use this method when an entity is expected to be returned.</para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -65,6 +65,9 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">connection to load entity from</param>
         /// <param name="constraints">dynamic specifying the properties to use. All parameters are joined with "AND" in the resulting SQL query. Any parameter with '%' in the value will be using LIKE instead of '='</param>
         /// <returns>Found entity</returns>
+        /// <remarks>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// </remarks>
         /// <example>
         ///     <code>
         /// <![CDATA[
@@ -107,6 +110,9 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">Connection to use</param>
         /// <param name="entity">Entity to insert.</param>
         /// <returns>Task to wait on for completion</returns>
+        /// <remarks>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// </remarks>
         public static async Task InsertAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
@@ -124,6 +130,9 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">Connection to use</param>
         /// <param name="entity">Entity to update.</param>
         /// <returns>Task to wait on for completion</returns>
+        /// <remarks>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// </remarks>
         public static async Task UpdateAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
@@ -141,6 +150,9 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">DB connection.</param>
         /// <param name="entity">Entity to remove.</param>
         /// <returns>Task to wait on for completion.</returns>
+        /// <remarks>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// </remarks>
         public static async Task DeleteAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
@@ -158,6 +170,9 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">DB connection.</param>
         /// <param name="constraints">dynamic specifying the properties to use. All parameters are joined with "AND" in the resulting SQL query. Any parameter with '%' in the value will be using LIKE instead of '='</param>
         /// <returns>Task to wait on for completion.</returns>
+        /// <remarks>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// </remarks>
         /// <example>
         /// <code>
         /// <![CDATA[

@@ -15,21 +15,38 @@ namespace Griffin.Data
     /// </remarks>
     public class TransactionAlreadyClosedException : DataException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionAlreadyClosedException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
         public TransactionAlreadyClosedException(string errorMessage)
             : base(errorMessage)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionAlreadyClosedException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="inner">The inner exception.</param>
         public TransactionAlreadyClosedException(string errorMessage, Exception inner)
             : base(errorMessage, inner)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionAlreadyClosedException"/> class.
+        /// </summary>
+        /// <param name="info">The data necessary to serialize or deserialize an object.</param>
+        /// <param name="context">Description of the source and destination of the specified serialized stream.</param>
         public TransactionAlreadyClosedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransactionAlreadyClosedException"/> class.
+        /// </summary>
         public TransactionAlreadyClosedException()
         {
         }

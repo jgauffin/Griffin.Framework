@@ -14,6 +14,12 @@ namespace Griffin.Net.Channels
     {
         private readonly ConcurrentDictionary<string, object> _items = new ConcurrentDictionary<string, object>();
 
+        /// <summary>
+        /// Get or add a value
+        /// </summary>
+        /// <param name="key">key to get</param>
+        /// <param name="addCallback">Should return value to add if the key is not found</param>
+        /// <returns>Item that was added or found</returns>
         public object GetOrAdd(string key, Func<string, object> addCallback)
         {
             return _items.GetOrAdd(key, addCallback);

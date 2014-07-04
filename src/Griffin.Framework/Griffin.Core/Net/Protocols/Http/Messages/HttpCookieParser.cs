@@ -26,11 +26,17 @@ namespace Griffin.Net.Protocols.Http.Messages
             }
         }
 
+        /// <summary>
+        /// end of cookie string?
+        /// </summary>
         protected bool IsEOF
         {
             get { return _index >= _headerValue.Length; }
         }
 
+        /// <summary>
+        /// Parse state method, remove all white spaces before the cookie name
+        /// </summary>
         protected void Name_Before()
         {
             while (char.IsWhiteSpace(Current))
@@ -41,6 +47,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             _parserMethod = Name;
         }
 
+        /// <summary>
+        /// Read cookie name until white space or equals are found
+        /// </summary>
         protected virtual void Name()
         {
             while (!char.IsWhiteSpace(Current) && Current != '=')
@@ -52,6 +61,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             _parserMethod = Name_After;
         }
 
+        /// <summary>
+        /// Remove all white spaces until colon is found
+        /// </summary>
         protected virtual void Name_After()
         {
             while (char.IsWhiteSpace(Current) || Current == ':')
@@ -62,6 +74,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             _parserMethod = Value_Before;
         }
 
+        /// <summary>
+        /// Determine if the cookie value is quoted or regular.
+        /// </summary>
         protected virtual void Value_Before()
         {
             if (Current == '"')
@@ -72,6 +87,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             MoveNext();
         }
 
+        /// <summary>
+        /// Read cookie value
+        /// </summary>
         private void Value()
         {
             while (Current != ';' && !IsEOF)
@@ -83,6 +101,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             _parserMethod = Value_After;
         }
 
+        /// <summary>
+        /// Read cookie value qouted
+        /// </summary>
         private void Value_Qouted()
         {
             MoveNext(); // skip '"'
@@ -106,6 +127,7 @@ namespace Griffin.Net.Protocols.Http.Messages
 
             _parserMethod = Value_After;
         }
+
 
         private void Value_After()
         {

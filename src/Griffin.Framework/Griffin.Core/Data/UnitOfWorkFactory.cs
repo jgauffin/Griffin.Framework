@@ -33,6 +33,8 @@ namespace Griffin.Data
     {
         private static Func<IUnitOfWork> _factoryMethod;
 
+        internal static Func<IUnitOfWork> ClearAssignment = () => null;
+
         /// <summary>
         /// Create a new unit of work.
         /// </summary>
@@ -52,7 +54,7 @@ namespace Griffin.Data
         public static void SetFactoryMethod(Func<IUnitOfWork> factoryMethod)
         {
             if (factoryMethod == null) throw new ArgumentNullException("factoryMethod");
-            _factoryMethod = factoryMethod;
+            _factoryMethod = ClearAssignment == factoryMethod ? null : factoryMethod;
         }
     }
 }

@@ -8,6 +8,9 @@ namespace Griffin.Net.Channels
     /// </summary>
     public class EmptyEndpoint : EndPoint
     {
+        /// <summary>
+        /// Instance representing an unassigned end point.
+        /// </summary>
         public static readonly EmptyEndpoint Instance = new EmptyEndpoint();
 
         private EmptyEndpoint()

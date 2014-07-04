@@ -24,6 +24,12 @@ namespace Griffin.IO
         private readonly int _maxQueueSize;
         private readonly object _syncLock = new object();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersistentCircularIndex"/> class.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="maxDataSize">Maximum size of the data.</param>
+        /// <param name="maxQueueSize">Maximum size of the queue.</param>
         public PersistentCircularIndex(string fileName, int maxDataSize, int maxQueueSize)
         {
             _fileName = fileName;
@@ -53,6 +59,13 @@ namespace Griffin.IO
             }
         }
 
+        /// <summary>
+        /// Enqueue a new string
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <exception cref="System.ArgumentNullException">data</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">data;Record size is max  + recordSize +  bytes.</exception>
+        /// <exception cref="QueueFullException"></exception>
         public void Enqueue(string data)
         {
             if (data == null) throw new ArgumentNullException("data");

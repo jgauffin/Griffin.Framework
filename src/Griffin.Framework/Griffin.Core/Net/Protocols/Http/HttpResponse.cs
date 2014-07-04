@@ -7,11 +7,23 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     public class HttpResponse : HttpResponseBase
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpResponse"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="reasonPhrase">The reason phrase.</param>
+        /// <param name="httpVersion">The HTTP version.</param>
         public HttpResponse(int statusCode, string reasonPhrase, string httpVersion) : base(statusCode, reasonPhrase, httpVersion)
         {
             Cookies = new HttpCookieCollection<IResponseCookie>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpResponse"/> class.
+        /// </summary>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="reasonPhrase">The reason phrase.</param>
+        /// <param name="httpVersion">The HTTP version.</param>
         public HttpResponse(HttpStatusCode statusCode, string reasonPhrase, string httpVersion) : base(statusCode, reasonPhrase, httpVersion)
         {
             Cookies = new HttpCookieCollection<IResponseCookie>();

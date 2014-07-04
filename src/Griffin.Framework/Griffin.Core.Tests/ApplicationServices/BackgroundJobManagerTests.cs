@@ -50,7 +50,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             Thread.Sleep(100);
 
 
-            sl.Received(2).CreateScope();
+            sl.Received(3).CreateScope();
         }
 
         [Fact]
@@ -128,6 +128,27 @@ namespace Griffin.Core.Tests.ApplicationServices
             Thread.Sleep(100);
 
             job2.Received().Execute();
+        }
+
+        [Fact]
+        public void run_next_async_job_even_if_first_fails()
+        {
+            var sl = Substitute.For<IContainer>();
+            var scope = Substitute.For<IContainerScope>();
+            var job = Substitute.For<IBackgroundJobAsync>();
+            var job2 = Substitute.For<IBackgroundJobAsync>();
+            job.When(x => x.ExecuteAsync()).Do(x => { throw new SqlNullValueException(); });
+            sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.Resolve(job2.GetType()).Returns(job2);
+            scope.ResolveAll<IBackgroundJobAsync>().Returns(new[] { job, job2 });
+
+            var sut = new BackgroundJobManager(sl);
+            sut.StartInterval = TimeSpan.FromSeconds(0);
+            sut.Start();
+            Thread.Sleep(100);
+
+            job2.Received().ExecuteAsync();
         }
 
       

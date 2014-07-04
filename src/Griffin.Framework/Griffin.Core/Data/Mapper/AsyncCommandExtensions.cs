@@ -11,18 +11,19 @@ namespace Griffin.Data.Mapper
     ///     Asynchronous extensions for <see cref="DbCommand" />.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// All methods which do not take a mapper class uses the <see cref="EntityMappingProvider"/> to identify the mapper to use when converting to/from rows in the database. SQL commands
-    /// for CRUD operations are provided by a <see cref="ICommandBuilder"/> implementation (specific for each database engine).
-    /// </para>
-    /// <para>
-    /// CRUD operations are typically performed on the <see cref="IAdoNetUnitOfWork"/> or <see cref="IDbConnection"/> instead as you do not have to create your own command then.
-    /// </para>
+    ///     <para>
+    ///         All methods which do not take a mapper class uses the <see cref="EntityMappingProvider" /> to identify the
+    ///         mapper to use when converting to/from rows in the database. SQL commands
+    ///         for CRUD operations are provided by a <see cref="ICommandBuilder" /> implementation (specific for each database
+    ///         engine).
+    ///     </para>
+    ///     <para>
+    ///         CRUD operations are typically performed on the <see cref="IAdoNetUnitOfWork" /> or <see cref="IDbConnection" />
+    ///         instead as you do not have to create your own command then.
+    ///     </para>
     /// </remarks>
     public static class AsyncCommandExtensions
     {
-        
-
         /// <summary>
         ///     Fetches the first found entity asynchronously
         /// </summary>
@@ -33,6 +34,9 @@ namespace Griffin.Data.Mapper
         /// <exception cref="EntityNotFoundException">Failed to find specified entity.</exception>
         /// <remarks>
         ///     <para>Use this method when an entity is expected to be returned.</para>
+        ///     <para>
+        ///         Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapperBase<TEntity>]]></c>
+        ///     </para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -51,7 +55,7 @@ namespace Griffin.Data.Mapper
         /// </example>
         public static Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd)
         {
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return FirstAsync(cmd, mapping);
         }
 
@@ -82,8 +86,8 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        /// <seealso cref="EntityMapper{TEntity}"/>
-        public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        /// <seealso cref="EntityMapper{TEntity}" />
+        public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapperBase<TEntity> mapper)
         {
             var result = await cmd.FirstOrDefaultAsync(mapper);
             if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
@@ -104,7 +108,7 @@ namespace Griffin.Data.Mapper
         /// </returns>
         /// <remarks>
         ///     <para>Use this method when an entity is expected to be returned.</para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapperBase<TEntity>]]></c>.</para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -125,7 +129,7 @@ namespace Griffin.Data.Mapper
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return FirstOrDefaultAsync(cmd, mapping);
         }
 
@@ -156,8 +160,9 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        /// <seealso cref="EntityMapper{TEntity}"/>
-        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        /// <seealso cref="EntityMapper{TEntity}" />
+        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd,
+            IEntityMapperBase<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -215,7 +220,7 @@ namespace Griffin.Data.Mapper
         ///         If the result returnd from the query is all records that you want it's probably more effecient to use
         ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
         ///     </para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapperBase<TEntity>]]></c>.</para>
         /// </remarks>
         public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd)
         {
@@ -245,7 +250,7 @@ namespace Griffin.Data.Mapper
         ///         disposed when you are
         ///         done with it.
         ///     </para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct mapper.</para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapperBase<TEntity>]]></c>.</para>
         /// </remarks>
         public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
             bool ownsConnection)
@@ -253,7 +258,7 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
 
             var reader = await cmd.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
 
@@ -280,15 +285,19 @@ namespace Griffin.Data.Mapper
         ///         disposed when you are
         ///         done with it.
         ///     </para>
+        ///     <para>
+        ///         Requires that a <c><![CDATA[IEntityMapperBase<TEntity>]]></c> is registered in the
+        ///         <see cref="EntityMappingProvider" />.
+        ///     </para>
         /// </remarks>
         public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
-            bool ownsConnection, IEntityMapper<TEntity> mapper)
+            bool ownsConnection, IEntityMapperBase<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
             var reader = await cmd.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
 
@@ -301,7 +310,7 @@ namespace Griffin.Data.Mapper
         /// <returns>A list which is generated asynchronously.</returns>
         /// <remarks>
         ///     <para>
-        ///         Uses the <see cref="EntityMappingProvider" /> to find the correct mapper.
+        ///         Uses the <see cref="EntityMappingProvider" /> to find the correct base mapper.
         ///     </para>
         ///     <para>
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
@@ -311,7 +320,7 @@ namespace Griffin.Data.Mapper
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return await ToListAsync(cmd, mapping);
         }
 
@@ -327,7 +336,8 @@ namespace Griffin.Data.Mapper
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
         ///     </para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd,
+            IEntityMapperBase<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -344,6 +354,5 @@ namespace Griffin.Data.Mapper
             }
             return items;
         }
-
     }
 }

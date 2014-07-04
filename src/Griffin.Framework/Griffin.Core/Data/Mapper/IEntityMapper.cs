@@ -5,7 +5,7 @@ using Griffin.Data.Mapper.CommandBuilders;
 namespace Griffin.Data.Mapper
 {
     /// <summary>
-    /// Maps a table column to a .NET entity.
+    /// Maps a table column to a .NET entity (to support CRUD operations).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -38,56 +38,8 @@ namespace Griffin.Data.Mapper
     /// ]]>
     /// </code>
     /// </example>
-    public interface IEntityMapper
+    public interface IEntityMapper : IEntityMapperBase
     {
-        /// <summary>
-        /// Create a new entity for the specified 
-        /// </summary>
-        /// <param name="record">should only be used to initialize any constructor arguments.</param>
-        /// <returns>Created entity</returns>
-        /// <example>
-        /// <para>Where a default constructor exists:</para>
-        /// <code>
-        /// public object Create(IDataRecord record)
-        /// {
-        ///     return new User();
-        /// }
-        /// </code>
-        /// <para>Where a only constructors with arguments exists:</para>
-        /// <code>
-        /// public object Create(IDataRecord record)
-        /// {
-        ///     return new User(record["Id"].ToString());
-        /// }
-        /// </code>
-        /// </example>
-        object Create(IDataRecord record);
-
-        /// <summary>
-        /// Get mapping for a 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        /// TODO: Fix
-        //PropertyMapping GetMapping(string name);
-
-        /// <summary>
-        /// Map a record to the specified entity
-        /// </summary>
-        /// <param name="source">Record from the DB</param>
-        /// <param name="destination">Entity to fill with information</param>
-        /// <example>
-        /// <code>
-        /// public void Map(IDataRecord source, object destination)
-        /// {
-        ///     var user = (User)destination;
-        ///     user.Id = source["Id"].ToString();
-        ///     user.Age = (int)source["Age"];
-        /// }
-        /// </code>
-        /// </example>
-        void Map(IDataRecord source, object destination);
-
         /// <summary>
         /// Free the mapping, no further changes may be made.
         /// </summary>
@@ -177,23 +129,8 @@ namespace Griffin.Data.Mapper
     /// ]]>
     /// </code>
     /// </example>
-    public interface IEntityMapper<in TEntity> : IEntityMapper
+    public interface IEntityMapper<in TEntity> : IEntityMapper, IEntityMapperBase<TEntity>
     {
-        /// <summary>
-        /// Map a record to the specified entity
-        /// </summary>
-        /// <param name="source">Record from the DB</param>
-        /// <param name="destination">Entity to fill with information</param>
-        /// <example>
-        /// <code>
-        /// public void Map(IDataRecord source, User destination)
-        /// {
-        ///     destination.Id = source["Id"].ToString();
-        ///     destination.Age = (int)source["Age"];
-        /// }
-        /// </code>
-        /// </example>
-        void Map(IDataRecord source, TEntity destination);
     }
 
 }

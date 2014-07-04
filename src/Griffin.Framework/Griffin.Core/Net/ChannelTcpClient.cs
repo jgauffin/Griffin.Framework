@@ -4,9 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Griffin.Net.Authentication;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
-using Griffin.Net.Protocols;
 
 namespace Griffin.Net
 {
@@ -14,9 +14,9 @@ namespace Griffin.Net
     ///     Can talk with messaging servers (i.e. servers based on <see cref="ChannelTcpListener" />).
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// You can use the <see cref="Filter"/> property if you want to have a callback for incoming messages.
-    /// </para>
+    ///     <para>
+    ///         You can use the <see cref="Filter" /> property if you want to have a callback for incoming messages.
+    ///     </para>
     /// </remarks>
     public class ChannelTcpClient : IDisposable
     {
@@ -32,8 +32,8 @@ namespace Griffin.Net
         private ITcpChannel _channel;
         private Exception _connectException;
         private FilterMessageHandler _filterHandler;
-        private Socket _socket;
         private Exception _sendException;
+        private Socket _socket;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChannelTcpClient" /> class.
@@ -68,7 +68,6 @@ namespace Griffin.Net
             _decoder = decoder;
             _readBuffer = readBuffer;
 
-            decoder.MessageReceived = OnMessageReceived;
             _args.Completed += OnConnect;
         }
 
@@ -76,6 +75,11 @@ namespace Griffin.Net
         ///     Set certificate if you want to use secure connections.
         /// </summary>
         public ISslStreamBuilder Certificate { get; set; }
+
+        /// <summary>
+        ///     Set if you want to authenticate against a server.
+        /// </summary>
+        public IClientAuthenticator Authenticator { get; set; }
 
         /// <summary>
         ///     Gets if channel is connected
@@ -203,14 +207,15 @@ namespace Griffin.Net
         ///     Receive a message
         /// </summary>
         /// <returns>Decoded message</returns>
-        public async Task<T> ReceiveAsync<T>() where  T : class
+        public async Task<T> ReceiveAsync<T>() where T : class
         {
             var item = await ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
             if (item == null)
                 return null;
             var casted = item as T;
             if (casted == null)
-                throw new InvalidCastException(string.Format("Failed to cast '{0}' as '{1}'.", item.GetType().FullName, typeof(T).FullName));
+                throw new InvalidCastException(string.Format("Failed to cast '{0}' as '{1}'.", item.GetType().FullName,
+                    typeof (T).FullName));
 
             return casted;
         }
@@ -301,7 +306,8 @@ namespace Griffin.Net
                 _sendException = null;
                 throw new AggregateException(ex);
             }
-                
+            if (Authenticator != null && Authenticator.AuthenticationFailed)
+                throw new AuthenticationDeniedException("Failed to authenticate");
 
             await _sendQueueSemaphore.WaitAsync();
 
@@ -323,9 +329,26 @@ namespace Griffin.Net
 
 
             _readItems.Enqueue(message);
-            _readSemaphore.Release();
+            if (_readSemaphore.CurrentCount == 0)
+                _readSemaphore.Release();
         }
 
+        /// <summary>
+        ///     Pre processes incoming bytes before they are passed to the message builder.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        ///         bytes instead of deserialized messages.
+        ///     </para>
+        /// </remarks>
+        public BufferPreProcessorHandler BufferPreProcessor
+        {
+            get { return _channel.BufferPreProcessor; }
+            set { _channel.BufferPreProcessor = value; }
+        }
+
+       
         private void OnConnect(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success)
@@ -355,19 +378,19 @@ namespace Griffin.Net
             }
         }
 
-        private void OnMessageReceived(object obj)
-        {
-            if (_filterHandler != null)
-            {
-                var result = _filterHandler(_channel, obj);
-                if (result == ClientFilterResult.Revoke)
-                    return;
-            }
+        //private void OnMessageReceived(object obj)
+        //{
+        //    if (_filterHandler != null)
+        //    {
+        //        var result = _filterHandler(_channel, obj);
+        //        if (result == ClientFilterResult.Revoke)
+        //            return;
+        //    }
 
-            _readItems.Enqueue(obj);
-            if (_readSemaphore.CurrentCount == 0)
-                _readSemaphore.Release();
-        }
+        //    _readItems.Enqueue(obj);
+        //    if (_readSemaphore.CurrentCount == 0)
+        //        _readSemaphore.Release();
+        //}
 
         private void OnSendCompleted(ITcpChannel channel, object sentMessage)
         {

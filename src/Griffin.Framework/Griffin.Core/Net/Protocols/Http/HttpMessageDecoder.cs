@@ -26,6 +26,9 @@ namespace Griffin.Net.Protocols.Http
         private Action<object> _messageReceived;
         private HttpCookieParser _cookieParser = new HttpCookieParser();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpMessageDecoder"/> class.
+        /// </summary>
         public HttpMessageDecoder()
         {
             _headerParser = new HeaderParser();
@@ -35,8 +38,14 @@ namespace Griffin.Net.Protocols.Http
             _messageReceived = delegate { };
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpMessageDecoder"/> class.
+        /// </summary>
+        /// <param name="messageSerializer">The message serializer.</param>
+        /// <exception cref="System.ArgumentNullException">messageSerializer</exception>
         public HttpMessageDecoder(IMessageSerializer messageSerializer)
         {
+            if (messageSerializer == null) throw new ArgumentNullException("messageSerializer");
             _messageSerializer = messageSerializer;
             _headerParser = new HeaderParser();
             _headerParser.HeaderParsed = OnHeader;
@@ -64,6 +73,10 @@ namespace Griffin.Net.Protocols.Http
             }
         }
 
+        /// <summary>
+        /// We've received bytes from the socket. Build a message out of them.
+        /// </summary>
+        /// <param name="buffer">Buffer</param>
         public void ProcessReadBytes(ISocketBuffer buffer)
         {
             var receiveBufferOffset = buffer.Offset;
@@ -108,6 +121,9 @@ namespace Griffin.Net.Protocols.Http
             }
         }
 
+        /// <summary>
+        /// Reset decoder state so that we can decode a new message
+        /// </summary>
         public void Clear()
         {
             _message = null;
