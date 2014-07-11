@@ -75,3 +75,32 @@ unitOfWork.Insert(new ChatWindow(/*....*/));
 
 To enable support for that you have to inherit from `CrudEntityMapper<T>` instead of `EntityMapper<T>`.
 
+Here is a real life mapping:
+
+```csharp
+public class DiscountMapper : CrudEntityMapper<Discount>
+{
+    public DiscountMapper() : base("Discounts")
+    {
+    }
+
+    public override void Configure(IDictionary<string, IPropertyMapping> mappings)
+    {
+        base.Configure(mappings);
+        mappings.Remove("IsValid");
+
+        mappings["Duration"].ColumnToPropertyAdapter = o => TimeSpan.FromDays((int)o);
+        mappings["Duration"].PropertyToColumnAdapter = o => ((TimeSpan)o).TotalDays;
+
+        mappings["ExtendedTrialDuration"].ColumnToPropertyAdapter = o => TimeSpan.FromDays((int)o);
+        mappings["ExtendedTrialDuration"].PropertyToColumnAdapter = o => ((TimeSpan)o).TotalDays;
+
+        mappings["PromotionEndsAt"].ColumnName = "EndsAt";
+        mappings["PromotionStartsAt"].ColumnName = "StartsAt";
+
+        mappings["Subscriptions"].ColumnName = "SubscriptionNames";
+        mappings["Subscriptions"].ColumnToPropertyAdapter = x => ((string)x).Split(';');
+        mappings["Subscriptions"].ColumnToPropertyAdapter = x => string.Join(';', (string[])x);
+    }
+}
+```
