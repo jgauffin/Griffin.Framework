@@ -45,15 +45,15 @@ namespace Griffin.Data.Mapper
         /// <typeparam name="TEntity">Type of entity to get a mapper for.</typeparam>
         /// <exception cref="MappingNotFoundException">Did not find a mapper for the specified entity.</exception>
         /// <returns></returns>
-        public static IEntityMapper<TEntity> GetMapper<TEntity>()
+        public static ICrudEntityMapper<TEntity> GetMapper<TEntity>()
         {
             EnsureThatAssembliesHaveBeenScanned();
 
             var mapperFound = _provider.Get<TEntity>();
-            var mapper = mapperFound as IEntityMapper<TEntity>;
+            var mapper = mapperFound as ICrudEntityMapper<TEntity>;
             if (mapper == null)
                 throw new MappingException(typeof (TEntity),
-                    "Expected to find a IEntityMapper but only found a IEntityMapperBase for the requested operation to work. Found mapper: " +
+                    "Expected to find a ICrudEntityMapper but only found a IEntityMapper for the requested operation to work. Found mapper: " +
                     mapperFound.GetType().FullName);
             return mapper;
         }
@@ -75,11 +75,11 @@ namespace Griffin.Data.Mapper
         /// <typeparam name="TEntity">Type of entity to get a mapper for.</typeparam>
         /// <exception cref="MappingNotFoundException">Did not find a mapper for the specified entity.</exception>
         /// <returns></returns>
-        public static IEntityMapperBase<TEntity> GetBaseMapper<TEntity>()
+        public static IEntityMapper<TEntity> GetBaseMapper<TEntity>()
         {
             EnsureThatAssembliesHaveBeenScanned();
 
-            var mapper = (IEntityMapperBase<TEntity>) _provider.Get<TEntity>();
+            var mapper = (IEntityMapper<TEntity>) _provider.Get<TEntity>();
             return mapper;
         }
     }

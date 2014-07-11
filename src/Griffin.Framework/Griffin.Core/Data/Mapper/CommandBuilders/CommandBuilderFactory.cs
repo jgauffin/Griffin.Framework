@@ -7,14 +7,14 @@ namespace Griffin.Data.Mapper.CommandBuilders
     /// </summary>
     public class CommandBuilderFactory
     {
-        private static Func<IEntityMapper, ICommandBuilder> _commandBuilder = mapper => new SqlServerCommandBuilder(mapper);
+        private static Func<ICrudEntityMapper, ICommandBuilder> _commandBuilder = mapper => new SqlServerCommandBuilder(mapper);
 
         /// <summary>
         /// Assigns the specified command builder.
         /// </summary>
         /// <param name="commandBuilder">Assign your database engine specific command builder factory.</param>
         /// <exception cref="System.ArgumentNullException">commandBuilder</exception>
-        public static void Assign(Func<IEntityMapper, ICommandBuilder> commandBuilder)
+        public static void Assign(Func<ICrudEntityMapper, ICommandBuilder> commandBuilder)
         {
             if (commandBuilder == null) throw new ArgumentNullException("commandBuilder");
             _commandBuilder = commandBuilder;
@@ -25,7 +25,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// </summary>
         /// <param name="mapper">Mapper to get a builder for.</param>
         /// <returns>builder.</returns>
-        public static ICommandBuilder Create(IEntityMapper mapper)
+        public static ICommandBuilder Create(ICrudEntityMapper mapper)
         {
             return _commandBuilder(mapper);
         }

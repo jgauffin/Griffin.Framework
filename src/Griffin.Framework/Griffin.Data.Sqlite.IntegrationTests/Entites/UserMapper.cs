@@ -4,7 +4,7 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 {
-    public class UserMapper : EntityMapper<User>
+    public class UserMapper : CrudEntityMapper<User>
     {
         public UserMapper() : base("Users")
         {

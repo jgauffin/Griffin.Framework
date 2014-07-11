@@ -18,7 +18,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerable<string>(cmd, reader, mapper, false);
             sut.GetEnumerator();

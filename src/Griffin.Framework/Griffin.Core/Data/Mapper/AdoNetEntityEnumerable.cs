@@ -28,7 +28,7 @@ namespace Griffin.Data.Mapper
         /// or
         /// mapper
         /// </exception>
-        public AdoNetEntityEnumerable(IDbCommand command, IDataReader reader, IEntityMapperBase<TEntity> mapper, bool ownsConnection)
+        public AdoNetEntityEnumerable(IDbCommand command, IDataReader reader, IEntityMapper<TEntity> mapper, bool ownsConnection)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (reader == null) throw new ArgumentNullException("reader");

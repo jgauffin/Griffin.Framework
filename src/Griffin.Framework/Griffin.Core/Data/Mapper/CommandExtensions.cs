@@ -16,7 +16,7 @@ namespace Griffin.Data.Mapper
         /// <param name="cmd">Command to add parameters to (should end with " WHERE " so that this method can add the constraints properly)</param>
         /// <param name="mapper">Mapper to use to convert properties to columns</param>
         /// <param name="constraints">properties in an anonymous object</param>
-        internal static void ApplyConstraints<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper, object constraints)
+        internal static void ApplyConstraints<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper, object constraints)
         {
             string tmp = "";
             foreach (var kvp in constraints.ToDictionary())
@@ -111,7 +111,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static TEntity First<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
+        public static TEntity First<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -186,7 +186,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static TEntity FirstOrDefault<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
+        public static TEntity FirstOrDefault<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -415,7 +415,7 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         public static IEnumerable<TEntity> ToEnumerable<TEntity>(this IDbCommand cmd, bool ownsConnection,
-            IEntityMapper<TEntity> mapper)
+            ICrudEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -499,7 +499,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static IList<TEntity> ToList<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
+        public static IList<TEntity> ToList<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");

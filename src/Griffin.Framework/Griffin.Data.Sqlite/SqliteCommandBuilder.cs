@@ -6,7 +6,7 @@ namespace Griffin.Data.Sqlite
 {
     public class SqliteCommandBuilder : CommandBuilder
     {
-        public SqliteCommandBuilder(IEntityMapper mapper) : base(mapper)
+        public SqliteCommandBuilder(ICrudEntityMapper mapper) : base(mapper)
         {
         }
 

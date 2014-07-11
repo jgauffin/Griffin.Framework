@@ -26,7 +26,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void TableName_is_properly_assigned_in_the_constructor()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
 
             var sut = new CommandBuilder(mapper);
@@ -37,7 +37,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_is_added_in_the_insert_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -58,7 +58,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_without_value_is_ignored_in_the_insert_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -77,7 +77,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void field_is_added_in_the_insert_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -98,7 +98,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void field_without_value_is_added_with_DbNull_in_the_insert_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -119,7 +119,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_is_added_first_in_the_insert_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -145,7 +145,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void keys_must_be_specified_in_an_update_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -164,7 +164,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_may_not_be_the_only_field_in_an_update_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -183,7 +183,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void field_is_added_in_the_update_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -207,7 +207,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void field_without_value_is_added_with_DbNull_in_the_update_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -232,7 +232,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_must_a_value_in_the_update_Query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -253,7 +253,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void keys_must_be_specified_in_a_delete_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -272,7 +272,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_should_be_the_only_field_in_a_delete_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -292,7 +292,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void key_is_assigned_correctly_in_a_delete_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
@@ -314,7 +314,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         [Fact]
         public void do_not_allow_DbNull_in_the_delete_query()
         {
-            var mapper = Substitute.For<IEntityMapper>();
+            var mapper = Substitute.For<ICrudEntityMapper>();
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {

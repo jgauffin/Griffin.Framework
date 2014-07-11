@@ -104,13 +104,13 @@
     <Compile Include="Data\Mapper\CommandExtensions.cs" />
     <Compile Include="Data\Mapper\ConnectionExtensions.cs" />
     <Compile Include="Data\Mapper\DateTimeExtensions.cs" />
+    <Compile Include="Data\Mapper\CrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMapper.cs" />
-    <Compile Include="Data\Mapper\EntityMapperBase.cs" />
     <Compile Include="Data\Mapper\EntityMappingProvider.cs" />
-    <Compile Include="Data\Mapper\IEntityMapper.cs" />
+    <Compile Include="Data\Mapper\ICrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\IMappingProvider.cs" />
     <Compile Include="Data\Mapper\IPropertyMapping.cs" />
-    <Compile Include="Data\Mapper\IEntityMapperBase.cs" />
+    <Compile Include="Data\Mapper\IEntityMapper.cs" />
     <Compile Include="Data\Mapper\IUnitOfWorkExtensions.cs" />
     <Compile Include="Data\Mapper\MappingException.cs" />
     <Compile Include="Data\Mapper\MappingForAttribute.cs" />
@@ -333,6 +333,8 @@
     <None Include="ApplicationServices\Docs\Backgroundjobs.md" />
     <None Include="ApplicationServices\ReadMe.md" />
     <None Include="Container\ReadMe.md" />
+    <None Include="Data\Mapper\Docs\Mappings.md" />
+    <None Include="Data\Mapper\ReadMe.md" />
     <None Include="Data\ReadMe.md" />
     <None Include="Logging\ReadMe.md" />
     <None Include="Net\Authentication\HashAuthenticator\Messages\ReadMe.md" />

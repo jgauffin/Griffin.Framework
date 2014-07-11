@@ -16,7 +16,7 @@ namespace Griffin.Core.Tests.Data.Mapper.TestMappings
     }
 
     [MappingFor(typeof(UsingAttribute))]
-    class UsingAttributeMapper : IEntityMapper
+    class UsingAttributeMapper : ICrudEntityMapper
     {
         /// <summary>
         /// Create a new entity for the specified 

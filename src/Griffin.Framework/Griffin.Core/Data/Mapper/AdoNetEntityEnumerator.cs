@@ -19,7 +19,7 @@ namespace Griffin.Data.Mapper
     /// </remarks>
     public class AdoNetEntityEnumerator<TEntity> : IEnumerator<TEntity>
     {
-        private readonly IEntityMapperBase _mapper;
+        private readonly IEntityMapper _mapper;
         private readonly bool _ownsConnection;
         private IDbCommand _command;
         private TEntity _current;
@@ -40,7 +40,7 @@ namespace Griffin.Data.Mapper
         /// or
         /// mapper
         /// </exception>
-        public AdoNetEntityEnumerator(IDbCommand command, IDataReader reader, IEntityMapperBase mapper, bool ownsConnection)
+        public AdoNetEntityEnumerator(IDbCommand command, IDataReader reader, IEntityMapper mapper, bool ownsConnection)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (reader == null) throw new ArgumentNullException("reader");

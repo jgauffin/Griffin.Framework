@@ -134,7 +134,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             public string Id { get; set; }
         }
 
-        public class TentityMapper : EntityMapper<Tentity>
+        public class TentityMapper : CrudEntityMapper<Tentity>
         {
             public TentityMapper() : base("Tenteties")
             {

@@ -21,7 +21,7 @@ namespace Griffin.Data.Mapper
         /// </returns>
         /// <remarks>
         ///     <para>Use this method when an entity is expected to be returned.</para>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -66,7 +66,7 @@ namespace Griffin.Data.Mapper
         /// <param name="constraints">dynamic specifying the properties to use. All parameters are joined with "AND" in the resulting SQL query. Any parameter with '%' in the value will be using LIKE instead of '='</param>
         /// <returns>Found entity</returns>
         /// <remarks>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -111,7 +111,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">Entity to insert.</param>
         /// <returns>Task to wait on for completion</returns>
         /// <remarks>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         public static async Task InsertAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
@@ -131,7 +131,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">Entity to update.</param>
         /// <returns>Task to wait on for completion</returns>
         /// <remarks>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         public static async Task UpdateAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
@@ -151,7 +151,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">Entity to remove.</param>
         /// <returns>Task to wait on for completion.</returns>
         /// <remarks>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         public static async Task DeleteAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
@@ -171,7 +171,7 @@ namespace Griffin.Data.Mapper
         /// <param name="constraints">dynamic specifying the properties to use. All parameters are joined with "AND" in the resulting SQL query. Any parameter with '%' in the value will be using LIKE instead of '='</param>
         /// <returns>Task to wait on for completion.</returns>
         /// <remarks>
-        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c></para>
+        /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
         /// <example>
         /// <code>

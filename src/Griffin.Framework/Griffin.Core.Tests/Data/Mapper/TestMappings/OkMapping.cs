@@ -8,7 +8,7 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {
-    class OkMapping : EntityMapper<Ok>
+    class OkMapping : CrudEntityMapper<Ok>
     {
         public OkMapping() : base("OkMappings")
         {

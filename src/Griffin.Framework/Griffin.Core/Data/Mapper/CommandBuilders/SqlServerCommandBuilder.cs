@@ -11,7 +11,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// Initializes a new instance of the <see cref="SqlServerCommandBuilder"/> class.
         /// </summary>
         /// <param name="mapper">Mapper that this builder can generate queries for.</param>
-        public SqlServerCommandBuilder(IEntityMapper mapper)
+        public SqlServerCommandBuilder(ICrudEntityMapper mapper)
             : base(mapper)
         {
         }

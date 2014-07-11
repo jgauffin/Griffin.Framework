@@ -23,7 +23,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             record["Id"].Returns("1");
             var actual = new FieldSetterProperty();
 
-            var sut = new EntityMapper<FieldSetterProperty>("Entities");
+            var sut = new CrudEntityMapper<FieldSetterProperty>("Entities");
             sut.Map(record, actual);
 
             actual.Id.Should().Be("1");
@@ -36,7 +36,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             record["Id"].Returns("1");
             var actual = new FieldGetterProperty();
 
-            var sut = new EntityMapper<FieldGetterProperty>("Entities");
+            var sut = new CrudEntityMapper<FieldGetterProperty>("Entities");
             sut.Map(record, actual);
 
             actual.Id.Should().Be("1");
@@ -49,7 +49,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             record["Id"].Returns("1");
             var actual = new PrivateProperty();
 
-            var sut = new EntityMapper<PrivateProperty>("Entities");
+            var sut = new CrudEntityMapper<PrivateProperty>("Entities");
             sut.Map(record, actual);
 
             actual.GetType().GetProperty("Id", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(actual).Should().Be("1");
@@ -62,7 +62,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             record["Id"].Returns("1");
             var actual = new PrivateSetterProperty();
 
-            var sut = new EntityMapper<PrivateSetterProperty>("Entities");
+            var sut = new CrudEntityMapper<PrivateSetterProperty>("Entities");
             sut.Map(record, actual);
 
             actual.Id.Should().Be("1");
@@ -75,7 +75,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             record["Id"].Returns("1");
             var actual = new NoSetterAndNoField();
 
-            var sut = new EntityMapper<NoSetterAndNoField>("Entities");
+            var sut = new CrudEntityMapper<NoSetterAndNoField>("Entities");
             sut.Map(record, actual);
 
             actual.Id.Should().Be("11");
@@ -85,7 +85,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void can_create_instance_no_specified_constructor()
         {
 
-            var actual = EntityMapper<PrivateSetterProperty>.CreateInstanceFactory()();
+            var actual = CrudEntityMapper<PrivateSetterProperty>.CreateInstanceFactory()();
 
             actual.Should().NotBeNull();
         }
@@ -94,7 +94,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void can_create_instance_with_private_constructor()
         {
 
-            var actual = EntityMapper<PrivateDefaultConstructor>.CreateInstanceFactory()();
+            var actual = CrudEntityMapper<PrivateDefaultConstructor>.CreateInstanceFactory()();
 
             actual.Should().NotBeNull();
         }
@@ -102,7 +102,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         [Fact]
         public void can_create_using_the_generated_factory_method()
         {
-            var sut = new EntityMapper<PrivateDefaultConstructor>("Entities");
+            var sut = new CrudEntityMapper<PrivateDefaultConstructor>("Entities");
             var record = Substitute.For<IDataRecord>();
 
             var actual = sut.Create(record);
@@ -114,7 +114,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void throws_detailed_exception_if_no_default_constructor_exists()
         {
 
-            Action actual = () => EntityMapper<NoDefaultConstructor>.CreateInstanceFactory()();
+            Action actual = () => CrudEntityMapper<NoDefaultConstructor>.CreateInstanceFactory()();
 
             actual.ShouldThrow<MappingException>().And.Message.Should().StartWith("Failed to find a default constructor ");
         }
@@ -124,7 +124,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var expected = new Ok { FirstName = "Arne", Id = "22" };
 
-            var sut = new EntityMapper<Ok>("Users");
+            var sut = new CrudEntityMapper<Ok>("Users");
             sut.Freeze();
             var keys = sut.GetKeys(expected);
 
@@ -137,7 +137,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var expected = new Empty();
 
-            var sut = new EntityMapper<Empty>("Users");
+            var sut = new CrudEntityMapper<Empty>("Users");
             var keys = sut.GetKeys(expected);
 
             keys.Length.Should().Be(0);
@@ -150,7 +150,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var record = Substitute.For<IDataRecord>();
             record["Prop"].Returns(10);
 
-            var sut = new EntityMapper<JustASetter>("Users");
+            var sut = new CrudEntityMapper<JustASetter>("Users");
             sut.Map(record, actual);
 
             actual.GetValue().Should().Be(10);

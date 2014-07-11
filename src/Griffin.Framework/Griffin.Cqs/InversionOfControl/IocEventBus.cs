@@ -54,7 +54,7 @@ namespace Griffin.Cqs.InversionOfControl
                     await task;
                     EventPublished(this, new EventPublishedEventArgs(scope, e, true));
                 }
-                catch (Exception exception)
+                catch
                 {
                     EventPublished(this, new EventPublishedEventArgs(scope, e, false));
                     throw task.Exception;

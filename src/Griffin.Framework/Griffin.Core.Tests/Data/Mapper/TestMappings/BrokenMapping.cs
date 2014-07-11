@@ -10,7 +10,7 @@ using Griffin.Data.Mapper.CommandBuilders;
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {
-    class BrokenMapping : IEntityMapper
+    class BrokenMapping : ICrudEntityMapper
     {
         /// <summary>
         /// Create a new entity for the specified 

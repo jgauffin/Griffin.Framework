@@ -2,7 +2,7 @@
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {
-    class EmptyMapping : EntityMapper<Empty>
+    class EmptyMapping : CrudEntityMapper<Empty>
     {
         public EmptyMapping() : base("Emty")
         {

@@ -15,10 +15,10 @@ namespace Griffin.Data.Mapper
         /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
         /// <remarks>
         /// <para>
-        /// Do note that the mapper must implement <see cref="IEntityMapper{TEntity}"/> interface for this method to work.
+        /// Do note that the mapper must implement <see cref="ICrudEntityMapper{TEntity}"/> interface for this method to work.
         /// </para>
         /// </remarks>
-        IEntityMapper Get<TEntity>();
+        ICrudEntityMapper Get<TEntity>();
 
         /// <summary>
         /// Get mapping for the specified entity type
@@ -26,6 +26,6 @@ namespace Griffin.Data.Mapper
         /// <typeparam name="T">Type of entity</typeparam>
         /// <returns>Mapper</returns>
         /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
-        IEntityMapperBase GetBase<T>();
+        IEntityMapper GetBase<T>();
     }
 }

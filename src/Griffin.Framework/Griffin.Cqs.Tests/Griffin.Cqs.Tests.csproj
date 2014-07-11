@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <NoWarn>4014, 1998</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCqs">

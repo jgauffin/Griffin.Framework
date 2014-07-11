@@ -12,7 +12,7 @@ namespace Griffin.Core.Tests.Data.Mapper.TestMappings
         public string Id { get; set; }
     }
 
-    public class UsingReflectionMapper : EntityMapper<UsingReflection>
+    public class UsingReflectionMapper : CrudEntityMapper<UsingReflection>
     {
         public UsingReflectionMapper()
             : base("UsingReflections")

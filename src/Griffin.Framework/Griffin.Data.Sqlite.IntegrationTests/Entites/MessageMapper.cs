@@ -4,7 +4,7 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 {
-    public class MessageMapper : EntityMapper<Message>
+    public class MessageMapper : CrudEntityMapper<Message>
     {
         public MessageMapper()
             : base("Messages")

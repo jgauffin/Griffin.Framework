@@ -18,7 +18,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
 
@@ -31,7 +31,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             sut.MoveNext();
@@ -44,7 +44,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             var actual = sut.MoveNext();
@@ -58,7 +58,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
             reader.Read().Returns(true);
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
@@ -72,7 +72,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
             reader.Read();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
@@ -87,7 +87,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             sut.Dispose();
@@ -100,7 +100,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             sut.Dispose();
@@ -115,7 +115,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var cmd = Substitute.For<IDbCommand>();
             cmd.Connection.Returns(connection);
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             sut.Dispose();
@@ -130,7 +130,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var cmd = Substitute.For<IDbCommand>();
             cmd.Connection.Returns(connection);
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, false);
             sut.Dispose();
@@ -143,7 +143,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<string>>();
+            var mapper = Substitute.For<ICrudEntityMapper<string>>();
             object tmp = null;
 
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, false);
@@ -157,7 +157,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<Wrapper>>();
+            var mapper = Substitute.For<ICrudEntityMapper<Wrapper>>();
             var expected = "Hello";
             mapper.Map(reader, Arg.Do<object>(x => ((Wrapper)x).Value = expected));
             mapper.Create(reader).Returns(new Wrapper());
@@ -176,7 +176,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<IDbCommand>();
             var reader = Substitute.For<IDataReader>();
-            var mapper = Substitute.For<IEntityMapper<Wrapper>>();
+            var mapper = Substitute.For<ICrudEntityMapper<Wrapper>>();
             var wrapper = new Wrapper();
             var expected = "Hello";
             mapper.Create(reader).Returns(wrapper);

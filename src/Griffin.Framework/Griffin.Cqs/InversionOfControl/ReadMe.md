@@ -114,7 +114,9 @@ private ICommandBus CreateCommandBus(IServiceLocator arg)
 
 ## Handlers
 
-A handler looks like any other class and can take a dependencies in the constructor:
+A handler looks like any other class and can take dependencies in the constructor. 
+
+This example uses the [Data mapper](../../Griffin.Core/Data/Mapper) in Griffin Framework to store the item.
 
 ```csharp
 public class AccountActivatedHandler : IApplicationEventSubscriber<AccountActivated>

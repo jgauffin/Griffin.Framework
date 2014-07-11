@@ -3,7 +3,7 @@
 namespace Griffin.Data.Mapper
 {
     /// <summary>
-    ///     Will point on the entity that a mapping is for if the <see cref="IEntityMapper" /> interface is used instead of the
+    ///     Will point on the entity that a mapping is for if the <see cref="ICrudEntityMapper" /> interface is used instead of the
     ///     generic one.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]

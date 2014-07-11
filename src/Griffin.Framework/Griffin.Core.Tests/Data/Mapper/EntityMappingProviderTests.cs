@@ -25,7 +25,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void the_new_provider_is_used_after_assignment()
         {
             var provider = Substitute.For<IMappingProvider>();
-            var expected = Substitute.For<IEntityMapper<string>>();
+            var expected = Substitute.For<ICrudEntityMapper<string>>();
             provider.Get<string>().Returns(expected);
 
             EntityMappingProvider.Provider = provider;

@@ -13,7 +13,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
     public class CommandBuilder : ICommandBuilder
     {
         private readonly List<IPropertyMapping> _keys = new List<IPropertyMapping>();
-        private readonly IEntityMapper _mapper;
+        private readonly ICrudEntityMapper _mapper;
         private readonly string _tableName;
         private readonly List<IPropertyMapping> _values = new List<IPropertyMapping>();
 
@@ -22,7 +22,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// </summary>
         /// <param name="mapper">The mapper.</param>
         /// <exception cref="System.ArgumentNullException">mapper</exception>
-        public CommandBuilder(IEntityMapper mapper)
+        public CommandBuilder(ICrudEntityMapper mapper)
         {
             if (mapper == null) throw new ArgumentNullException("mapper");
 
