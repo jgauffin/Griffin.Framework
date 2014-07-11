@@ -27,6 +27,11 @@ namespace Griffin.Cqs.InversionOfControl
         }
 
         /// <summary>
+        /// A query have been executed.
+        /// </summary>
+        public event EventHandler<QueryExecutedEventArgs> QueryExecuted;
+
+        /// <summary>
         ///     Invoke a query and wait for the result
         /// </summary>
         /// <typeparam name="TResult">Type of result that the query will return</typeparam>
@@ -41,8 +46,8 @@ namespace Griffin.Cqs.InversionOfControl
 
             using (var scope = _container.CreateScope())
             {
-                var result = scope.ResolveAll(handler);
-                var handlers = result.ToArray();
+                var handlerList = scope.ResolveAll(handler);
+                var handlers = handlerList.ToArray();
 
                 if (handlers.Length == 0)
                     throw new CqsHandlerMissingException(query.GetType());
@@ -54,7 +59,10 @@ namespace Griffin.Cqs.InversionOfControl
                 {
                     var task = (Task) method.Invoke(handlers[0], new object[] {query});
                     await task;
-                    return ((dynamic) task).Result;
+                    var result1= ((dynamic) task).Result;
+                    if (QueryExecuted != null)
+                        QueryExecuted(this, new QueryExecutedEventArgs(scope, query, handlers[0]));
+                    return result1;
                 }
                 catch (TargetInvocationException exception)
                 {

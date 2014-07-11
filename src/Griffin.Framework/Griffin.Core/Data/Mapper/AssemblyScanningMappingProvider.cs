@@ -10,17 +10,45 @@ namespace Griffin.Data.Mapper
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         All mappers are added as created instances to an internal cache for fast access during mapping operations. Hence it's important
-    /// that they are thread safe and considered as singletons when this class is used.
+    ///         All mappers are added as created instances to an internal cache for fast access during mapping operations.
+    ///         Hence it's important
+    ///         that they are thread safe and considered as singletons when this class is used.
     ///     </para>
-    /// <para>
-    /// 
-    /// </para>
+    ///     <para>
+    ///     </para>
     /// </remarks>
     public class AssemblyScanningMappingProvider : IMappingProvider
     {
         private readonly Dictionary<Type, object> _mappers = new Dictionary<Type, object>();
         private readonly IList<Assembly> _scannedAssemblies = new List<Assembly>();
+
+        /// <summary>
+        ///     Ignore mapper classes which are invalid when locating all mappings in the loaded assemblies.
+        /// </summary>
+        /// <remarks>
+        ///     <para>The <c>Scan()</c> method </para>
+        /// </remarks>
+        public bool IgnoreInvalidMappers { get; set; }
+
+        /// <summary>
+        ///     If <c>true</c>, we'll replace the first mapper if we encounter a second mapper for the same entity.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <c>false</c> means that an exception will be thrown
+        ///     </para>
+        /// </remarks>
+        public bool ReplaceDuplicateMappers { get; set; }
+
+        /// <summary>
+        ///     Scan has been called.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Used by the library to check if the library should trigger a scan.
+        ///     </para>
+        /// </remarks>
+        public bool HasScanned { private set; get; }
 
         /// <summary>
         ///     Retrieve a mapper.
@@ -29,28 +57,30 @@ namespace Griffin.Data.Mapper
         /// <returns>Mapper</returns>
         /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
         /// <remarks>
-        /// <para>
-        /// Do note that the mapper must implement <see cref="IEntityMapper{TEntity}"/> interface for this method to work.
-        /// </para>
+        ///     <para>
+        ///         Do note that the mapper must implement <see cref="IEntityMapper{TEntity}" /> interface for this method to work.
+        ///     </para>
         /// </remarks>
         public IEntityMapper Get<TEntity>()
         {
             object mapper;
-            if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+            if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
             {
-                if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
-                    throw new MappingNotFoundException(typeof(TEntity));
+                if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof (TEntity));
             }
 
             var genericMapper = mapper as IEntityMapper<TEntity>;
             if (genericMapper == null)
-                throw new MappingException(typeof(TEntity), "The mapper for '" + typeof(TEntity).FullName + "' must implement the generic interface 'IEntityMapper<T>' for this method to work.");
+                throw new MappingException(typeof (TEntity),
+                    "The mapper for '" + typeof (TEntity).FullName +
+                    "' must implement the generic interface 'IEntityMapper<T>' for this method to work.");
 
             return genericMapper;
         }
 
-         /// <summary>
-        /// Get mapping for the specified entity type
+        /// <summary>
+        ///     Get mapping for the specified entity type
         /// </summary>
         /// <typeparam name="T">Type of entity</typeparam>
         /// <returns>Mapper</returns>
@@ -58,15 +88,17 @@ namespace Griffin.Data.Mapper
         public IEntityMapperBase GetBase<TEntity>()
         {
             object mapper;
-            if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+            if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
             {
-                if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
-                    throw new MappingNotFoundException(typeof(TEntity));
+                if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof (TEntity));
             }
 
             var genericMapper = mapper as IEntityMapperBase<TEntity>;
             if (genericMapper == null)
-                throw new MappingException(typeof(TEntity), "The mapper for '" + typeof(TEntity).FullName + "' must implement the generic interface 'IEntityMapperBase<T>' for this method to work.");
+                throw new MappingException(typeof (TEntity),
+                    "The mapper for '" + typeof (TEntity).FullName +
+                    "' must implement the generic interface 'IEntityMapperBase<T>' for this method to work.");
 
             return genericMapper;
         }
@@ -89,32 +121,15 @@ namespace Griffin.Data.Mapper
                     throw new MappingNotFoundException(entityType);
             }
 
-            return (IEntityMapper)mapper;
+            return (IEntityMapper) mapper;
         }
-
-        /// <summary>
-        /// Ignore mapper classes which are invalid when locating all mappings in the loaded assemblies.
-        /// </summary>
-        /// <remarks>
-        /// <para>The <c>Scan()</c> method </para>
-        /// </remarks>
-        public bool IgnoreInvalidMappers { get; set; }
-
-        /// <summary>
-        /// If <c>true</c>, we'll replace the first mapper if we encounter a second mapper for the same entity.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <c>false</c> means that an exception will be thrown
-        /// </para>
-        /// </remarks>
-        public bool ReplaceDuplicateMappers { get; set; }
 
         /// <summary>
         ///     Scan all loaded assemblies in the current domain.
         /// </summary>
         public void Scan()
         {
+            HasScanned = true;
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies)
             {
@@ -130,13 +145,14 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Scan all loaded assemblies in the current domain.
         /// </summary>
-        /// <param name="assembly">Assembly to scan for types that implement <see cref="IEntityMapper"/>.,</param>
+        /// <param name="assembly">Assembly to scan for types that implement <see cref="IEntityMapper" />.,</param>
         public void Scan(Assembly assembly)
         {
             if (_scannedAssemblies.Contains(assembly))
                 return;
 
-            var types = assembly.GetTypes().Where(x => typeof(IEntityMapper).IsAssignableFrom(x));
+            HasScanned = true;
+            var types = assembly.GetTypes().Where(x => typeof (IEntityMapper).IsAssignableFrom(x));
             foreach (var type in types)
             {
                 Console.WriteLine("scanning: " + type.FullName);
@@ -149,7 +165,7 @@ namespace Griffin.Data.Mapper
                 if (type.GetGenericArguments().Length > 0)
                     continue;
 
-                Console.WriteLine("adding: "  + type.FullName);
+                Console.WriteLine("adding: " + type.FullName);
                 if (type.BaseType != null && type.BaseType.GenericTypeArguments.Length == 1)
                 {
                     entityType = type.BaseType.GenericTypeArguments[0];
@@ -175,13 +191,12 @@ namespace Griffin.Data.Mapper
                                 "Entity mappers must either implement IEntityMapper<T> or be decorated with the [MappingFor(typeof(YourEntity))] attribute. Adjust '" +
                                 type.FullName + "' accordingly.");
                         }
-                            
+
 
                         entityType = genericInterface.GenericTypeArguments[0];
                         instance = CreateInstance(type);
                     }
                 }
-
 
 
                 if (_mappers.ContainsKey(entityType) && !ReplaceDuplicateMappers)
@@ -190,7 +205,7 @@ namespace Griffin.Data.Mapper
                             entityType.FullName, type.FullName, _mappers[entityType].GetType().FullName));
 
                 ((IEntityMapper) instance).Freeze();
-                _mappers[entityType] =  instance;
+                _mappers[entityType] = instance;
             }
         }
 
@@ -208,7 +223,8 @@ namespace Griffin.Data.Mapper
             }
             catch (Exception exception)
             {
-                throw new MappingException(type, "Failed to initialize mapper class. Is the mappings correct? Check inner exception for more information.",
+                throw new MappingException(type,
+                    "Failed to initialize mapper class. Is the mappings correct? Check inner exception for more information.",
                     exception);
             }
             return instance;

@@ -9,29 +9,33 @@ using Griffin.Logging;
 namespace Griffin.ApplicationServices
 {
     /// <summary>
-    ///     Used to execute all classes that implement <see cref="IBackgroundJob"/>. The jobs are executed in parallell.
+    ///     Used to execute all classes that implement <see cref="IBackgroundJob" />. The jobs are executed in parallell.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This implementation uses your inversion of control container via the interface <see cref="Griffin.Container.IContainer"/>.. A new scope (
+    ///         This implementation uses your inversion of control container via the interface
+    ///         <see cref="Griffin.Container.IContainer" />.. A new scope (
     ///         <see
     ///             cref="IContainerScope" />
     ///         ) is created for every time a job is executed.
     ///     </para>
     ///     <para>
-    ///         By subscribing on the event <see cref="ScopeClosing"/> you can for instance commit an unit of work everytime a job have been executed.
+    ///         By subscribing on the event <see cref="ScopeClosing" /> you can for instance commit an unit of work everytime a
+    ///         job have been executed.
     ///     </para>
-    /// <para>
-    /// To be able to run every job in isolation (in an own scope) we need to be able to find all background jobs. To do that a temporary scope
-    /// is created during startup to resolve all jobs (<c><![CDATA[scope.ResolveAll<IBackgroundJob>()]]></c>. The jobs are not invoked but only located so that we can map all background job types. Then later
-    /// when we are going to execute each job we use <c><![CDATA[scope.Resolve(jobType)]]></c> for every job that is about to be executed.
-    /// </para>
+    ///     <para>
+    ///         To be able to run every job in isolation (in an own scope) we need to be able to find all background jobs. To
+    ///         do that a temporary scope
+    ///         is created during startup to resolve all jobs (<c><![CDATA[scope.ResolveAll<IBackgroundJob>()]]></c>. The jobs
+    ///         are not invoked but only located so that we can map all background job types. Then later
+    ///         when we are going to execute each job we use <c><![CDATA[scope.Resolve(jobType)]]></c> for every job that is
+    ///         about to be executed.
+    ///     </para>
     /// </remarks>
     /// <example>
-    /// <para>
-    /// Example for a windows service class:
-    /// </para>
-    /// 
+    ///     <para>
+    ///         Example for a windows service class:
+    ///     </para>
     ///     <code>
     /// public class Service1 : ServiceBase
     /// {
@@ -74,10 +78,10 @@ namespace Griffin.ApplicationServices
     public class BackgroundJobManager : IDisposable
     {
         private readonly IContainer _container;
-        private readonly ILogger _logger = LogManager.GetLogger(typeof(BackgroundJobManager));
-        private Timer _timer;
-        private List<Type> _syncJobTypes = new List<Type>();
+        private readonly ILogger _logger = LogManager.GetLogger(typeof (BackgroundJobManager));
         private List<Type> _asyncJobTypes = new List<Type>();
+        private List<Type> _syncJobTypes = new List<Type>();
+        private Timer _timer;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="BackgroundJobManager" /> class.
@@ -124,9 +128,9 @@ namespace Griffin.ApplicationServices
         ///     A job have finished executing.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Will not be invoked if <see cref="JobFailed"/> event sets <c>CanContinue</c> to <c>false</c>.
-        /// </para>
+        ///     <para>
+        ///         Will not be invoked if <see cref="JobFailed" /> event sets <c>CanContinue</c> to <c>false</c>.
+        ///     </para>
         /// </remarks>
         public event EventHandler<ScopeClosingEventArgs> ScopeClosing = delegate { };
 
@@ -139,13 +143,14 @@ namespace Griffin.ApplicationServices
         public event EventHandler<BackgroundJobFailedEventArgs> JobFailed = delegate { };
 
         /// <summary>
-        ///     Start executing jobs (once the <see cref="StartInterval"/> have been passed).
+        ///     Start executing jobs (once the <see cref="StartInterval" /> have been passed).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Will do one initial resolve on al jobs in the container to be able to discover their <c>Type</c>. Without this check it would not be
-        /// possible to run each job in an isolated scope.
-        /// </para>
+        ///     <para>
+        ///         Will do one initial resolve on al jobs in the container to be able to discover their <c>Type</c>. Without this
+        ///         check it would not be
+        ///         possible to run each job in an isolated scope.
+        ///     </para>
         /// </remarks>
         public void Start()
         {
@@ -190,23 +195,20 @@ namespace Griffin.ApplicationServices
                             ScopeCreated(this, new ScopeCreatedEventArgs(scope));
                             job.Execute();
                             ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
-
                         }
                         catch (Exception exception)
                         {
-                            var args = new BackgroundJobFailedEventArgs(job, exception);
+                            var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
                             JobFailed(this, args);
                             ScopeClosing(this, new ScopeClosingEventArgs(scope, false) {Exception = exception});
                         }
-
                     }
                 }
                 catch (Exception exception)
                 {
-                    JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(exception), exception));
+                    JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
                     _logger.Error("Failed to execute job: " + job, exception);
                 }
-
             });
 
             var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
@@ -222,37 +224,52 @@ namespace Griffin.ApplicationServices
                 {
                     try
                     {
-                        job = (IBackgroundJobAsync)scope.Resolve(jobType);
+                        job = (IBackgroundJobAsync) scope.Resolve(jobType);
                         ScopeCreated(this, new ScopeCreatedEventArgs(scope));
                         await job.ExecuteAsync();
                         ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
-
                     }
                     catch (Exception exception)
                     {
-                        var args = new BackgroundJobFailedEventArgs(job, exception);
+                        var args = new BackgroundJobFailedEventArgs((object) job ?? new NoJob(jobType, exception),
+                            exception);
                         JobFailed(this, args);
-                        ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope, false) {Exception = exception});
                     }
-
                 }
             }
             catch (Exception exception)
             {
-                JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(exception), exception));
+                JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
                 _logger.Error("Failed to execute job: " + job, exception);
             }
-
         }
 
-        private class NoJob : IBackgroundJob
+        /// <summary>
+        /// Used in the events when a job can not be constructed.
+        /// </summary>
+        public class NoJob : IBackgroundJob
         {
             private readonly Exception _exception;
 
-            public NoJob(Exception exception)
+            public NoJob(Type jobType, Exception exception)
             {
+                JobType = jobType;
                 if (exception == null) throw new ArgumentNullException("exception");
                 _exception = exception;
+            }
+
+            /// <summary>
+            /// Job that could not be created
+            /// </summary>
+            public Type JobType { get; set; }
+
+            /// <summary>
+            /// Exception that prevents job from being created.
+            /// </summary>
+            public Exception Exception
+            {
+                get { return _exception; }
             }
 
             /// <summary>
@@ -263,22 +280,20 @@ namespace Griffin.ApplicationServices
             /// </remarks>
             public void Execute()
             {
-
             }
 
             /// <summary>
-            /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            ///     Returns a <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
             /// </summary>
             /// <returns>
-            /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+            ///     A <see cref="T:System.String" /> that represents the current <see cref="T:System.Object" />.
             /// </returns>
             public override string ToString()
             {
-                return "NoJob, scope.ResolveAll<IBackgroundJob>() failed. Check exception property for more information. '" +
-                       _exception.Message + "'";
+                return
+                    "NoJob, scope.ResolveAll<IBackgroundJob>() failed. Check exception property for more information. '" +
+                    Exception.Message + "'";
             }
         }
     }
-
-
 }

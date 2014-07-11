@@ -5,8 +5,11 @@ using Griffin.Container;
 namespace Griffin.Cqs.InversionOfControl
 {
     /// <summary>
-    /// A command have been successfully invoked
+    /// An event have been published.
     /// </summary>
+    /// <remarks>
+    /// <para>Wether all handlers succeeded or not is specified by the <see cref="Successful"/> property.</para>
+    /// </remarks>
     public class EventPublishedEventArgs : EventArgs
     {
         /// <summary>

@@ -53,6 +53,7 @@
     <Compile Include="ICommandExecutor.cs" />
     <Compile Include="IEventExecutor.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
+    <Compile Include="InversionOfControl\QueryExecutedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />
     <Compile Include="InversionOfControl\IocCommandBus.cs" />
     <Compile Include="InversionOfControl\IocEventBus.cs" />

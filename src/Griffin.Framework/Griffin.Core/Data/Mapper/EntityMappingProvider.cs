@@ -47,17 +47,26 @@ namespace Griffin.Data.Mapper
         /// <returns></returns>
         public static IEntityMapper<TEntity> GetMapper<TEntity>()
         {
+            EnsureThatAssembliesHaveBeenScanned();
+
+            var mapperFound = _provider.Get<TEntity>();
+            var mapper = mapperFound as IEntityMapper<TEntity>;
+            if (mapper == null)
+                throw new MappingException(typeof (TEntity),
+                    "Expected to find a IEntityMapper but only found a IEntityMapperBase for the requested operation to work. Found mapper: " +
+                    mapperFound.GetType().FullName);
+            return mapper;
+        }
+
+        private static void EnsureThatAssembliesHaveBeenScanned()
+        {
             if (!_scanned && _provider is AssemblyScanningMappingProvider)
             {
+                var provider = (AssemblyScanningMappingProvider) _provider;
                 _scanned = true;
-                ((AssemblyScanningMappingProvider) _provider).Scan();
+                if (!provider.HasScanned)
+                    provider.Scan();
             }
-
-            var mapperFound=  _provider.Get<TEntity>();
-            var mapper=  mapperFound as IEntityMapper<TEntity>;
-            if (mapper == null)
-                throw new MappingException(typeof(TEntity), "Expected to find a IEntityMapper but only found a IEntityMapperBase for the requested operation to work. Found mapper: " + mapperFound.GetType().FullName);
-            return mapper;
         }
 
         /// <summary>
@@ -68,13 +77,9 @@ namespace Griffin.Data.Mapper
         /// <returns></returns>
         public static IEntityMapperBase<TEntity> GetBaseMapper<TEntity>()
         {
-            if (!_scanned && _provider is AssemblyScanningMappingProvider)
-            {
-                _scanned = true;
-                ((AssemblyScanningMappingProvider)_provider).Scan();
-            }
+            EnsureThatAssembliesHaveBeenScanned();
 
-            var mapper = (IEntityMapperBase<TEntity>)_provider.Get<TEntity>();
+            var mapper = (IEntityMapperBase<TEntity>) _provider.Get<TEntity>();
             return mapper;
         }
     }

@@ -10,7 +10,7 @@ namespace Griffin.ApplicationServices
         /// <summary>
         ///     Initializes a new instance of the <see cref="BackgroundJobFailedEventArgs" /> class.
         /// </summary>
-        /// <param name="job">Job that failed</param>
+        /// <param name="job">Job that failed (or <see cref="BackgroundJobManager.NoJob"/> if the job could not be resolved in the container).</param>
         /// <param name="exception">Exception that the job threw.</param>
         public BackgroundJobFailedEventArgs(object job, Exception exception)
         {
@@ -25,7 +25,7 @@ namespace Griffin.ApplicationServices
         ///     Job that failed.
         /// </summary>
         /// <remarks>
-        /// <para>An object which implementsa either <c>IBackgroundJob</c> or <c>IBackgroundJobAsync</c>.</para>
+        /// <para>An object which implements either <c>IBackgroundJob</c> or <c>IBackgroundJobAsync</c>.</para>
         /// </remarks>
         public object Job { get; private set; }
 
