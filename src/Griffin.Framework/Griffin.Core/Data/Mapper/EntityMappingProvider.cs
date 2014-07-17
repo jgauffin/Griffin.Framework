@@ -79,7 +79,7 @@ namespace Griffin.Data.Mapper
         {
             EnsureThatAssembliesHaveBeenScanned();
 
-            var mapper = (IEntityMapper<TEntity>) _provider.Get<TEntity>();
+            var mapper = (IEntityMapper<TEntity>) _provider.GetBase<TEntity>();
             return mapper;
         }
     }

@@ -155,8 +155,6 @@ namespace Griffin.Data.Mapper
             var types = assembly.GetTypes().Where(x => typeof(IEntityMapper).IsAssignableFrom(x));
             foreach (var type in types)
             {
-                Console.WriteLine("scanning: " + type.FullName);
-
                 if (type.IsAbstract || type.IsInterface)
                     continue;
 
@@ -165,7 +163,6 @@ namespace Griffin.Data.Mapper
                 if (type.GetGenericArguments().Length > 0)
                     continue;
 
-                Console.WriteLine("adding: " + type.FullName);
                 if (type.BaseType != null && type.BaseType.GenericTypeArguments.Length == 1)
                 {
                     entityType = type.BaseType.GenericTypeArguments[0];
@@ -181,7 +178,7 @@ namespace Griffin.Data.Mapper
                     }
                     else
                     {
-                        var genericInterface = type.GetInterface("ICrudEntityMapper`1");
+                        var genericInterface = type.GetInterface("IEntityMapper`1");
                         if (genericInterface == null)
                         {
                             if (IgnoreInvalidMappers)

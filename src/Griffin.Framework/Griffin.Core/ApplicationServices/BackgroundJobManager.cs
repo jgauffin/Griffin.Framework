@@ -179,40 +179,50 @@ namespace Griffin.ApplicationServices
 
         private void OnExecuteJob(object state)
         {
-            // the catch block is outermost as all jobs
-            // will share the same transaction
-
-            Parallel.ForEach(_syncJobTypes, jobType =>
+            Task allTask = null;
+            try
             {
-                IBackgroundJob job = null;
-                try
+                Parallel.ForEach(_syncJobTypes, jobType =>
                 {
-                    using (var scope = _container.CreateScope())
+                    IBackgroundJob job = null;
+                    try
                     {
-                        try
+                        using (var scope = _container.CreateScope())
                         {
-                            job = (IBackgroundJob) scope.Resolve(jobType);
-                            ScopeCreated(this, new ScopeCreatedEventArgs(scope));
-                            job.Execute();
-                            ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
-                        }
-                        catch (Exception exception)
-                        {
-                            var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
-                            JobFailed(this, args);
-                            ScopeClosing(this, new ScopeClosingEventArgs(scope, false) {Exception = exception});
+                            try
+                            {
+                                job = (IBackgroundJob)scope.Resolve(jobType);
+                                ScopeCreated(this, new ScopeCreatedEventArgs(scope));
+                                job.Execute();
+                                ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
+                            }
+                            catch (Exception exception)
+                            {
+                                var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
+                                JobFailed(this, args);
+                                ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
+                            }
                         }
                     }
-                }
-                catch (Exception exception)
-                {
-                    JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
-                    _logger.Error("Failed to execute job: " + job, exception);
-                }
-            });
+                    catch (Exception exception)
+                    {
+                        JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
+                        _logger.Error("Failed to execute job: " + job, exception);
+                    }
+                });
 
-            var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
-            Task.WhenAll(tasks).Wait();
+                var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
+                allTask = Task.WhenAll(tasks);
+                allTask.Wait();
+            }
+            catch (Exception exception)
+            {
+                _logger.Error("failed to execute jobs", exception);
+                if (allTask != null)
+                    JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(GetType(), allTask.Exception), exception));
+                else
+                    JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(GetType(), exception), exception));
+            }
         }
 
         private async Task ExecuteAsyncJob(Type jobType)

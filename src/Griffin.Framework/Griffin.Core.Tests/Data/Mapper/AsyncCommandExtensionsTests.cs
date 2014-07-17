@@ -25,7 +25,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(task);
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            Action actual = () => cmd.FirstAsync(new TentityMapper()).Wait();
+            Action actual = () => cmd.FirstAsync(new CrudMapper()).Wait();
 
             actual.ShouldThrow<EntityNotFoundException>();
         }
@@ -40,7 +40,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            var actual = await cmd.FirstAsync(new TentityMapper());
+            var actual = await cmd.FirstAsync(new SimpleMapper());
 
             actual.Id.Should().Be("10");
         }
@@ -55,7 +55,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            await cmd.FirstOrDefaultAsync(new TentityMapper());
+            await cmd.FirstOrDefaultAsync(new SimpleMapper());
 
             reader.ReceivedCalls().Count(x => x.GetMethodInfo().Name == "ReadAsync").Should().Be(1);
         }
@@ -66,7 +66,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var cmd = Substitute.For<DbCommand>();
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(Substitute.For<DbDataReader>()));
 
-            var actual = await cmd.FirstOrDefaultAsync(new TentityMapper());
+            var actual = await cmd.FirstOrDefaultAsync(new SimpleMapper());
 
             actual.Should().BeNull();
         }
@@ -75,7 +75,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public async Task ToEnumerable_without_arguments_generates_an_enumerable_without_connection_ownership()
         {
             var provider = Substitute.For<IMappingProvider>();
-            provider.Get<Tentity>().Returns(new TentityMapper());
+            provider.GetBase<TestEntity>().Returns(new SimpleMapper());
             EntityMappingProvider.Provider = provider;
             var cmd = Substitute.For<DbCommand>();
             var connection = Substitute.For<DbConnection>();
@@ -86,7 +86,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            var actual = await cmd.ToEnumerableAsync<Tentity>();
+            var actual = await cmd.ToEnumerableAsync<TestEntity>();
             actual.GetEnumerator().Dispose();
 
             connection.DidNotReceive().Close();
@@ -97,7 +97,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public async Task ToEnumerable_with_ownership_should_dispose_connection()
         {
             var provider = Substitute.For<IMappingProvider>();
-            provider.Get<Tentity>().Returns(new TentityMapper());
+            provider.GetBase<TestEntity>().Returns(new SimpleMapper());
             EntityMappingProvider.Provider = provider;
             var cmd = Substitute.For<DbCommand>();
             var connection = Substitute.For<DbConnection>();
@@ -108,14 +108,14 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            var actual = await cmd.ToEnumerableAsync<Tentity>(true);
+            var actual = await cmd.ToEnumerableAsync<TestEntity>(true);
             actual.GetEnumerator().Dispose();
 
             connection.Received().Dispose();
         }
 
         [Fact]
-        public async Task  ToList_should_fill_the_list()
+        public async Task ToList_should_fill_the_list()
         {
             var cmd = Substitute.For<DbCommand>();
             var reader = Substitute.For<DbDataReader>();
@@ -124,21 +124,27 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            var actual = await cmd.ToListAsync<Tentity>(new TentityMapper());
+            var actual = await cmd.ToListAsync<TestEntity>(new SimpleMapper());
 
             actual[0].Id.Should().Be("10");
         }
 
-        public class Tentity
+        public class TestEntity
         {
             public string Id { get; set; }
         }
 
-        public class TentityMapper : CrudEntityMapper<Tentity>
+        public class CrudMapper : CrudEntityMapper<TestEntity>
         {
-            public TentityMapper() : base("Tenteties")
+            public CrudMapper()
+                : base("Tenteties")
             {
             }
+        }
+
+        public class SimpleMapper : EntityMapper<TestEntity>
+        {
+
         }
 
     }
