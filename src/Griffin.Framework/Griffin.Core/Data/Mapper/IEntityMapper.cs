@@ -5,6 +5,11 @@ namespace Griffin.Data.Mapper
     /// <summary>
     /// Contract for only mapping rows and nothing more.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Implementations of this class must be decorated with the <see cref="MappingForAttribute"/> to allow <see cref="AssemblyScanningMappingProvider"/> to map it correctly.
+    /// </para>
+    /// </remarks>
     public interface IEntityMapper
     {
         /// <summary>

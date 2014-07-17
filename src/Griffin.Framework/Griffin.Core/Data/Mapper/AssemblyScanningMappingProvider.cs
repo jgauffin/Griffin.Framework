@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Griffin.Data.Mapper
 {
@@ -64,16 +65,16 @@ namespace Griffin.Data.Mapper
         public ICrudEntityMapper Get<TEntity>()
         {
             object mapper;
-            if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+            if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
             {
-                if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
-                    throw new MappingNotFoundException(typeof (TEntity));
+                if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof(TEntity));
             }
 
             var genericMapper = mapper as ICrudEntityMapper<TEntity>;
             if (genericMapper == null)
-                throw new MappingException(typeof (TEntity),
-                    "The mapper for '" + typeof (TEntity).FullName +
+                throw new MappingException(typeof(TEntity),
+                    "The mapper for '" + typeof(TEntity).FullName +
                     "' must implement the generic interface 'ICrudEntityMapper<T>' for this method to work.");
 
             return genericMapper;
@@ -82,22 +83,22 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Get mapping for the specified entity type
         /// </summary>
-        /// <typeparam name="T">Type of entity</typeparam>
+        /// <typeparam name="TEntity">Type of entity</typeparam>
         /// <returns>Mapper</returns>
         /// <exception cref="NotSupportedException">The specified entity type is not supported.</exception>
         public IEntityMapper GetBase<TEntity>()
         {
             object mapper;
-            if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
+            if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
             {
-                if (!_mappers.TryGetValue(typeof (TEntity), out mapper))
-                    throw new MappingNotFoundException(typeof (TEntity));
+                if (!_mappers.TryGetValue(typeof(TEntity), out mapper))
+                    throw new MappingNotFoundException(typeof(TEntity));
             }
 
             var genericMapper = mapper as IEntityMapper<TEntity>;
             if (genericMapper == null)
-                throw new MappingException(typeof (TEntity),
-                    "The mapper for '" + typeof (TEntity).FullName +
+                throw new MappingException(typeof(TEntity),
+                    "The mapper for '" + typeof(TEntity).FullName +
                     "' must implement the generic interface 'IEntityMapper<T>' for this method to work.");
 
             return genericMapper;
@@ -106,7 +107,6 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Retrieve a mapper.
         /// </summary>
-        /// <typeparam name="T">Type of entity to retrieve a mapper for.</typeparam>
         /// <param name="entityType">Type of entity to get a mapper for</param>
         /// <returns>Mapper</returns>
         /// <exception cref="MappingNotFoundException">Failed to find a mapping for the given entity type.</exception>
@@ -121,7 +121,7 @@ namespace Griffin.Data.Mapper
                     throw new MappingNotFoundException(entityType);
             }
 
-            return (ICrudEntityMapper) mapper;
+            return (ICrudEntityMapper)mapper;
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Griffin.Data.Mapper
                 return;
 
             HasScanned = true;
-            var types = assembly.GetTypes().Where(x => typeof (ICrudEntityMapper).IsAssignableFrom(x));
+            var types = assembly.GetTypes().Where(x => typeof(IEntityMapper).IsAssignableFrom(x));
             foreach (var type in types)
             {
                 Console.WriteLine("scanning: " + type.FullName);
@@ -188,7 +188,7 @@ namespace Griffin.Data.Mapper
                                 continue;
 
                             throw new MappingException(type,
-                                "Entity mappers must either implement ICrudEntityMapper<T> or be decorated with the [MappingFor(typeof(YourEntity))] attribute. Adjust '" +
+                                "Entity mappers must either implement the generic interface IEntityMapper<T> or be decorated with the [MappingFor(typeof(YourEntity))] attribute. Adjust '" +
                                 type.FullName + "' accordingly.");
                         }
 
@@ -204,7 +204,9 @@ namespace Griffin.Data.Mapper
                         string.Format("Two mappers found for entity '{0}'. '{1}' and '{2}'. Remove one of them.",
                             entityType.FullName, type.FullName, _mappers[entityType].GetType().FullName));
 
-                ((ICrudEntityMapper) instance).Freeze();
+                var crud = instance as ICrudEntityMapper;
+                if (crud != null)
+                    crud.Freeze();
                 _mappers[entityType] = instance;
             }
         }
