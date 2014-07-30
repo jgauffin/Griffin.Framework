@@ -52,7 +52,6 @@ namespace Griffin.ApplicationServices
     {
         private readonly ManualResetEvent _shutDownEvent = new ManualResetEvent(false);
         private Thread _workThread;
-        private Action<string> _logFunc;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationServiceThread"/> class.

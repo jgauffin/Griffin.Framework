@@ -125,6 +125,7 @@
     <Compile Include="GuidFactory.cs" />
     <Compile Include="InstanceFactory.cs" />
     <Compile Include="IO\DirectoryUtils.cs" />
+    <Compile Include="IO\OneFilePerItemQueue.cs" />
     <Compile Include="IO\PersistentCircularIndex.cs" />
     <Compile Include="IO\PersistentQueue.cs" />
     <Compile Include="IO\Serializers\BinaryFormatterSerializer.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="Logging\Providers\NamespaceFilter.cs" />
     <Compile Include="Logging\Providers\NoFilter.cs" />
     <Compile Include="Logging\Providers\NullLogProvider.cs" />
+    <Compile Include="MemoryQueue.cs" />
     <Compile Include="MethodInfoExtensions.cs" />
     <Compile Include="Net\Authentication\AuthenticationDeniedException.cs" />
     <Compile Include="Net\Authentication\AuthenticationRequiredException.cs" />

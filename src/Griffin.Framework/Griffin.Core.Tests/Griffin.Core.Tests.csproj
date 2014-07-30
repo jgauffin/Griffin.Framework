@@ -111,6 +111,7 @@
     <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
     <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
     <Compile Include="IO\CircularIndexTests.cs" />
+    <Compile Include="IO\OneFilePerItemQueueTests.cs" />
     <Compile Include="IO\PersistantQueueTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerTests.cs" />
     <Compile Include="Logging\Loggers\BaseLoggerWrapper.cs" />

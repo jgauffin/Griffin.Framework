@@ -68,7 +68,7 @@ namespace Griffin.Cqs.InversionOfControl
         {
             if (container == null) throw new ArgumentNullException("container");
 
-            _queue = new MemoryQueue<Command>();
+            _queue = new Griffin.MemoryQueue<Command>();
             _container = container;
             _workerCount = 5;
             _semaphore = new SemaphoreSlim(5);

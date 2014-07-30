@@ -22,45 +22,76 @@ namespace Griffin.Cqs.InversionOfControl
     /// </remarks>
     public class QueuedIocEventBus : IEventBus
     {
-        private readonly IContainer _container;
         private readonly IQueue<ApplicationEvent> _queue;
+        private readonly IEventBus _innerBus;
         private Thread _executionThread;
         private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
         private bool _shutdown;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
         /// </summary>
         /// <param name="queue">The queue.</param>
-        /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
+        /// <param name="innerBus">Bus used once it's time for an event to be executed.</param>
         /// <exception cref="System.ArgumentNullException">
         /// queue
         /// or
-        /// container
+        /// innerBus
         /// </exception>
-        public QueuedIocEventBus(IQueue<ApplicationEvent> queue, IContainer container)
+        public QueuedIocEventBus(IQueue<ApplicationEvent> queue, IEventBus innerBus)
         {
             if (queue == null) throw new ArgumentNullException("queue");
-            if (container == null) throw new ArgumentNullException("container");
+            if (innerBus == null) throw new ArgumentNullException("innerBus");
+
             _queue = queue;
-            _container = container;
+            _innerBus = innerBus;
+            var iocBus = _innerBus as IocEventBus;
+            if (iocBus != null)
+            {
+                iocBus.EventPublished += OnDelegateEventPublished;
+                iocBus.HandlerFailed += OnDelegateHandlerFailed;
+            }
             _executionThread = new Thread(OnExecuteCommand);
         }
 
+        private void OnDelegateHandlerFailed(object sender, EventHandlerFailedEventArgs e)
+        {
+            HandlerFailed(this, e);
+        }
+
+        private void OnDelegateEventPublished(object sender, EventPublishedEventArgs e)
+        {
+            EventPublished(this, e);
+        }
+
+        /// <summary>
+        ///     Event have been executed and the scope will be disposed after this event has been triggered.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         You can use this event to save a Unit Of Work or similar.
+        ///     </para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// eventBus.EventPublished += (source,e) => e.Scope.ResolveAll<IUnitOfWork>().SaveChanges();
+        /// ]]>
+        /// </code>
+        /// </example>
+        public event EventHandler<EventPublishedEventArgs> EventPublished = delegate { };
         /// <summary>
         /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
         /// </summary>
-        /// <param name="container">Used for service location (to lookup <![CDATA[IApplicationEventSubscriber<T>]]>).</param>
+        /// <param name="innerBus">Bus used once it's time for an event to be executed.</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
         /// <remarks>
         /// Uses <![CDATA[ConcurrentQueue<T>]]> to store events before they are executed.
         /// </remarks>
-        public QueuedIocEventBus(IContainer container)
+        public QueuedIocEventBus(IEventBus innerBus)
+            : this(new Griffin.MemoryQueue<ApplicationEvent>(), innerBus)
         {
-            if (container == null) throw new ArgumentNullException("container");
-            _queue = new MemoryQueue<ApplicationEvent>();
-            _container = container;
-            _executionThread = new Thread(OnExecuteCommand);
         }
 
         /// <summary>
@@ -124,36 +155,7 @@ namespace Griffin.Cqs.InversionOfControl
             if (appEvent == null)
                 return false;
 
-
-            using (var scope = _container.CreateScope())
-            {
-                var type = typeof (IApplicationEventSubscriber<>).MakeGenericType(appEvent.GetType());
-
-                var handlers = scope.ResolveAll(type).ToList();
-                var failures = new List<HandlerFailure>();
-                var method = type.GetMethod("HandleAsync");
-                foreach (var handler in handlers)
-                {
-                    try
-                    {
-                        var task = (Task)method.Invoke(handler, new object[] { appEvent });
-                        await task;
-                    }
-                    catch (Exception exception)
-                    {
-                        if (exception is TargetInvocationException)
-                            exception = exception.InnerException;
-
-                        failures.Add(new HandlerFailure(handler, exception));
-                    }
-                }
-
-                if (failures.Any())
-                {
-                    HandlerFailed(this, new EventHandlerFailedEventArgs(appEvent, failures, handlers.Count));
-                }
-            }
-
+            await _innerBus.PublishAsync(appEvent);
             return true;
         }
 

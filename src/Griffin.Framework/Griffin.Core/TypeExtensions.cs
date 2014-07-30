@@ -108,14 +108,14 @@ namespace Griffin
                 throw new InvalidOperationException("Can't use dynamic assemblies.");
 
             return type.AssemblyQualifiedName;
-            int pos = type.AssemblyQualifiedName.IndexOf(',');
-            if (pos == -1)
-                return type.AssemblyQualifiedName;
-            pos = type.AssemblyQualifiedName.IndexOf(',', pos + 1);
-            if (pos == -1)
-                return type.AssemblyQualifiedName;
+            //int pos = type.AssemblyQualifiedName.IndexOf(',');
+            //if (pos == -1)
+            //    return type.AssemblyQualifiedName;
+            //pos = type.AssemblyQualifiedName.IndexOf(',', pos + 1);
+            //if (pos == -1)
+            //    return type.AssemblyQualifiedName;
 
-            return type.AssemblyQualifiedName.Substring(0, pos);
+            //return type.AssemblyQualifiedName.Substring(0, pos);
         }
     }
 }

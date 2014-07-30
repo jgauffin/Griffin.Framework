@@ -6,23 +6,91 @@ using System.Threading;
 namespace Griffin.Net.Protocols.Stomp.Broker
 {
     /// <summary>
-    /// 
     /// </summary>
     public class StompQueue : IStompQueue
     {
+        private readonly ConcurrentQueue<Subscription> _idleSubscriptions = new ConcurrentQueue<Subscription>();
+        private readonly ManualResetEventSlim _messageEvent = new ManualResetEventSlim();
+        private readonly LinkedList<IFrame> _messages = new LinkedList<IFrame>();
+        private readonly ReaderWriterLockSlim _queueLock = new ReaderWriterLockSlim();
+        private readonly List<Subscription> _subscriptions = new List<Subscription>();
         private readonly ITransactionManager _transactionManager;
-        LinkedList<IFrame> _messages = new LinkedList<IFrame>();
-        ReaderWriterLockSlim _queueLock = new ReaderWriterLockSlim();
-        readonly List<Subscription> _subscriptions = new List<Subscription>();
-        ConcurrentQueue<Subscription> _idleSubscriptions = new ConcurrentQueue<Subscription>();
         private Thread _workThread;
 
-        private ManualResetEventSlim _messageEvent = new ManualResetEventSlim();
-
-        public StompQueue()
+        public StompQueue(ITransactionManager transactionManager)
         {
+            _transactionManager = transactionManager;
             _workThread = new Thread(OnSendNextMessage);
             _workThread.Start();
+        }
+
+
+        public string Name { get; set; }
+
+        /// <summary>
+        ///     Put a message in our queue.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <remarks>
+        ///     Messages within transactions will be put on hold until the transaction is commited.
+        /// </remarks>
+        public void Enqueue(IFrame message)
+        {
+            if (message == null) throw new ArgumentNullException("message");
+
+            _queueLock.EnterWriteLock();
+            try
+            {
+                _messages.AddLast(message);
+            }
+            finally
+            {
+                _queueLock.ExitWriteLock();
+            }
+
+            _messageEvent.Set();
+        }
+
+        public void Stop()
+        {
+            _workThread.Join();
+        }
+
+        public void AddSubscription(Subscription subscription)
+        {
+            subscription.BecameIdle += OnSubscriptionWentIdle;
+        }
+
+        public void Unbsubscribe(Subscription subscription)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        ///     Will put all frames first in the queue again
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <remarks>
+        ///     Should only be used for queues that got one client and where the message ordering is important.
+        /// </remarks>
+        public void Requeue(IEnumerable<IFrame> frame)
+        {
+            _queueLock.EnterWriteLock();
+            try
+            {
+                // Required so that they are added in the correct order.
+                var it = frame.GetEnumerator();
+                it.MoveNext();
+                var node = _messages.AddFirst(it.Current);
+                while (it.MoveNext())
+                {
+                    node = _messages.AddAfter(node, it.Current);
+                }
+            }
+            finally
+            {
+                _queueLock.ExitWriteLock();
+            }
         }
 
         private void OnSendNextMessage()
@@ -52,6 +120,10 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
         }
 
+        private void OnSubscriptionWentIdle(object sender, EventArgs e)
+        {
+        }
+
         private void SendMessage()
         {
             IFrame frame;
@@ -61,7 +133,7 @@ namespace Griffin.Net.Protocols.Stomp.Broker
                 frame = _messages.First.Value;
                 _messages.RemoveFirst();
             }
-            finally 
+            finally
             {
                 _queueLock.ExitWriteLock();
             }
@@ -69,83 +141,10 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             Subscription subscription;
             if (!_idleSubscriptions.TryDequeue(out subscription))
             {
-                Requeue(new []{frame});
+                Requeue(new[] {frame});
             }
 
             subscription.Send(frame);
-        }
-
-
-        /// <summary>
-        /// Will put all frames first in the queue again
-        /// </summary>
-        /// <param name="frame"></param>
-        /// <remarks>
-        /// Should only be used for queues that got one client and where the message ordering is important.
-        /// </remarks>
-        public void Requeue(IEnumerable<IFrame> frame)
-        {
-            _queueLock.EnterWriteLock();
-            try
-            {
-                // Required so that they are added in the correct order.
-                var it = frame.GetEnumerator();
-                it.MoveNext();
-                var node = _messages.AddFirst(it.Current);
-                while (it.MoveNext())
-                {
-                    node = _messages.AddAfter(node, it.Current);
-                }
-            }
-            finally 
-            {
-                _queueLock.ExitWriteLock();
-            }
-        }
-
-        
-
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Put a message in our queue. 
-        /// </summary>
-        /// <param name="message"></param>
-        /// <remarks>
-        /// Messages within transactions will be put on hold until the transaction is commited.
-        /// 
-        /// </remarks>
-        public void Enqueue(IFrame message)
-        {
-            if (message == null) throw new ArgumentNullException("message");
-
-            _queueLock.EnterWriteLock();
-            try
-            {
-                _messages.AddLast(message);
-            }
-            finally
-            {
-                _queueLock.ExitWriteLock();
-            }
-
-            _messageEvent.Set();
-        }
-
-     
-        public void AddSubscription(Subscription subscription)
-        {
-            subscription.BecameIdle += OnSubscriptionWentIdle;
-        }
-
-        private void OnSubscriptionWentIdle(object sender, EventArgs e)
-        {
-            
-        }
-
-        public void Unbsubscribe(Subscription subscription)
-        {
-            throw new NotImplementedException();
         }
     }
 }

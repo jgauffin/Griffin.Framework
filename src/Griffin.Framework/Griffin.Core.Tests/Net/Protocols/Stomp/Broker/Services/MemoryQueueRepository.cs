@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Griffin.Net.Protocols.Stomp.Broker;
 using Griffin.Net.Protocols.Stomp.Broker.Services;
+using NSubstitute;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Services
@@ -11,7 +12,8 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Services
         [Fact]
         public void add_queue_requires_a_name()
         {
-            var queue = new StompQueue();
+            var transactionManager = Substitute.For<ITransactionManager>();
+            var queue = new StompQueue(transactionManager);
 
             var sut = new MemoryQueueRepository();
             Action actual = () => sut.Add(queue);
@@ -22,7 +24,8 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Services
         [Fact]
         public void add_queue_using_minimal_requirements()
         {
-            var queue = new StompQueue();
+            var transactionManager = Substitute.For<ITransactionManager>();
+            var queue = new StompQueue(transactionManager);
             queue.Name = "mama";
 
             var sut = new MemoryQueueRepository();
@@ -33,7 +36,8 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Services
         [Fact]
         public void fetch_existing_queue()
         {
-            var queue = new StompQueue();
+            var transactionManager = Substitute.For<ITransactionManager>();
+            var queue = new StompQueue(transactionManager);
             queue.Name = "mama";
             var sut = new MemoryQueueRepository();
             sut.Add(queue);

@@ -43,12 +43,13 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Handlers
         [Fact]
         public void successful_subcribe()
         {
+            var transactionManager = Substitute.For<ITransactionManager>(); 
             var repos = Substitute.For<IQueueRepository>();
             var client = Substitute.For<IStompClient>();
             var msg = new BasicFrame("SUBSCRIBE");
             msg.Headers["id"] = "123";
             msg.Headers["destination"] = "/queue/mamma";
-            repos.Get("/queue/mamma").Returns(new StompQueue());
+            repos.Get("/queue/mamma").Returns(new StompQueue(transactionManager));
 
             var sut = new SubscribeHandler(repos);
             var actual = sut.Process(client, msg);
