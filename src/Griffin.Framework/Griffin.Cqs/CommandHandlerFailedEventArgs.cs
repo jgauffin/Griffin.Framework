@@ -5,7 +5,7 @@ using Griffin.Cqs.InversionOfControl;
 namespace Griffin.Cqs
 {
     /// <summary>
-    ///     Used by <see cref="QueuedIocCommandBus.HandlerFailed" />.
+    ///     Used by <see cref="QueuedCommandBus.HandlerFailed" />.
     /// </summary>
     public class CommandHandlerFailedEventArgs : EventArgs
     {

@@ -58,8 +58,8 @@
     <Compile Include="InversionOfControl\IocCommandBus.cs" />
     <Compile Include="InversionOfControl\IocEventBus.cs" />
     <Compile Include="InversionOfControl\IocRequestReplyBus.cs" />
-    <Compile Include="InversionOfControl\QueuedIocCommandBus.cs" />
-    <Compile Include="InversionOfControl\QueuedIocEventBus.cs" />
+    <Compile Include="Reliable\QueuedCommandBus.cs" />
+    <Compile Include="Reliable\QueuedEventBus.cs" />
     <Compile Include="InversionOfControl\IocQueryBus.cs" />
     <Compile Include="CqsHandlerMissingException.cs" />
     <Compile Include="EventHandlerFailedEventArgs.cs" />
@@ -92,6 +92,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ReadMe.md" />
+    <None Include="Reliable\ReadMe.md" />
     <None Include="Simple\ReadMe.md" />
   </ItemGroup>
   <ItemGroup />
