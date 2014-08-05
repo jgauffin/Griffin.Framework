@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.ApplicationServices;
 using Griffin.Container;
 using Griffin.IO;
 
@@ -20,26 +21,29 @@ namespace Griffin.Cqs.InversionOfControl
     ///         crashes (unless the application crashes during the actual execution of the event).
     ///     </para>
     /// </remarks>
-    public class QueuedIocEventBus : IEventBus
+    public class QueuedEventBus : IEventBus, IApplicationService, IDisposable
     {
         private readonly IQueue<ApplicationEvent> _queue;
         private readonly IEventBus _innerBus;
-        private Thread _executionThread;
         private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
+        private readonly SemaphoreSlim _semaphore;
+        private readonly int _workerCount;
+
         private bool _shutdown;
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
+        /// Initializes a new instance of the <see cref="QueuedEventBus" /> class.
         /// </summary>
         /// <param name="queue">The queue.</param>
         /// <param name="innerBus">Bus used once it's time for an event to be executed.</param>
+        /// <param name="workerCount"></param>
         /// <exception cref="System.ArgumentNullException">
         /// queue
         /// or
         /// innerBus
         /// </exception>
-        public QueuedIocEventBus(IQueue<ApplicationEvent> queue, IEventBus innerBus)
+        public QueuedEventBus(IQueue<ApplicationEvent> queue, IEventBus innerBus, int workerCount)
         {
             if (queue == null) throw new ArgumentNullException("queue");
             if (innerBus == null) throw new ArgumentNullException("innerBus");
@@ -52,7 +56,8 @@ namespace Griffin.Cqs.InversionOfControl
                 iocBus.EventPublished += OnDelegateEventPublished;
                 iocBus.HandlerFailed += OnDelegateHandlerFailed;
             }
-            _executionThread = new Thread(OnExecuteCommand);
+            _workerCount = workerCount;
+            _semaphore = new SemaphoreSlim(workerCount);
         }
 
         private void OnDelegateHandlerFailed(object sender, EventHandlerFailedEventArgs e)
@@ -81,16 +86,18 @@ namespace Griffin.Cqs.InversionOfControl
         /// </code>
         /// </example>
         public event EventHandler<EventPublishedEventArgs> EventPublished = delegate { };
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueuedIocEventBus" /> class.
+        /// Initializes a new instance of the <see cref="QueuedEventBus" /> class.
         /// </summary>
         /// <param name="innerBus">Bus used once it's time for an event to be executed.</param>
+        /// <param name="workerCount"></param>
         /// <exception cref="System.ArgumentNullException">container</exception>
         /// <remarks>
         /// Uses <![CDATA[ConcurrentQueue<T>]]> to store events before they are executed.
         /// </remarks>
-        public QueuedIocEventBus(IEventBus innerBus)
-            : this(new Griffin.MemoryQueue<ApplicationEvent>(), innerBus)
+        public QueuedEventBus(IEventBus innerBus, int workerCount)
+            : this(new Griffin.MemoryQueue<ApplicationEvent>(), innerBus, workerCount)
         {
         }
 
@@ -106,28 +113,33 @@ namespace Griffin.Cqs.InversionOfControl
             where TApplicationEvent : ApplicationEvent
         {
             await _queue.EnqueueAsync(e);
-            _jobEvent.Set();
+            if (await _semaphore.WaitAsync(0))
+            {
+                Task.Run((Func<Task>)ExecuteFirstTask);
+            }
         }
 
         /// <summary>
-        /// Start bus (required to start processing queued commands)
+        ///     Start bus (required to start processing queued commands)
         /// </summary>
         public void Start()
         {
-            _jobEvent.Reset();
             _shutdown = false;
-            _executionThread.Start();
         }
 
         /// <summary>
-        /// Stop processing bus (will wait for the current command to be completed before shutting down)
+        ///     Stop processing bus (will wait for the current command to be completed before shutting down)
         /// </summary>
         public void Stop()
         {
             _shutdown = true;
             _jobEvent.Set();
-            _executionThread.Join(5000);
+            for (var i = 0; i < _workerCount; i++)
+            {
+                _semaphore.Wait(1000);
+            }
         }
+
 
 
         /// <summary>
@@ -155,30 +167,33 @@ namespace Griffin.Cqs.InversionOfControl
             if (appEvent == null)
                 return false;
 
-            await _innerBus.PublishAsync(appEvent);
+            await _innerBus.PublishAsync((dynamic)appEvent);
             return true;
         }
 
-        private void OnExecuteCommand()
+        internal async Task ExecuteFirstTask()
         {
             while (true)
             {
-                _jobEvent.Wait(1000);
                 if (_shutdown)
                     return;
 
                 try
                 {
-                    var task = ExecuteJobAsync();
-                    task.Wait();
-                    if (!task.Result)
-                        _jobEvent.Reset();
+                    var result = await ExecuteJobAsync();
+                    if (!result)
+                        break;
                 }
                 catch (Exception exception)
                 {
                     BusFailed(this, new BusFailedEventArgs(exception));
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }
     }
 }

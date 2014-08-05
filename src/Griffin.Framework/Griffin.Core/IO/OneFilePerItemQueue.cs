@@ -34,6 +34,11 @@ namespace Griffin.IO
         private int _nextWriteNumber;
         private ISerializer _serializer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OneFilePerItemQueue{T}"/> class.
+        /// </summary>
+        /// <param name="queueName">Name of the queue.</param>
+        /// <exception cref="System.ArgumentNullException">queueName</exception>
         public OneFilePerItemQueue(string queueName)
         {
             if (queueName == null) throw new ArgumentNullException("queueName");

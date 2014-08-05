@@ -67,6 +67,7 @@
     <Compile Include="InversionOfControl\IocEventBusTests.cs" />
     <Compile Include="InversionOfControl\IocCommandBusTests.cs" />
     <Compile Include="InversionOfControl\MemoryQueueTests.cs" />
+    <Compile Include="InversionOfControl\QueuedEventBusTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using DotNetCqs;
 using Griffin.ApplicationServices;
 using Griffin.Container;
@@ -18,58 +19,58 @@ namespace Griffin.Cqs.InversionOfControl
     ///         commands.
     ///     </para>
     /// </remarks>
-    public class QueuedIocCommandBus : ICommandBus, IDisposable, IApplicationService
+    public class QueuedCommandBus : ICommandBus, IDisposable, IApplicationService
     {
-        private readonly IContainer _container;
-        private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
+        private readonly ICommandBus _commandBus;
         private readonly IQueue<Command> _queue;
+        private readonly ManualResetEventSlim _jobEvent = new ManualResetEventSlim(false);
         private readonly SemaphoreSlim _semaphore;
         private readonly int _workerCount;
 
         private bool _shutdown;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="QueuedIocCommandBus" /> class.
+        ///     Initializes a new instance of the <see cref="QueuedCommandBus" /> class.
         /// </summary>
         /// <param name="queue">Used to store items before the command is executed.</param>
-        /// <param name="container">
-        ///     Used for service location (to lookup <![CDATA[ICommandHandler<T>]]>).
+        /// <param name="commandBus">
+        ///     Used to execute a command once it arrives to the beginning of the queue.
         /// </param>
         /// <param name="workerCount">Amount of commands that can be executed simultaneously.</param>
         /// <exception cref="System.ArgumentNullException">
         ///     queue
         ///     or
-        ///     container
+        ///     commandBus
         /// </exception>
-        public QueuedIocCommandBus(IQueue<Command> queue, IContainer container, int workerCount)
+        public QueuedCommandBus(IQueue<Command> queue, ICommandBus commandBus, int workerCount)
         {
             if (queue == null) throw new ArgumentNullException("queue");
-            if (container == null) throw new ArgumentNullException("container");
+            if (commandBus == null) throw new ArgumentNullException("commandBus");
 
             _queue = queue;
-            _container = container;
+            _commandBus = commandBus;
             _workerCount = workerCount;
             _semaphore = new SemaphoreSlim(workerCount);
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="QueuedIocCommandBus" /> class.
+        ///     Initializes a new instance of the <see cref="QueuedCommandBus" /> class.
         /// </summary>
-        /// <param name="container">
-        ///     Used for service location (to lookup <![CDATA[ICommandHandler<T>]]>).
+        /// <param name="commandBus">
+        ///     Used to execute a command once it arrives to the beginning of the queue.
         /// </param>
-        /// <exception cref="System.ArgumentNullException">container</exception>
+        /// <exception cref="System.ArgumentNullException">commandBus</exception>
         /// <remarks>
         ///     <para>
         ///         Uses a <![CDATA[ConcurrentQueue<T>]]> and 10 workers.
         ///     </para>
         /// </remarks>
-        public QueuedIocCommandBus(IContainer container)
+        public QueuedCommandBus(ICommandBus commandBus)
         {
-            if (container == null) throw new ArgumentNullException("container");
+            if (commandBus == null) throw new ArgumentNullException("commandBus");
 
             _queue = new Griffin.MemoryQueue<Command>();
-            _container = container;
+            _commandBus = commandBus;
             _workerCount = 5;
             _semaphore = new SemaphoreSlim(5);
         }
@@ -170,53 +171,10 @@ namespace Griffin.Cqs.InversionOfControl
             if (command == null)
                 return false;
 
-            using (var scope = _container.CreateScope())
-            {
-                var type = typeof (ICommandHandler<>).MakeGenericType(command.GetType());
-                var handlers = scope.ResolveAll(type).ToArray();
-
-                if (handlers.Length == 0)
-                    throw new CqsHandlerMissingException(command.GetType());
-                if (handlers.Length != 1)
-                    throw new OnlyOneHandlerAllowedException(command.GetType());
-
-                try
-                {
-                    var method = type.GetMethod("ExecuteAsync");
-                    var task = (Task) method.Invoke(handlers[0], new object[] {command});
-                    await task;
-                }
-                catch (Exception exception)
-                {
-                    if (exception is TargetInvocationException)
-                        exception = exception.InnerException;
-                    HandlerFailed(this, new CommandHandlerFailedEventArgs(command, handlers[0], exception));
-                }
-            }
+            await _commandBus.ExecuteAsync((dynamic) command);
 
             return true;
         }
 
-        private void OnExecuteCommand()
-        {
-            while (true)
-            {
-                _jobEvent.Wait(1000);
-                if (_shutdown)
-                    return;
-
-                try
-                {
-                    var task = ExecuteJobAsync();
-                    task.Wait();
-                    if (!task.Result)
-                        _jobEvent.Reset();
-                }
-                catch (Exception exception)
-                {
-                    BusFailed(this, new BusFailedEventArgs(exception));
-                }
-            }
-        }
     }
 }
