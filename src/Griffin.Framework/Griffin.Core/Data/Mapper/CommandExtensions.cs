@@ -47,6 +47,55 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Takes an anonymous/dynamic objects and converts it into a WHERE clause using the supplied mapping.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
+        /// <param name="cmd">Command to add parameters to (should end with " WHERE " so that this method can add the constraints properly)</param>
+        /// <param name="mapper">Mapper to use to convert properties to columns</param>
+        /// <param name="sql">SQL query. Complete query or just the WHERE clause</param>
+        /// <param name="constraints">properties in an anonymous object</param>
+        /// <example>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("WHERE Id = @id", new { id = user.Id});
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        internal static void ApplyQuerySql<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper, string sql, object constraints)
+        {
+            if (sql.StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+            {
+                sql = "SELECT * FROM " + mapper.TableName + " " + sql;
+            }
+
+            foreach (var kvp in constraints.ToDictionary())
+            {
+                IPropertyMapping propertyMapping;
+                if (!mapper.Properties.TryGetValue(kvp.Key, out propertyMapping))
+                    throw new DataException(typeof(TEntity).FullName + " does not have a property named " + kvp.Key + ".");
+
+                object value;
+                try
+                {
+                    value = propertyMapping.PropertyToColumnAdapter(kvp.Value);
+                }
+                catch (InvalidCastException exception)
+                {
+                    throw new MappingException(typeof(TEntity), "Failed to cast '" + kvp.Key + "' from '" + kvp.Value.GetType() + "'.", exception);
+                }
+
+                cmd.AddParameter(propertyMapping.PropertyName, value);
+            }
+        }
+
+        /// <summary>
         ///     Fetches the first row from a query, but mapped as an entity.
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>

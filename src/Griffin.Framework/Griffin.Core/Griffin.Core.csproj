@@ -120,6 +120,7 @@
     <Compile Include="Data\Mapper\ValueHandler.cs" />
     <Compile Include="Data\NamespaceDoc.cs" />
     <Compile Include="Data\TransactionAlreadyClosedException.cs" />
+    <Compile Include="Data\UnitOfWorkExtensions.cs" />
     <Compile Include="Data\UnitOfWorkFactory.cs" />
     <Compile Include="External\Inflector.cs" />
     <Compile Include="GuidFactory.cs" />

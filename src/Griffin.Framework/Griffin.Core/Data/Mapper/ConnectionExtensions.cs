@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 
 namespace Griffin.Data.Mapper
 {
@@ -8,6 +9,21 @@ namespace Griffin.Data.Mapper
     /// </summary>
     public static class ConnectionExtensions
     {
+        /// <summary>
+        /// Cast <c>IDbCommand</c> to <c>DbCommand</c> to be able to access the async methods.
+        /// </summary>
+        /// <param name="connection">Connection used as a factory</param>
+        /// <returns>Command</returns>
+        /// <exception cref="NotSupportedException">The created command cannot be cast to DbCommand.</exception>
+        public static DbCommand CreateDbCommand(this IDbConnection connection)
+        {
+            var cmd = connection.CreateCommand() as DbCommand;
+            if (cmd == null)
+                throw new NotSupportedException("Failed to cast connection.CreateCommand() to DbCommand, connection type: " + connection.GetType().FullName + ". We need to be able to cast IDbCommand to DbCommand to gain access to the async ADO.NET methods.");
+
+            return cmd;
+        }
+
         /// <summary>
         ///     Fetches the first row from a query, but mapped as an entity.
         /// </summary>

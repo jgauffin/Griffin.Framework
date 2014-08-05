@@ -86,7 +86,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        /// <seealso cref="CrudCrudEntityMapper{TEntity}" />
+        /// <seealso cref="CrudEntityMapper{TEntity}" />
         public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             var result = await cmd.FirstOrDefaultAsync(mapper);
@@ -160,7 +160,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        /// <seealso cref="CrudCrudEntityMapper{TEntity}" />
+        /// <seealso cref="CrudEntityMapper{TEntity}" />
         public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd,
             IEntityMapper<TEntity> mapper)
         {
