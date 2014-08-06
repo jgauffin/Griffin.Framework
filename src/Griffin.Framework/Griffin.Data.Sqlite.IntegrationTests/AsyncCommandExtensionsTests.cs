@@ -57,7 +57,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task First_without_rows_should_throw_exception()
+        public void First_without_rows_should_throw_exception()
         {
             using (var cmd = _connection.CreateCommand())
             {

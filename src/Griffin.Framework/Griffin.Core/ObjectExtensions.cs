@@ -12,7 +12,7 @@ namespace Griffin
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static IDictionary<string, object> ToDictionary(this object data)
+        public static Dictionary<string, object> ToDictionary(this object data)
         {
             return (from property in data.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 where property.CanRead

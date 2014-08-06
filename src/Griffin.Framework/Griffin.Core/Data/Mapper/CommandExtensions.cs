@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace Griffin.Data.Mapper
 {
@@ -47,39 +50,116 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
-        /// Takes an anonymous/dynamic objects and converts it into a WHERE clause using the supplied mapping.
+        /// Builds a command using query or a short-hand query, and query parameters.
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="cmd">Command to add parameters to (should end with " WHERE " so that this method can add the constraints properly)</param>
         /// <param name="mapper">Mapper to use to convert properties to columns</param>
-        /// <param name="sql">SQL query. Complete query or just the WHERE clause</param>
-        /// <param name="constraints">properties in an anonymous object</param>
+        /// <param name="sql">Complete (<code>"SELECT * FROM user WHERE id = @id"</code>) or short (<code>"id = @id"</code>).</param>
+        /// <param name="parameters">Anonymous object (<code>new { id = user.Id }</code>), a dictionary or an array of values</param>
+        /// <remarks>
+        /// <para>
+        /// Query 
+        /// </para>
+        /// 
+        /// </remarks>
         /// <example>
+        /// <para>Using complete query, with named arguments</para>
         /// <code>
         /// <![CDATA[
         /// public void GetUser(string id)
         /// {
         ///     using (var command = connection.CreateCommand())
         ///     {
-        ///         command.ApplyQuerySql("WHERE Id = @id", new { id = user.Id});
+        ///         command.ApplyQuerySql("SELECT * FROM Users WHERE Id = @id", new { id = user.Id});
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using complete query, with array of values</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("SELECT * FROM Users WHERE Id = @1", user.Id);
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using short query and named parameters</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("Age <= @age AND City = @city", new { age = dto.Age, city = dto.City});
+        ///         return cmd.ToList<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using short query and a value array</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("Age <= @1 AND City = @2", dto.Age, dto.City);
         ///         return cmd.First<User>();
         ///     }
         /// }
         /// ]]>
         /// </code>
         /// </example>
-        internal static void ApplyQuerySql<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper, string sql, object constraints)
+        public static void ApplyQuerySql<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper, string sql, params object[] parameters)
         {
-            if (sql.StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+            var isSingleValueArray = parameters.Length == 1 && sql.Contains("@1");
+            if (!sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
-                sql = "SELECT * FROM " + mapper.TableName + " " + sql;
+                cmd.CommandText = "SELECT * FROM " + mapper.TableName + " WHERE " + sql;
+            }
+            else
+                cmd.CommandText = sql;
+
+            if (parameters.Length == 0)
+                return;
+
+            if (isSingleValueArray || parameters.Length > 1)
+            {
+                for (var i = 1; i <= parameters.Length; i++)
+                {
+                    cmd.AddParameter(i.ToString(CultureInfo.InvariantCulture), parameters[i - 1]);
+                }
+                return;
             }
 
-            foreach (var kvp in constraints.ToDictionary())
+            IDictionary<string, object> dictionary;
+            if (parameters[0] is IDictionary<string, object>)
+                dictionary = (IDictionary<string, object>) parameters[0];
+            else if (parameters[0] is IDictionary)
+            {
+                var dict = (IDictionary) parameters[0];
+                dictionary = new Dictionary<string, object>(dict.Count);
+                foreach (var key in dict.Keys)
+                {
+                    dictionary.Add(key.ToString(), dict[key]);
+                }
+            }
+            else
+                dictionary = parameters[0].ToDictionary();
+
+            foreach (var kvp in dictionary)
             {
                 IPropertyMapping propertyMapping;
                 if (!mapper.Properties.TryGetValue(kvp.Key, out propertyMapping))
-                    throw new DataException(typeof(TEntity).FullName + " does not have a property named " + kvp.Key + ".");
+                    throw new DataException(typeof (TEntity).FullName + " does not have a property named " + kvp.Key +
+                                            ".");
 
                 object value;
                 try
@@ -88,7 +168,8 @@ namespace Griffin.Data.Mapper
                 }
                 catch (InvalidCastException exception)
                 {
-                    throw new MappingException(typeof(TEntity), "Failed to cast '" + kvp.Key + "' from '" + kvp.Value.GetType() + "'.", exception);
+                    throw new MappingException(typeof (TEntity),
+                        "Failed to cast '" + kvp.Key + "' from '" + kvp.Value.GetType() + "'.", exception);
                 }
 
                 cmd.AddParameter(propertyMapping.PropertyName, value);

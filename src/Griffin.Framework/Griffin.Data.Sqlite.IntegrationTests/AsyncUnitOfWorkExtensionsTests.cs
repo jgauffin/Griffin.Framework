@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
@@ -108,5 +109,226 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             var actual = await _connection.FirstAsync<User>(new { expected.Id });
             actual.FirstName.Should().Be(expected.FirstName);
         }
+
+
+        [Fact]
+        public async Task FirstOrDefault_with_objectConstraint_should_return_wanted_row()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>(new { _userTable.Users[11].FirstName });
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefault_with_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>("SELECT * FROM Users WHERE id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefault_with_short_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>("id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefault_with_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>("SELECT * FROM Users WHERE id = @Id", new { _userTable.Users[11].Id });
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefault_with_short_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>("id = @Id", new { _userTable.Users[11].Id });
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+
+        [Fact]
+        public async Task FirstOrDefault_with_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.FirstOrDefaultAsync<User>("SELECT * FROM Users WHERE id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task FirstOrDefault_with_short_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _connection.FirstOrDefaultAsync<User>("id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            actual.Should().NotBeNull();
+            actual.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        //next
+
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("SELECT * FROM Users WHERE id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_short_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("SELECT * FROM Users WHERE id = @Id", new { _userTable.Users[11].Id });
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_short_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("id = @Id", new { _userTable.Users[11].Id });
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("SELECT * FROM Users WHERE id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToEnumerableAsync_with_short_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToEnumerableAsync<User>("id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            var first = actual.First();
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+
+        //list
+
+
+        [Fact]
+        public async Task ToListAsync_with_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("SELECT * FROM Users WHERE id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToListAsync_with_short_query_and_no_parameters()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("id = '" + _userTable.Users[11].Id.ToString("N") + "'");
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToListAsync_with_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("SELECT * FROM Users WHERE id = @Id", new { _userTable.Users[11].Id });
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToListAsync_with_short_query_and_anon_parameter()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("id = @Id", new { _userTable.Users[11].Id });
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+
+        [Fact]
+        public async Task ToListAsync_with_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("SELECT * FROM Users WHERE id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
+        [Fact]
+        public async Task ToListAsync_with_short_query_and_value_array()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var actual = await _uow.ToListAsync<User>("id = @1", _userTable.Users[11].Id.ToString("N"));
+
+            var first = actual[0];
+            first.LastName.Should().Be(_userTable.Users[11].LastName);
+        }
+
     }
 }

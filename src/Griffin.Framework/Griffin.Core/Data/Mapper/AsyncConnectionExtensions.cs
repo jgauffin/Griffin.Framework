@@ -64,8 +64,8 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="connection">Connection to invoke <c>ExecuteReaderAsync()</c> on (through a created <c>DbCommand</c>).</param>
-        /// <param name="query">SQL query, complete query or just <c>WHERE id = @id</c></param>
-        /// <param name="constraints">Properties specified in query and their value. <c>new { id = userId }</c></param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>
         ///     Entity if found; otherwise <c>null</c>.
         /// </returns>
@@ -83,16 +83,16 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IDbConnection connection, string query, object constraints)
+        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (constraints == null) throw new ArgumentNullException("constraints");
+            if (parameters == null) throw new ArgumentNullException("parameters");
 
             var mapping = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
-                cmd.ApplyQuerySql(mapping, query, constraints);
+                cmd.ApplyQuerySql(mapping, query, parameters);
                 return cmd.FirstOrDefaultAsync<TEntity>();
             }
         }
@@ -147,8 +147,8 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to load, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
         /// <param name="connection">connection to load entity from</param>
-        /// <param name="query">SQL query, complete query or just <c>WHERE id = @id</c></param>
-        /// <param name="constraints">Properties specified in query and their value. <c>new { id = userId }</c></param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>Found entity</returns>
         /// <remarks>
         /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
@@ -174,14 +174,14 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         /// <exception cref="EntityNotFoundException">Failed to find an entity mathing the query</exception>
-        public static Task<TEntity> FirstAsync<TEntity>(this IDbConnection connection, string query, object constraints)
+        public static Task<TEntity> FirstAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
             var mapping = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
-                cmd.ApplyQuerySql(mapping, query, constraints);
+                cmd.ApplyQuerySql(mapping, query, parameters);
                 return cmd.FirstAsync(mapping);
             }
         }
@@ -313,53 +313,44 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
-        ///     Return an enumerable which uses lazy loading of each row.
+        ///     Return an enumerable which uses lazy loading of each row (you must close the connection once done).
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to map</typeparam>
         /// <param name="connection">Connection to invoke <c>ExecuteReaderAsync()</c> on (through a created <c>DbCommand</c>).</param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>Lazy loaded enumerator</returns>
         /// <remarks>
         ///     <para>
-        ///         The command is executed asynchronously.
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         command/datareader is
+        ///         connection/command/datareader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
         ///     </para>
-        ///     <para>
-        ///         As the returned item is a custom lazy loaded enumerable it's quite fast as nothing is mapped if you do like:
-        ///     </para>
-        ///     <example>
-        ///         <code>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
         /// <![CDATA[
-        /// using (var cmd = connection.CreateCommand())
-        /// {
-        ///     cmd.CommandText = "SELECT * FROM Users";
-        ///     var users = await cmd.ToEnumerable<User>();
-        ///     return users.Skip(1000).Take(50).ToList();
-        /// }
+        /// var users = await connection.ToEnumerable<User>("Age < 10");
+        /// var users = await connection.ToEnumerable<User>("SELECT * FROM Users WHERE Age = 37");
+        /// var users = await connection.ToEnumerable<User>("FirstName = @name", new { name = user.FirstName });
+        /// var users = await connection.ToEnumerable<User>("FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = await connection.ToEnumerable<User>("SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await connection.ToEnumerable<User>("SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
         /// ]]>
         /// </code>
-        ///     </example>
-        ///     <para>
-        ///         Do note that it will still read all rows and is therefore slower than paging in the SQL server. It will however
-        ///         use a lot less
-        ///         allocations than building a complete list first.
-        ///     </para>
-        ///     <para>
-        ///         If the result returnd from the query is all records that you want it's probably more effecient to use
-        ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
-        ///     </para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
-        /// </remarks>
-        public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbConnection connection)
+        /// </example>
+        public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            return ToEnumerableAsync<TEntity>(connection, false);
+            return ToEnumerableAsync<TEntity>(connection, false, query, parameters);
         }
 
         /// <summary>
@@ -371,10 +362,12 @@ namespace Griffin.Data.Mapper
         ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
         ///     remarks.
         /// </param>
+        /// <param name="query">Query or short query (<c>"id = @1"</c>)</param>
+        /// <param name="parameters"></param>
         /// <returns>Lazy loaded enumerator</returns>
         /// <remarks>
         ///     <para>
-        ///         The command is executed asynchronously.
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
@@ -385,17 +378,31 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = await connection.ToEnumerable<User>(true, "Age < 10");
+        /// var users = await connection.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = 37");
+        /// var users = await connection.ToEnumerable<User>(true, "FirstName = @name", new { name = user.FirstName });
+        /// var users = await connection.ToEnumerable<User>(true, "FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = await connection.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await connection.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
         public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbConnection connection,
-            bool ownsConnection)
+            bool ownsConnection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+
             var cmd = connection.CreateDbCommand();
+            cmd.ApplyQuerySql(mapping, query, parameters);
             var reader = await cmd.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
-
 
         /// <summary>
         ///     Return an enumerable which uses lazy loading of each row.
@@ -406,11 +413,13 @@ namespace Griffin.Data.Mapper
         ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
         ///     remarks.
         /// </param>
-        /// <param name="mapper">Mapper used to convert rows to entities</param>
+        /// <param name="mapping">Mapping used when translating table rows to .NET classes.</param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>Lazy loaded enumerator</returns>
         /// <remarks>
         ///     <para>
-        ///         The command is executed asynchronously.
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
@@ -419,20 +428,29 @@ namespace Griffin.Data.Mapper
         ///         disposed when you are
         ///         done with it.
         ///     </para>
-        ///     <para>
-        ///         Requires that a <c><![CDATA[IEntityMapper<TEntity>]]></c> is registered in the
-        ///         <see cref="EntityMappingProvider" />.
-        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "Age < 10");
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "SELECT * FROM Users WHERE Age = 37");
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "FirstName = @name", new { name = user.FirstName });
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await connection.ToEnumerable<User>(true, new CustomUserMapping(), "SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
         public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbConnection connection,
-            bool ownsConnection, IEntityMapper<TEntity> mapper)
+            bool ownsConnection, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (mapper == null) throw new ArgumentNullException("mapper");
 
             var cmd = connection.CreateDbCommand();
+            cmd.ApplyQuerySql(mapping, query, parameters);
             var reader = await cmd.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
 
@@ -442,21 +460,41 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to map</typeparam>
         /// <param name="connection">Connection to invoke <c>ExecuteReaderAsync()</c> on (through a created <c>DbCommand</c>).</param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>A list which is generated asynchronously.</returns>
         /// <remarks>
         ///     <para>
-        ///         Uses the <see cref="EntityMappingProvider" /> to find the correct base mapper.
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
         ///     </para>
         ///     <para>
-        ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
         ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection)
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = await connection.ToListAsync<User>("Age < 10");
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = 37");
+        /// var users = await connection.ToListAsync<User>("FirstName = @name", new { name = user.FirstName });
+        /// var users = await connection.ToListAsync<User>("FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
-            return await ToListAsync(connection, mapping);
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            return await ToListAsync(connection, mapping, query, parameters);
         }
 
         /// <summary>
@@ -464,33 +502,56 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to map</typeparam>
         /// <param name="connection">Connection to invoke <c>ExecuteReaderAsync()</c> on (through a created <c>DbCommand</c>).</param>
-        /// <param name="mapper">Mapper to use when converting rows to entities</param>
+        /// <param name="mapping">Mapping used to translate from db table rows to .NET object</param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
         /// <returns>A list which is generated asynchronously.</returns>
         /// <remarks>
         ///     <para>
-        ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
         ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection,
-            IEntityMapper<TEntity> mapper)
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = await connection.ToListAsync<User>("Age < 10");
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = 37");
+        /// var users = await connection.ToListAsync<User>("FirstName = @name", new { name = user.FirstName });
+        /// var users = await connection.ToListAsync<User>("FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await connection.ToListAsync<User>("SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
-            if (connection == null) throw new ArgumentNullException("cmd");
-            if (mapper == null) throw new ArgumentNullException("mapper");
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (mapping == null) throw new ArgumentNullException("mapping");
 
             var cmd = connection.CreateDbCommand();
+            cmd.ApplyQuerySql(mapping, query, parameters);
+
             var items = new List<TEntity>();
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
-                    var entity = mapper.Create(reader);
-                    mapper.Map(reader, entity);
+                    var entity = mapping.Create(reader);
+                    mapping.Map(reader, entity);
                     items.Add((TEntity)entity);
                 }
             }
             return items;
         }
-
 
     }
 }

@@ -207,6 +207,8 @@
     <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\ClientDisconnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\CookieAuthentication.cs" />
+    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketDecoder.cs" />
+    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketGuid.cs" />
     <Compile Include="Net\Protocols\Serializers\DecoderFailureException.cs" />
     <Compile Include="Net\Protocols\Http\Serializers\FormAndFilesResult.cs" />
     <Compile Include="Net\Protocols\Http\External\ConcurrentPriorityQueue.cs" />
