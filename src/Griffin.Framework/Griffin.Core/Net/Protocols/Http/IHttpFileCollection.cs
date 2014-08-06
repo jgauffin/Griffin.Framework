@@ -1,9 +1,11 @@
-﻿namespace Griffin.Net.Protocols.Http
+﻿using System.Collections.Generic;
+
+namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
     /// Collection of files
     /// </summary>
-    public interface IHttpFileCollection
+    public interface IHttpFileCollection : IEnumerable<IHttpFile>
     {
         /// <summary>
         /// Get a file
