@@ -18,11 +18,12 @@ namespace Griffin.Net.Protocols.Serializers
     {
         private readonly Dictionary<string, IMessageSerializer> _decoders = new Dictionary<string, IMessageSerializer>();
 
-		  /// <summary>
-		  ///     Initializes a new instance of the <see cref="CompositeIMessageSerializer" /> class.
-		  /// </summary>
-        public CompositeIMessageSerializer() {
-		      _decoders.Add(UrlFormattedMessageSerializer.MimeType, new UrlFormattedMessageSerializer());
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CompositeIMessageSerializer" /> class.
+        /// </summary>
+        public CompositeIMessageSerializer()
+        {
+            _decoders.Add(UrlFormattedMessageSerializer.MimeType, new UrlFormattedMessageSerializer());
             _decoders.Add(MultipartSerializer.MimeType, new MultipartSerializer());
             DefaultEncoding = Encoding.UTF8;
         }
@@ -68,9 +69,9 @@ namespace Griffin.Net.Protocols.Serializers
             IMessageSerializer decoder;
             var contentTypeTrimmed = GetContentTypeWithoutCharset(contentType);
 
-				if (string.IsNullOrEmpty(contentTypeTrimmed) || !_decoders.TryGetValue(contentTypeTrimmed, out decoder))
-					return false;
-				
+            if (string.IsNullOrEmpty(contentTypeTrimmed) || !_decoders.TryGetValue(contentTypeTrimmed, out decoder))
+                return false;
+
             return decoder.Deserialize(contentType, source);
         }
 

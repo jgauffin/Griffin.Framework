@@ -67,10 +67,10 @@ namespace Griffin.Net.Protocols.Http.Serializers
             };
             var contentTypeHeader = new HttpHeaderValue(contentType);
             var encodingStr = contentTypeHeader.Parameters["charset"];
-				var encoding = Encoding.Default;
-				if (!string.IsNullOrEmpty(encodingStr)) {
-					encoding = Encoding.GetEncoding(encodingStr);
-				}
+            var encoding = Encoding.Default;
+            if (!string.IsNullOrEmpty(encodingStr)) {
+                encoding = Encoding.GetEncoding(encodingStr);
+            }
 
             //multipart/form-data, boundary=AaB03x
             var boundry = contentTypeHeader.Parameters.Get("boundary");
