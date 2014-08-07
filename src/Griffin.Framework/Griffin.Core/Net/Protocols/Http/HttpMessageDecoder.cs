@@ -178,7 +178,7 @@ namespace Griffin.Net.Protocols.Http
         private void TriggerMessageReceived(HttpMessage message)
         {
             var request = message as HttpRequest;
-            if (_messageSerializer != null && request != null)
+            if (_messageSerializer != null && request != null && request.HttpMethod == "POST")
             {
                 if (message.Body != null && message.Body.Length > 0)
                 {
