@@ -78,7 +78,7 @@ namespace Griffin.Net.Protocols.Serializers
             IMessageSerializer decoder;
             var contentTypeTrimmed = GetContentTypeWithoutCharset(contentType);
 
-				if (!_decoders.TryGetValue(contentTypeTrimmed, out decoder))
+				if (string.IsNullOrEmpty(contentTypeTrimmed) || !_decoders.TryGetValue(contentTypeTrimmed, out decoder))
 				{
 					if (_enforceDecoding)
 						return null;
@@ -89,7 +89,6 @@ namespace Griffin.Net.Protocols.Serializers
 							Form = new Griffin.Net.Protocols.Http.Messages.ParameterCollection()
 						};
 				}
-               
 
             return decoder.Deserialize(contentType, source);
         }
