@@ -57,7 +57,7 @@ namespace Griffin.Net.Protocols.Http.Serializers
         /// <exception cref="SerializationException">Deserialization failed</exception>
         public object Deserialize(string contentType, Stream source)
         {
-            if (!contentType.EndsWith(MimeType))
+            if (!contentType.StartsWith(MimeType))
                 return null;
 
             var result = new FormAndFilesResult()
@@ -67,7 +67,10 @@ namespace Griffin.Net.Protocols.Http.Serializers
             };
             var contentTypeHeader = new HttpHeaderValue(contentType);
             var encodingStr = contentTypeHeader.Parameters["charset"];
-            var encoding = Encoding.GetEncoding(encodingStr);
+				var encoding = Encoding.Default;
+				if (!string.IsNullOrEmpty(encodingStr)) {
+					encoding = Encoding.GetEncoding(encodingStr);
+				}
 
             //multipart/form-data, boundary=AaB03x
             var boundry = contentTypeHeader.Parameters.Get("boundary");
@@ -130,7 +133,6 @@ namespace Griffin.Net.Protocols.Http.Serializers
                     result.Form.Add(Uri.UnescapeDataString(element.Name), encoding.GetString(buffer));
                 }
             }
-
 
             return result;
         }

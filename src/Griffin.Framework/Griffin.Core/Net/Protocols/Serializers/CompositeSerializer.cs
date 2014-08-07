@@ -17,22 +17,12 @@ namespace Griffin.Net.Protocols.Serializers
     public class CompositeIMessageSerializer : IMessageSerializer
     {
         private readonly Dictionary<string, IMessageSerializer> _decoders = new Dictionary<string, IMessageSerializer>();
-        private readonly bool _enforceDecoding;
 
 		  /// <summary>
 		  ///     Initializes a new instance of the <see cref="CompositeIMessageSerializer" /> class.
 		  /// </summary>
-        public CompositeIMessageSerializer() : this(true)
-		  {
-		  }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="CompositeIMessageSerializer" /> class.
-        /// </summary>
-		  /// <param name="enforceDecoding">Do not ignore unknown content types</param>
-        public CompositeIMessageSerializer(bool enforceDecoding)
-        {
-            _decoders.Add(UrlFormattedMessageSerializer.MimeType, new UrlFormattedMessageSerializer());
+        public CompositeIMessageSerializer() {
+		      _decoders.Add(UrlFormattedMessageSerializer.MimeType, new UrlFormattedMessageSerializer());
             _decoders.Add(MultipartSerializer.MimeType, new MultipartSerializer());
             DefaultEncoding = Encoding.UTF8;
         }
@@ -79,17 +69,8 @@ namespace Griffin.Net.Protocols.Serializers
             var contentTypeTrimmed = GetContentTypeWithoutCharset(contentType);
 
 				if (string.IsNullOrEmpty(contentTypeTrimmed) || !_decoders.TryGetValue(contentTypeTrimmed, out decoder))
-				{
-					if (_enforceDecoding)
-						return null;
-					else
-						return new FormAndFilesResult()
-						{
-							Files = new Griffin.Net.Protocols.Http.Messages.HttpFileCollection(),
-							Form = new Griffin.Net.Protocols.Http.Messages.ParameterCollection()
-						};
-				}
-
+					return false;
+				
             return decoder.Deserialize(contentType, source);
         }
 

@@ -98,7 +98,7 @@ namespace Griffin.Net.Protocols.Http.Messages
                             oldPos = index + 1;
                         }
                         break;
-                    case ',':
+                    case ';':
                         gotEquals = false;
                         if (lastCh != '\\')
                         {

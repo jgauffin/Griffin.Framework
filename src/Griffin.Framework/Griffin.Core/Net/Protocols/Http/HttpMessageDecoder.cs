@@ -192,8 +192,8 @@ namespace Griffin.Net.Protocols.Http
                         request.Form = formAndFiles.Form;
                         request.Files = formAndFiles.Files;
                     }
-                    else
-                        throw new HttpException(500, "Unknown decoder result: " + result);
+                    // else
+                    //    throw new HttpException(500, "Unknown decoder result: " + result);
                     
                 }
                 var cookies = request.Headers["Cookie"];
