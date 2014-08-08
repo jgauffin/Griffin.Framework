@@ -123,7 +123,6 @@ namespace Griffin.Net
             if (_listener != null)
                 throw new InvalidOperationException("Already listening.");
 
-
             _listener = new TcpListener(address, port);
             _listener.Start();
 
@@ -144,6 +143,7 @@ namespace Griffin.Net
         public virtual void Stop()
         {
             _listener.Stop();
+				_listener = null;
         }
 
         /// <summary>
@@ -206,38 +206,43 @@ namespace Griffin.Net
 
         private void OnSocket(IAsyncResult ar)
         {
-            var socket = _listener.EndAcceptSocket(ar);
+			  try
+			  {
+				  var socket = _listener.EndAcceptSocket(ar);
 
-            try
-            {
-                ITcpChannel channel;
-                if (!_channels.TryPop(out channel))
-                {
-                    var decoder = _configuration.DecoderFactory();
-                    var encoder = _configuration.EncoderFactory();
-                    channel = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
-                }
+				  try
+				  {
+					  ITcpChannel channel;
+					  if (!_channels.TryPop(out channel))
+					  {
+						  var decoder = _configuration.DecoderFactory();
+						  var encoder = _configuration.EncoderFactory();
+						  channel = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
+					  }
 
-                channel.Disconnected = OnChannelDisconnect;
-                channel.MessageReceived = OnMessage;
-                channel.Assign(socket);
+					  channel.Disconnected = OnChannelDisconnect;
+					  channel.MessageReceived = OnMessage;
+					  channel.Assign(socket);
 
-                var args = OnClientConnected(channel);
-                if (!args.MayConnect)
-                {
-                    if (args.Response != null)
-                        channel.Send(args.Response);
-                    channel.Close();
-                    return;
-                }
-            }
-            catch (Exception exception)
-            {
-                ListenerError(this, new ErrorEventArgs(exception));
-            }
+					  var args = OnClientConnected(channel);
+					  if (!args.MayConnect)
+					  {
+						  if (args.Response != null)
+							  channel.Send(args.Response);
+						  channel.Close();
+						  return;
+					  }
+				  }
+				  catch (Exception exception)
+				  { 
+					  ListenerError(this, new ErrorEventArgs(exception));
+				  }
 
-
-            _listener.BeginAcceptSocket(OnSocket, null);
+				  _listener.BeginAcceptSocket(OnSocket, null);
+			  }
+			  catch (Exception)
+			  { //Ignore            
+			  }
         }
     }
 }
