@@ -13,11 +13,12 @@ namespace Griffin.Data.Mapper
     /// </summary>
     /// <typeparam name="TEntity">Type of entity (i.e. class that somewhat corresponds to a table)</typeparam>
     /// <remarks>
-    /// <para>
-    /// This mapper is konventional based. If there is a column named <c>"Id"</c> this mapper will assume that that is the primary key. If you do not have
-    /// an <c>"Id"</c> id column you need to inherit this class and overide the <c>Configure</c> method:
-    /// </para>
-    /// <code>
+    ///     <para>
+    ///         This mapper is konventional based. If there is a column named <c>"Id"</c> this mapper will assume that that is
+    ///         the primary key. If you do not have
+    ///         an <c>"Id"</c> id column you need to inherit this class and overide the <c>Configure</c> method:
+    ///     </para>
+    ///     <code>
     /// <![CDATA[
     /// public class UserMapping : CrudEntityMapper<User>
     /// {
@@ -31,7 +32,8 @@ namespace Griffin.Data.Mapper
     /// ]]>
     /// </code>
     ///     <para>
-    ///         All mappers must have a parameterless constructor, but you can set it as non-public if you do not want to expose
+    ///         All mappers must have a parameterless constructor, but you can set it as non-public if you do not want to
+    ///         expose
     ///         it.
     ///     </para>
     ///     <para>
@@ -39,7 +41,8 @@ namespace Griffin.Data.Mapper
     /// </remarks>
     /// <example>
     ///     <para>
-    ///         You can just create an empty class like below if there is an one-one mapping between the table and your entity class. It will
+    ///         You can just create an empty class like below if there is an one-one mapping between the table and your entity
+    ///         class. It will
     ///         automatically be
     ///         picked up by the <see cref="AssemblyScanningMappingProvider" />.
     ///     </para>
@@ -59,9 +62,13 @@ namespace Griffin.Data.Mapper
     ///     {
     ///         base.Configure(mappings);
     /// 
-    ///         // Id is of the column type "uniqueidentifier" in the DB and of "string" type for our property.
-    ///         mappings["Id"].ColumnToPropertyAdapter = value => value.ToString();
-    ///         mappings["Id"].PropertyToColumnAdapter = value => Guid.Parse(string)value);
+    ///         // Id is per default set to primary key, but any other name must be configured
+    ///         // you can set multiple properties as a key too (composite key)
+    ///         mappings["Id"].IsPrimaryKey = true;
+    /// 
+    ///         // UserId is of the column type "uniqueidentifier" in the DB and of "string" type for our property.
+    ///         mappings["UserId"].ColumnToPropertyAdapter = value => value.ToString();
+    ///         mappings["UserId"].PropertyToColumnAdapter = value => Guid.Parse(string)value);
     ///     }
     /// }
     /// ]]>
@@ -74,7 +81,7 @@ namespace Griffin.Data.Mapper
         private ICommandBuilder _builder = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CrudEntityMapper{TEntity}"/> class.
+        ///     Initializes a new instance of the <see cref="CrudEntityMapper{TEntity}" /> class.
         /// </summary>
         /// <param name="tableName">Name of the table.</param>
         public CrudEntityMapper(string tableName)
@@ -103,7 +110,11 @@ namespace Griffin.Data.Mapper
         ///     Free the mapping, no further changes may be made.
         /// </summary>
         /// <remarks>
-        ///     <para>Called by the mapping provider when it's being added to it.</para>
+        ///     <para>Called by the mapping provider when the mapping have been added to it.</para>
+        ///     <para>
+        ///         The purpose is to allow the mapping implementations to do post process once the mappings have been fully
+        ///         configured. 
+        ///     </para>
         /// </remarks>
         public void Freeze()
         {
@@ -112,17 +123,23 @@ namespace Griffin.Data.Mapper
             {
                 _keys.Add(kvp);
             }
+
+            if (_keys.Count != 0)
+                return;
+
+            if (Properties.ContainsKey("Id"))
+                _keys.Add("Id", Properties["Id"]);
         }
 
         /// <summary>
-        /// Get the primary key 
+        ///     Get the primary key
         /// </summary>
         /// <param name="entity">entity to fetch key values from.</param>
         /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key</returns>
         public KeyValuePair<string, object>[] GetKeys(object entity)
         {
             var values = new KeyValuePair<string, object>[_keys.Count];
-            int index = 0;
+            var index = 0;
             foreach (var kvp in _keys)
             {
                 values[index++] = new KeyValuePair<string, object>(kvp.Key, kvp.Value.GetValue(entity));

@@ -316,7 +316,7 @@ namespace Griffin.Data.Mapper
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
         ///     </para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd)
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this DbCommand cmd)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
@@ -336,7 +336,7 @@ namespace Griffin.Data.Mapper
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
         ///     </para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd,
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this DbCommand cmd,
             IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");

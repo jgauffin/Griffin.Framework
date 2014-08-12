@@ -338,6 +338,7 @@
     <None Include="ApplicationServices\Docs\Backgroundjobs.md" />
     <None Include="ApplicationServices\ReadMe.md" />
     <None Include="Container\ReadMe.md" />
+    <None Include="Data\Mapper\Docs\AsyncMethods.md" />
     <None Include="Data\Mapper\Docs\Mappings.md" />
     <None Include="Data\Mapper\ReadMe.md" />
     <None Include="Data\ReadMe.md" />

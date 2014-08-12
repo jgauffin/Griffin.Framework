@@ -197,13 +197,13 @@ namespace Griffin.Data.Mapper
         /// <remarks>
         /// <para>Uses <see cref="EntityMappingProvider"/> to find the correct <c><![CDATA[ICrudEntityMapper<TEntity>]]></c></para>
         /// </remarks>
-        public static async Task InsertAsync<TEntity>(this IDbConnection connection, TEntity entity)
+        public static async Task<object> InsertAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 mapper.CommandBuilder.InsertCommand(cmd, entity);
-                await cmd.ExecuteNonQueryAsync();
+                return await cmd.ExecuteScalarAsync();
             }
         }
 
@@ -489,7 +489,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -532,7 +532,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this IDbConnection connection, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (mapping == null) throw new ArgumentNullException("mapping");
