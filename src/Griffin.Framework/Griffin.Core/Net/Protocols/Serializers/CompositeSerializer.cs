@@ -69,11 +69,10 @@ namespace Griffin.Net.Protocols.Serializers
             IMessageSerializer decoder;
             var contentTypeTrimmed = GetContentTypeWithoutCharset(contentType);
 
-            if (!_decoders.TryGetValue(contentTypeTrimmed, out decoder))
+            if (string.IsNullOrEmpty(contentTypeTrimmed) || !_decoders.TryGetValue(contentTypeTrimmed, out decoder))
                 return false;
 
-            decoder.Deserialize(contentType, source);
-            return true;
+            return decoder.Deserialize(contentType, source);
         }
 
         /// <summary>
