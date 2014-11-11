@@ -138,6 +138,7 @@
     <Compile Include="Net\Protocols\Http\Messages\HeaderParserTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HttpCookieParserTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HttpMessageDecoderTests.cs" />
+    <Compile Include="Net\Protocols\Http\BodyDecoders\MultipartSerializerTests.cs" />
     <Compile Include="Net\Protocols\Http\BodyDecoders\UrlDecoderTests.cs" />
     <Compile Include="Net\Protocols\Http\HttpEncoderTests.cs" />
     <Compile Include="Net\Protocols\Http\HttpMessageDecoderTests.cs" />
