@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace Griffin.Net.Protocols.Http.Messages
             while (canRun)
             {
                 var result = reader.ReadToEnd("&=");
-                var name = Uri.UnescapeDataString(result.Value);
+                var name = WebUtility.UrlDecode(result.Value);
                 switch (result.Delimiter)
                 {
                     case '&':
@@ -36,7 +37,7 @@ namespace Griffin.Net.Protocols.Http.Messages
                         break;
                     case '=':
                         result = reader.ReadToEnd("&");
-                        parameters.Add(name, Uri.UnescapeDataString(result.Value));
+                        parameters.Add(name, WebUtility.UrlDecode(result.Value));
                         break;
                     case char.MinValue:
                         // EOF = no delimiter && no value

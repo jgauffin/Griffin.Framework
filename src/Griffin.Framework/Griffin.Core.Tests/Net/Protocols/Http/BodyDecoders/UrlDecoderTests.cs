@@ -68,5 +68,20 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
 
             Assert.Equal("world", ((FormAndFilesResult) result).Form["hello"]);
         }
+
+        [Fact]
+        public void DecodeWhitespace()
+        {
+            var contentType = "application/x-www-form-urlencoded;charset=ASCII";
+            var formData = "test1=hello world&test2=hello+world&test3=hello%20world";
+            var body = new MemoryStream(Encoding.ASCII.GetBytes(formData));
+
+            var decoder = new UrlFormattedMessageSerializer();
+            var result = decoder.Deserialize(contentType, body);
+
+            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test1"]);
+            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test2"]);
+            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test3"]);
+        }
     }
 }
