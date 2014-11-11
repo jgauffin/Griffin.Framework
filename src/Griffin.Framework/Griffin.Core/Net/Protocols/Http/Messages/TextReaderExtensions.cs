@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 
 namespace Griffin.Net.Protocols.Http.Messages
 {
@@ -15,14 +16,16 @@ namespace Griffin.Net.Protocols.Http.Messages
         public static ReaderResult ReadToEnd(this TextReader reader, string delimiters)
         {
             var result = new ReaderResult();
+            var builder = new StringBuilder();
 
             var intChar = reader.Read();
             while (intChar != -1 && delimiters.IndexOf((char)intChar) == -1)
             {
-                result.Value += (char)intChar;
+                builder.Append((char)intChar);
                 intChar = reader.Read();
             }
 
+            result.Value = builder.ToString();
             result.Delimiter = intChar == -1 ? char.MinValue : (char)intChar;
             return result;
         }
