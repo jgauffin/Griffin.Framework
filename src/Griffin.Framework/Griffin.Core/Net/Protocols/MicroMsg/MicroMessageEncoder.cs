@@ -205,7 +205,7 @@ namespace Griffin.Net.Protocols.MicroMsg
 
             // the header length field is not included in _headerSize as it's a header prefix.
             // hence the +2
-            return _headerSize + 2;
+            return _headerSize;
         }
     }
 }
