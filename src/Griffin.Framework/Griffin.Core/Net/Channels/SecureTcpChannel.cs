@@ -50,7 +50,6 @@ namespace Griffin.Net.Channels
 
             _encoder = encoder;
             _decoder = decoder;
-            _decoder.MessageReceived = OnMessageReceived;
             _sslStreamBuilder = sslStreamBuilder;
             _decoder.MessageReceived = OnMessageReceived;
 
