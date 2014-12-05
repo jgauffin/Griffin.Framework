@@ -47,6 +47,7 @@ namespace Griffin.Net.Channels
             if (readBuffer == null) throw new ArgumentNullException("readBuffer");
             if (encoder == null) throw new ArgumentNullException("encoder");
             if (decoder == null) throw new ArgumentNullException("decoder");
+            if (sslStreamBuilder == null) throw new ArgumentNullException("sslStreamBuilder");
 
             _encoder = encoder;
             _decoder = decoder;
