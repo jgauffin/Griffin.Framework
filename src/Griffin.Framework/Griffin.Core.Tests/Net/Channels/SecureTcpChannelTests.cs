@@ -112,6 +112,26 @@ namespace Griffin.Core.Tests.Net.Channels
             actual.Should().Be("Hello world");
         }
 
+        [Fact]
+        public void send_close_message()
+        {
+            var slice = new BufferSlice(new byte[65535], 0, 65535);
+            var encoder = new StringEncoder();
+            var decoder = new StringDecoder();
+
+            var sut = CreateClientChannel(slice, encoder, decoder);
+            sut.MessageReceived += (channel, message) => { };
+            var stream = new SslStream(new NetworkStream(_helper.Server));
+            stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
+            sut.Assign(_helper.Client);
+
+            Assert.True(sut.IsConnected);
+
+            sut.Close();
+
+            Assert.False(sut.IsConnected);
+        }
+
         private void OnAuthenticated(IAsyncResult ar)
         {
             var stream = (SslStream) ar.AsyncState;

@@ -158,6 +158,7 @@ namespace Griffin.Net.Channels
             if (MessageReceived == null)
                 throw new InvalidOperationException("Must handle the MessageReceived callback before invoking this method.");
 
+            _socket = socket;
             _stream = _sslStreamBuilder.Build(this, socket);
             _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
         }
@@ -226,7 +227,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         public void Close()
         {
-            _socket.Shutdown(SocketShutdown.Both);
+            Send(CloseMessage);
             _closeEvent.Wait(5000);
         }
 
