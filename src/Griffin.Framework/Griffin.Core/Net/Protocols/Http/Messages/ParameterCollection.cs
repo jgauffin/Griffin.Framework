@@ -188,7 +188,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </returns>
         public override string ToString()
         {
-            return string.Join(",", _items.Select(x => string.Format("{0}={1}", x.Key, x.Value)));
+            return string.Join(",", _items.Values.Select(x => string.Format("{0}={1}", x.Name, x.Value)));
         }
     }
 }

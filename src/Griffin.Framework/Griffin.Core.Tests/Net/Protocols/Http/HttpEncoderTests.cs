@@ -76,5 +76,26 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
 
             actual.Should().Be(expected);
         }
+
+        [Fact]
+        public void response_with_body_encoding()
+        {
+            var frame = new HttpResponseBase(404, "Failed to find it dude", "HTTP/1.1");
+            frame.AddHeader("X-Requested-With", "XHttpRequest");
+            frame.ContentType = "text/plain";
+            frame.ContentCharset = Encoding.UTF8;
+            frame.Body = new MemoryStream(Encoding.UTF8.GetBytes("hello queue a"));
+            var expected = string.Format("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nDate: {0}\r\nContent-Type: text/plain;charset=utf-8\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a",
+                DateTime.UtcNow.ToString("R"));
+            var buffer = new SocketBufferFake();
+
+            var encoder = new HttpMessageEncoder();
+            encoder.Prepare(frame);
+            encoder.Send(buffer);
+            var actual = Encoding.UTF8.GetString(buffer.Buffer, 0, buffer.Count);
+
+            actual.Should().Be(expected);
+        }
+
     }
 }
