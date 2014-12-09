@@ -161,7 +161,7 @@ namespace Griffin.Net.Channels
             _socket = socket;
             RemoteEndpoint = socket.RemoteEndPoint;
             _stream = _sslStreamBuilder.Build(this, socket);
-            _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
+            ReadAsync();
         }
 
         /// <summary>
