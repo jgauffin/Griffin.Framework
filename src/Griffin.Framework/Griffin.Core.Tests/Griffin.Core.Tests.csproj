@@ -145,6 +145,9 @@
     <Compile Include="Net\Protocols\Http\Messages\HeaderCollectionTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\ParameterCollectionTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\TextReaderExtensionsTests.cs" />
+    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketFrameTests.cs" />
+    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMessageEncoderTests.cs" />
+    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMessageDecoderTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\CodecTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoderTests.cs" />
     <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoderTests.cs" />
