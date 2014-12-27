@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using FluentAssertions;
 using Griffin.Net.Protocols.Http;
@@ -61,7 +62,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void response_with_body()
         {
-            var frame = new HttpResponseBase(404, "Failed to find it dude", "HTTP/1.1");
+            var frame = new HttpResponseBase(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.Body = new MemoryStream(Encoding.ASCII.GetBytes("hello queue a"));
@@ -80,7 +81,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void response_with_body_encoding()
         {
-            var frame = new HttpResponseBase(404, "Failed to find it dude", "HTTP/1.1");
+            var frame = new HttpResponseBase(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.ContentCharset = Encoding.UTF8;

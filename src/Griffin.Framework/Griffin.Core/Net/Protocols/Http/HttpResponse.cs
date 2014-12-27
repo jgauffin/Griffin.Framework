@@ -13,7 +13,7 @@ namespace Griffin.Net.Protocols.Http
         /// <param name="statusCode">The status code.</param>
         /// <param name="reasonPhrase">The reason phrase.</param>
         /// <param name="httpVersion">The HTTP version.</param>
-        public HttpResponse(int statusCode, string reasonPhrase, string httpVersion) : base(statusCode, reasonPhrase, httpVersion)
+        internal HttpResponse(int statusCode, string reasonPhrase, string httpVersion) : base(statusCode, reasonPhrase, httpVersion)
         {
             Cookies = new HttpCookieCollection<IResponseCookie>();
         }
