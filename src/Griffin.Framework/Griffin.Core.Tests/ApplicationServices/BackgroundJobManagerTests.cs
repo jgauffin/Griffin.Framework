@@ -146,7 +146,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             var sut = new BackgroundJobManager(sl);
             sut.StartInterval = TimeSpan.FromSeconds(0);
             sut.Start();
-            Thread.Sleep(100);
+            Thread.Sleep(10000);
 
             job2.Received().ExecuteAsync();
         }

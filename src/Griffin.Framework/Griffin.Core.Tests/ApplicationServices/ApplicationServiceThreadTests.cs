@@ -61,13 +61,13 @@ namespace Griffin.Core.Tests.ApplicationServices
 
             var sut = new TestAppService();
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
-            sut.StoppedEvent.WaitOne(100);
+            sut.StoppedEvent.WaitOne(10000);
             sut.StartedEvent.Reset();
             sut.Start();
 
-            sut.StartedEvent.WaitOne(100).Should().BeTrue();
+            sut.StartedEvent.WaitOne(10000).Should().BeTrue();
         }
 
 
@@ -80,9 +80,9 @@ namespace Griffin.Core.Tests.ApplicationServices
             var sut = new TestAppService();
             sut.WorkFunc = handle => handle.WaitOne(500);
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
-            sut.StoppedEvent.WaitOne(100);
+            sut.StoppedEvent.WaitOne(10000);
             sut.StartedEvent.Reset();
             sut.Start();
 
@@ -95,10 +95,10 @@ namespace Griffin.Core.Tests.ApplicationServices
         public void will_not_crash_when_Run_throws_exception_and_log_func_is_not_set()
         {
             var sut = new TestAppService();
-            sut.WorkFunc = handle => { throw new InvalidOperationException(); };
+            sut.WorkFunc = handle => { handle.WaitOne(500); throw new InvalidOperationException(); };
 
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
             var actual = sut.StoppedEvent.WaitOne(10000);
 

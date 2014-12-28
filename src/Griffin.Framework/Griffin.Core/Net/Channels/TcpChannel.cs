@@ -411,10 +411,17 @@ namespace Griffin.Net.Channels
 
         private void ReadAsync()
         {
-            var isPending = _socket.ReceiveAsync(_readArgs);
-            if (!isPending)
+            try
             {
-                OnReadCompleted(_socket, _readArgs);
+                var isPending = _socket.ReceiveAsync(_readArgs);
+                if (!isPending)
+                {
+                    OnReadCompleted(_socket, _readArgs);
+                }
+            }
+            catch (Exception e)
+            {
+                HandleDisconnect(SocketError.ConnectionReset);
             }
         }
 
