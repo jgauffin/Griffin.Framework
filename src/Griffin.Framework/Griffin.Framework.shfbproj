@@ -26,11 +26,12 @@
     <CleanIntermediates>True</CleanIntermediates>
     <DocumentationSources>
       <DocumentationSource sourceFile="Griffin.Core.Autofac\Griffin.Core.Autofac.csproj" xmlns="" />
-<DocumentationSource sourceFile="Griffin.Core\Griffin.Core.csproj" xmlns="" />
-<DocumentationSource sourceFile="Griffin.Core.Json\Griffin.Core.Json.csproj" xmlns="" />
-<DocumentationSource sourceFile="Griffin.Core.Protobuf\Griffin.Core.Protobuf.csproj" xmlns="" />
-<DocumentationSource sourceFile="Griffin.Cqs\Griffin.Cqs.csproj" xmlns="" />
-<DocumentationSource sourceFile="Griffin.Data.Sqlite\Griffin.Data.Sqlite.csproj" xmlns="" /></DocumentationSources>
+      <DocumentationSource sourceFile="Griffin.Core\Griffin.Core.csproj" xmlns="" />
+      <DocumentationSource sourceFile="Griffin.Core.Json\Griffin.Core.Json.csproj" xmlns="" />
+      <DocumentationSource sourceFile="Griffin.Core.Protobuf\Griffin.Core.Protobuf.csproj" xmlns="" />
+      <DocumentationSource sourceFile="Griffin.Cqs\Griffin.Cqs.csproj" xmlns="" />
+      <DocumentationSource sourceFile="Griffin.Data.Sqlite\Griffin.Data.Sqlite.csproj" xmlns="" />
+    </DocumentationSources>
     <MaximumGroupParts>2</MaximumGroupParts>
     <NamespaceGrouping>False</NamespaceGrouping>
     <SyntaxFilters>C#, Visual Basic</SyntaxFilters>
@@ -48,12 +49,12 @@
     <ComponentConfigurations>
       <ComponentConfig id="Code Block Component" enabled="True" xmlns="">
         <component id="Code Block Component">
-  <basePath value="{@HtmlEncProjectFolder}" />
-  <outputPaths>{@HelpFormatOutputPaths}</outputPaths>
-  <allowMissingSource value="false" />
-  <removeRegionMarkers value="false" />
-  <colorizer syntaxFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.xml" styleFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.xsl" stylesheet="{@SHFBFolder}PresentationStyles\Colorizer\highlight.css" scriptFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.js" disabled="{@DisableCodeBlockComponent}" language="cs" tabSize="0" numberLines="false" outlining="false" keepSeeTags="false" defaultTitle="true" />
-</component>
+          <basePath value="{@HtmlEncProjectFolder}" />
+          <outputPaths>{@HelpFormatOutputPaths}</outputPaths>
+          <allowMissingSource value="false" />
+          <removeRegionMarkers value="false" />
+          <colorizer syntaxFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.xml" styleFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.xsl" stylesheet="{@SHFBFolder}PresentationStyles\Colorizer\highlight.css" scriptFile="{@SHFBFolder}PresentationStyles\Colorizer\highlight.js" disabled="{@DisableCodeBlockComponent}" language="cs" tabSize="0" numberLines="false" outlining="false" keepSeeTags="false" defaultTitle="true" />
+        </component>
       </ComponentConfig>
     </ComponentConfigurations>
   </PropertyGroup>
@@ -75,6 +76,23 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' ">
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>Griffin.Core.Autofac\bin\Release\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetCqs">
+      <HintPath>Griffin.Cqs\bin\Release\DotNetCqs.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity">
+      <HintPath>Griffin.Core.Unity\bin\Release\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Griffin.Core.Json\bin\Release\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>Griffin.Core.Protobuf\bin\Release\protobuf-net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <!-- Import the SHFB build targets -->
   <Import Project="$(SHFBROOT)\SandcastleHelpFileBuilder.targets" />
 </Project>
