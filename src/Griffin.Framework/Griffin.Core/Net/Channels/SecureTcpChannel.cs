@@ -47,10 +47,10 @@ namespace Griffin.Net.Channels
             if (readBuffer == null) throw new ArgumentNullException("readBuffer");
             if (encoder == null) throw new ArgumentNullException("encoder");
             if (decoder == null) throw new ArgumentNullException("decoder");
+            if (sslStreamBuilder == null) throw new ArgumentNullException("sslStreamBuilder");
 
             _encoder = encoder;
             _decoder = decoder;
-            _decoder.MessageReceived = OnMessageReceived;
             _sslStreamBuilder = sslStreamBuilder;
             _decoder.MessageReceived = OnMessageReceived;
 
@@ -158,8 +158,10 @@ namespace Griffin.Net.Channels
             if (MessageReceived == null)
                 throw new InvalidOperationException("Must handle the MessageReceived callback before invoking this method.");
 
+            _socket = socket;
+            RemoteEndpoint = socket.RemoteEndPoint;
             _stream = _sslStreamBuilder.Build(this, socket);
-            _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
+            ReadAsync();
         }
 
         /// <summary>
@@ -226,7 +228,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         public void Close()
         {
-            _socket.Shutdown(SocketShutdown.Both);
+            Send(CloseMessage);
             _closeEvent.Wait(5000);
         }
 
@@ -258,6 +260,7 @@ namespace Griffin.Net.Channels
             _decoder.Clear();
             _currentOutboundMessage = null;
             _socket = null;
+            _stream = null;
 
             if (Data != null)
                 Data.Clear();
@@ -369,7 +372,14 @@ namespace Griffin.Net.Channels
 
         private void ReadAsync()
         {
-            _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
+            try
+            {
+                _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
+            }
+            catch (Exception e)
+            {
+                HandleDisconnect(e);
+            }
         }
 
         private void SendCurrent()
@@ -377,7 +387,14 @@ namespace Griffin.Net.Channels
             // Allows us to send everything before closing the connection.
             if (_currentOutboundMessage == CloseMessage)
             {
-                _socket.Shutdown(SocketShutdown.Both);
+                try
+                {
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+                catch (Exception e)
+                {
+                    HandleDisconnect(e);
+                }
                 _currentOutboundMessage = null;
                 _closeEvent.Release();
                 return;
@@ -386,7 +403,14 @@ namespace Griffin.Net.Channels
 
             _encoder.Prepare(_currentOutboundMessage);
             _encoder.Send(_writeBuffer);
-            _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);
+            try
+            {
+                _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);
+            }
+            catch (Exception e)
+            {
+                HandleDisconnect(e);
+            }
         }
     }
 }
