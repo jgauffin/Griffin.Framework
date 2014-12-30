@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Security.Principal;
-using System.Text;
 
 namespace Griffin.ApplicationServices.AppDomains.Controller
 {
     internal class NamedPipeServer
     {
-        private ClientConnection[] _clients = new ClientConnection[3];
-        private string _pipeName = Guid.NewGuid().ToString("N");
+        private readonly ClientConnection[] _clients = new ClientConnection[3];
+        private readonly string _pipeName = Guid.NewGuid().ToString("N");
 
         public string PipeName
         {
@@ -20,7 +14,7 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
 
         public void Start()
         {
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var clientConnection = new ClientConnection(_pipeName, 3);
                 clientConnection.ReceivedCommand += OnClientCommand;
@@ -28,7 +22,6 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
                 clientConnection.UnhandledException += OnClientException;
                 clientConnection.Start();
             }
-            
         }
 
         public event EventHandler<ClientReceivedCommandEventArgs> ReceivedCommand = delegate { };
@@ -58,12 +51,5 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
                     client.Stop();
             }
         }
-
-    
-
-       
     }
-
-
-    public delegate void ReceivedCommandHandler(string command, string[] argv);
 }

@@ -47,6 +47,9 @@
     <Compile Include="ApplicationServices\AppDomains\Controller\ClientConnection.cs" />
     <Compile Include="ApplicationServices\AppDomains\Controller\ClientReceivedCommandEventArgs.cs" />
     <Compile Include="ApplicationServices\AppDomains\Controller\NamedPipeServer.cs" />
+    <Compile Include="ApplicationServices\AppDomains\Controller\ReceivedCommandHandler.cs" />
+    <Compile Include="ApplicationServices\AppDomains\Host\ReceivedCommandHandler.cs" />
+    <Compile Include="ApplicationServices\AppDomains\NamespaceDoc.cs" />
     <Compile Include="ApplicationServices\AppDomains\UnhandledExceptionEventArgs.cs" />
     <Compile Include="ApplicationServices\AppDomains\Controller\NewVersionDetector.cs" />
     <Compile Include="ApplicationServices\AppDomains\Controller\VersionFoundEventArgs.cs" />
@@ -72,6 +75,7 @@
     <Compile Include="ApplicationServices\IGuardedService.cs" />
     <Compile Include="ApplicationServices\IocAppServiceLocator.cs" />
     <Compile Include="ApplicationServices\ISettingsRepository.cs" />
+    <Compile Include="ApplicationServices\NamespaceDoc.cs" />
     <Compile Include="ApplicationServices\ScopeClosingEventArgs.cs" />
     <Compile Include="ApplicationServices\ScopeCreatedEventArgs.cs" />
     <Compile Include="ApplicationServices\AppDomains\Host\AppInitializeRunner.cs" />
@@ -80,7 +84,10 @@
     <Compile Include="ConstructorExtensions.cs" />
     <Compile Include="Container\ContainerLifetime.cs" />
     <Compile Include="Container\ContainerServiceAttribute.cs" />
+    <Compile Include="Container\IScopedTaskInvoker.cs" />
     <Compile Include="Container\NamespaceDoc.cs" />
+    <Compile Include="Container\ScopedTaskEventArgs.cs" />
+    <Compile Include="Container\ScopedTaskInvoker.cs" />
     <Compile Include="Container\ServiceNotRegisteredException.cs" />
     <Compile Include="Container\DependencyMissingException.cs" />
     <Compile Include="Container\IContainer.cs" />
@@ -126,6 +133,7 @@
     <Compile Include="GuidFactory.cs" />
     <Compile Include="InstanceFactory.cs" />
     <Compile Include="IO\DirectoryUtils.cs" />
+    <Compile Include="IO\NamespaceDoc.cs" />
     <Compile Include="IO\OneFilePerItemQueue.cs" />
     <Compile Include="IO\PersistentCircularIndex.cs" />
     <Compile Include="IO\PersistentQueue.cs" />
@@ -158,6 +166,7 @@
     <Compile Include="Logging\Providers\NullLogProvider.cs" />
     <Compile Include="MemoryQueue.cs" />
     <Compile Include="MethodInfoExtensions.cs" />
+    <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Net\Authentication\AuthenticationDeniedException.cs" />
     <Compile Include="Net\Authentication\AuthenticationRequiredException.cs" />
     <Compile Include="Net\Authentication\HashAuthenticator\HashClientAuthenticator.cs" />
@@ -204,6 +213,7 @@
     <Compile Include="Net\FilterMessageHandler.cs" />
     <Compile Include="Net\IMessageQueue.cs" />
     <Compile Include="Net\MessageQueue.cs" />
+    <Compile Include="Net\NamespaceDoc.cs" />
     <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\ClientDisconnectedEventArgs.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\CookieAuthentication.cs" />
@@ -284,6 +294,7 @@
     <Compile Include="Net\Protocols\Stomp\Broker\FrameExtensions.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\IStompClient.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\IStompQueue.cs" />
+    <Compile Include="Net\Protocols\Stomp\Broker\ISubscriptionSubscriber.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\ITransactionManager.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\MessageHandlers\AbortHandler.cs" />
     <Compile Include="Net\Protocols\Stomp\Broker\MessageHandlers\AckHandler.cs" />
@@ -310,8 +321,11 @@
     <Compile Include="Net\Protocols\Stomp\Broker\Transaction.cs" />
     <Compile Include="Net\Protocols\Stomp\FrameExtensions.cs" />
     <Compile Include="Net\Protocols\Stomp\Frames\BasicFrame.cs" />
+    <Compile Include="Net\Protocols\Stomp\Frames\FrameHeaderHandler.cs" />
+    <Compile Include="Net\Protocols\Stomp\Frames\FrameNameHandler.cs" />
     <Compile Include="Net\Protocols\Stomp\Frames\HeaderCollection.cs" />
     <Compile Include="Net\Protocols\Stomp\Frames\HeaderParser.cs" />
+    <Compile Include="Net\Protocols\Stomp\Frames\ParseException.cs" />
     <Compile Include="Net\Protocols\Stomp\Frames\Server\Error.cs" />
     <Compile Include="Net\Protocols\Stomp\IFrame.cs" />
     <Compile Include="Net\Protocols\Stomp\IFrameFactory.cs" />
@@ -334,13 +348,6 @@
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ApplicationServices\Docs\ApplicationServices.md" />
-    <None Include="ApplicationServices\Docs\Backgroundjobs.md" />
-    <None Include="ApplicationServices\ReadMe.md" />
-    <None Include="Container\ReadMe.md" />
-    <None Include="Data\Mapper\Docs\AsyncMethods.md" />
-    <None Include="Data\Mapper\Docs\Mappings.md" />
-    <None Include="Data\Mapper\ReadMe.md" />
     <None Include="Data\ReadMe.md" />
     <None Include="Logging\ReadMe.md" />
     <None Include="Net\Authentication\HashAuthenticator\Messages\ReadMe.md" />

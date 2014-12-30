@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Griffin.Logging;
 
 namespace Griffin.Net.Protocols.Stomp.Broker
 {
@@ -16,7 +17,12 @@ namespace Griffin.Net.Protocols.Stomp.Broker
         private readonly List<Subscription> _subscriptions = new List<Subscription>();
         private readonly ITransactionManager _transactionManager;
         private Thread _workThread;
+        private ILogger _logger = LogManager.GetLogger<StompQueue>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StompQueue"/> class.
+        /// </summary>
+        /// <param name="transactionManager">The transaction manager.</param>
         public StompQueue(ITransactionManager transactionManager)
         {
             _transactionManager = transactionManager;
@@ -25,6 +31,9 @@ namespace Griffin.Net.Protocols.Stomp.Broker
         }
 
 
+        /// <summary>
+        /// Queue name
+        /// </summary>
         public string Name { get; set; }
 
         /// <summary>
@@ -51,17 +60,29 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             _messageEvent.Set();
         }
 
+        /// <summary>
+        /// Stop processing messages in queue
+        /// </summary>
         public void Stop()
         {
             _workThread.Join();
         }
 
+        /// <summary>
+        /// Add a client subscription
+        /// </summary>
+        /// <param name="subscription">Subscription that we should deliver messages to.</param>
         public void AddSubscription(Subscription subscription)
         {
             subscription.BecameIdle += OnSubscriptionWentIdle;
         }
 
-        public void Unbsubscribe(Subscription subscription)
+        /// <summary>
+        /// Unsubscribe on this queue.
+        /// </summary>
+        /// <param name="subscription"></param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void Unsubscribe(Subscription subscription)
         {
             throw new NotImplementedException();
         }
@@ -116,7 +137,7 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
             catch (Exception exception)
             {
-                //TODO: Log
+                _logger.Error("Failed to send a message.", exception);
             }
         }
 

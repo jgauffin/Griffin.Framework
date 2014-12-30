@@ -12,6 +12,11 @@ namespace Griffin.Net.Protocols.Stomp.Broker.MessageHandlers
     {
         private readonly IQueueRepository _queueRepository;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SendHandler"/> class.
+        /// </summary>
+        /// <param name="queueRepository">The queue repository.</param>
+        /// <exception cref="System.ArgumentNullException">queueRepository</exception>
         public SendHandler(IQueueRepository queueRepository)
         {
             if (queueRepository == null) throw new ArgumentNullException("queueRepository");
@@ -19,6 +24,14 @@ namespace Griffin.Net.Protocols.Stomp.Broker.MessageHandlers
             _queueRepository = queueRepository;
         }
 
+        /// <summary>
+        /// Process an inbound frame.
+        /// </summary>
+        /// <param name="client">Connection that received the frame</param>
+        /// <param name="request">Inbound frame to process</param>
+        /// <returns>
+        /// Frame to send back; <c>null</c> if no message should be returned;
+        /// </returns>
         public IFrame Process(IStompClient client, IFrame request)
         {
             ValidateContentHeaders(request);

@@ -12,6 +12,10 @@ namespace Griffin.Net.Protocols.Stomp
     /// </remarks>
     public class StompClientLight : ChannelTcpClient
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StompClientLight"/> class.
+        /// </summary>
+        /// <param name="serializer">The serializer used to encode/decode body.</param>
         public StompClientLight(IMessageSerializer serializer)
             : base(new MicroMessageEncoder(serializer), new MicroMessageDecoder(serializer))
         {

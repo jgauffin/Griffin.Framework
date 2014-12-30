@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Griffin.Net.Protocols.Http.Messages;
@@ -23,7 +24,6 @@ namespace Griffin.Net.Protocols.Http
 
         private readonly HeaderCollection _headers;
         private Stream _body;
-        private HttpHeaderValue _contentType;
 
         /// <summary>
         /// </summary>
@@ -104,7 +104,7 @@ namespace Griffin.Net.Protocols.Http
             {
                 _body = value;
                 if (!_headers.Contains("Content-Length"))
-                    _headers["Content-Length"] = _body.Length.ToString();
+                    _headers["Content-Length"] = _body.Length.ToString(CultureInfo.InvariantCulture);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Griffin.Net.Protocols.Http
 
                 return 0;
             }
-            set { _headers["Content-Length"] = value.ToString(); }
+            set { _headers["Content-Length"] = value.ToString(CultureInfo.InvariantCulture); }
         }
 
         /// <summary>

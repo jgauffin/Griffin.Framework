@@ -3,6 +3,9 @@ using System.Net;
 
 namespace Griffin.Net.Protocols.Stomp.Broker
 {
+    /// <summary>
+    /// Represents a connection / client session.
+    /// </summary>
     public interface IStompClient
     {
         //event EventHandler<MessageAckedEventArgs> MessageAcked;

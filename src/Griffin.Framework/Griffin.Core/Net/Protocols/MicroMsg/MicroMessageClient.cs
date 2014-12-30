@@ -13,16 +13,20 @@ namespace Griffin.Net.Protocols.MicroMsg
     /// </summary>
     public class MicroMessageClient
     {
+        private readonly SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
+        private readonly MicroMessageDecoder _decoder;
+        private readonly MicroMessageEncoder _encoder;
         private readonly ClientSideSslStreamBuilder _sslStreamBuilder;
-        private SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
         private ITcpChannel _channel;
         private TaskCompletionSource<IPEndPoint> _connectCompletionSource;
-        private MicroMessageDecoder _decoder;
-        private MicroMessageEncoder _encoder;
         private TaskCompletionSource<object> _readCompletionSource;
         private TaskCompletionSource<object> _sendCompletionSource;
         private Socket _socket;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="MicroMessageClient" /> class.
+        /// </summary>
+        /// <param name="serializer">The serializer.</param>
         public MicroMessageClient(IMessageSerializer serializer)
         {
             _decoder = new MicroMessageDecoder(serializer);
@@ -31,6 +35,11 @@ namespace Griffin.Net.Protocols.MicroMsg
             _args.Completed += OnConnect;
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="MicroMessageClient" /> class.
+        /// </summary>
+        /// <param name="serializer">The serializer.</param>
+        /// <param name="sslStreamBuilder">The SSL stream builder.</param>
         public MicroMessageClient(IMessageSerializer serializer, ClientSideSslStreamBuilder sslStreamBuilder)
         {
             _sslStreamBuilder = sslStreamBuilder;
@@ -52,7 +61,6 @@ namespace Griffin.Net.Protocols.MicroMsg
             }
             else
             {
-
                 _channel = new TcpChannel(new BufferSlice(new byte[65535], 0, 65535), _encoder, _decoder);
             }
 
@@ -63,15 +71,15 @@ namespace Griffin.Net.Protocols.MicroMsg
         }
 
         /// <summary>
-        /// Connect to server
+        ///     Connect to server
         /// </summary>
         /// <param name="address">The address.</param>
         /// <param name="port">The port.</param>
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">
-        /// Socket is already connected
-        /// or
-        /// There is already a pending connect.
+        ///     Socket is already connected
+        ///     or
+        ///     There is already a pending connect.
         /// </exception>
         public Task ConnectAsync(IPAddress address, int port)
         {
@@ -87,14 +95,14 @@ namespace Griffin.Net.Protocols.MicroMsg
             _connectCompletionSource = new TaskCompletionSource<IPEndPoint>();
             if (!isPending)
             {
-                _connectCompletionSource.SetResult((IPEndPoint)_socket.RemoteEndPoint);
+                _connectCompletionSource.SetResult((IPEndPoint) _socket.RemoteEndPoint);
             }
 
             return _connectCompletionSource.Task;
         }
 
         /// <summary>
-        /// Receive an object
+        ///     Receive an object
         /// </summary>
         /// <returns>completion task</returns>
         public Task<Object> ReceiveAsync()
@@ -109,12 +117,12 @@ namespace Griffin.Net.Protocols.MicroMsg
         }
 
         /// <summary>
-        /// Send an object
+        ///     Send an object
         /// </summary>
         /// <param name="message">Message to send</param>
         /// <returns>completion task (completed once the message have been delivered).</returns>
         /// <remarks>
-        /// <para>All objects are enqueued and sent in order as soon as possible</para>
+        ///     <para>All objects are enqueued and sent in order as soon as possible</para>
         /// </remarks>
         public Task SendAsync(object message)
         {
@@ -139,7 +147,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         {
             if (e.SocketError != SocketError.Success)
             {
-                _connectCompletionSource.SetException(new SocketException((int)e.SocketError));
+                _connectCompletionSource.SetException(new SocketException((int) e.SocketError));
                 _connectCompletionSource = null;
                 return;
             }
@@ -158,7 +166,7 @@ namespace Griffin.Net.Protocols.MicroMsg
                 return;
             }
 
-            _connectCompletionSource.SetResult((IPEndPoint)_socket.RemoteEndPoint);
+            _connectCompletionSource.SetResult((IPEndPoint) _socket.RemoteEndPoint);
             _connectCompletionSource = null;
         }
 

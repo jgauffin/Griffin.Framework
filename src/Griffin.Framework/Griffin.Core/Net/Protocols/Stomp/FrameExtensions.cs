@@ -1,13 +1,24 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Griffin.Net.Protocols.Stomp.Frames;
 using Griffin.Net.Protocols.Stomp.Frames.Server;
 
 namespace Griffin.Net.Protocols.Stomp
 {
+    /// <summary>
+    /// Extension methods for Tasks
+    /// </summary>
     public static class FrameExtensions
     {
+        /// <summary>
+        /// Create a ACK from the specified message
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>Generated ACK frame</returns>
+        /// <exception cref="System.ArgumentNullException">request</exception>
         public static IFrame CreateAck(this IFrame request)
         {
+            if (request == null) throw new ArgumentNullException("request");
             var frame = new BasicFrame("ACK");
 
             var trans = request.Headers["transaction"];
@@ -26,6 +37,12 @@ namespace Griffin.Net.Protocols.Stomp
             return frame;
         }
 
+        /// <summary>
+        /// Create an error FRAME, include details from the faulty frame.
+        /// </summary>
+        /// <param name="request">Faulty frame</param>
+        /// <param name="errorDescription">What happened</param>
+        /// <returns>ERROR frame</returns>
         public static IFrame CreateError(this IFrame request, string errorDescription)
         {
             var frame = new StompError(errorDescription);
@@ -62,8 +79,23 @@ namespace Griffin.Net.Protocols.Stomp
             return frame;
         }
 
+        /// <summary>
+        /// Create a NACK frame
+        /// </summary>
+        /// <param name="request">Request to generate NACK from</param>
+        /// <param name="errorDescription">Why we NACK</param>
+        /// <returns>
+        /// NACK frame
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// request
+        /// or
+        /// errorDescription
+        /// </exception>
         public static IFrame CreateNack(this IFrame request, string errorDescription)
         {
+            if (request == null) throw new ArgumentNullException("request");
+            if (errorDescription == null) throw new ArgumentNullException("errorDescription");
             var frame = new BasicFrame("NACK");
 
             var trans = request.Headers["transaction"];

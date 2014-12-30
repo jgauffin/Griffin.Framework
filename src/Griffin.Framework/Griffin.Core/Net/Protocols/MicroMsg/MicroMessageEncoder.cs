@@ -11,35 +11,45 @@ namespace Griffin.Net.Protocols.MicroMsg
     ///     Takes any object that the serializer supports and transfers it over the wire.
     /// </summary>
     /// <remarks>
-    /// The encoder also natively supports <c>byte[]</c> arrays and <c>Stream</c> derived objects (as long as the stream have a size specified). These objects
-    /// will be transferred without invoking the serializer.
+    ///     The encoder also natively supports <c>byte[]</c> arrays and <c>Stream</c> derived objects (as long as the stream
+    ///     have a size specified). These objects
+    ///     will be transferred without invoking the serializer.
     /// </remarks>
     public class MicroMessageEncoder : IMessageEncoder
     {
-        public const byte Version = MicroMessageDecoder.Version;
         /// <summary>
-        /// Size of the fixed header: version (1), content length (4), type name length (1) = 8
+        ///     PROTOCOL version
+        /// </summary>
+        public const byte Version = MicroMessageDecoder.Version;
+
+        /// <summary>
+        ///     Size of the fixed header: version (1), content length (4), type name length (1) = 8
         /// </summary>
         /// <remarks>
-        /// The header size field is not included in the actual header count as it always have to be read to 
-        /// get the actual header size.
+        ///     The header size field is not included in the actual header count as it always have to be read to
+        ///     get the actual header size.
         /// </remarks>
         public const int FixedHeaderLength = MicroMessageDecoder.FixedHeaderLength;
+
+        private readonly IBufferSlice _bufferSlice;
+
         private readonly MemoryStream _internalStream = new MemoryStream();
         private readonly IMessageSerializer _serializer;
-        private readonly IBufferSlice _bufferSlice;
         private Stream _bodyStream;
         private int _bytesEnqueued;
         private int _bytesLeftToSend;
         private int _bytesTransferred;
         private bool _headerIsSent;
-        private object _message;
         private int _headerSize;
+        private object _message;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MicroMessageEncoder" /> class.
         /// </summary>
-        /// <param name="serializer">Serialiser used to serialize the messages that should be sent. You might want to pick a serializer which is reasonable fast.</param>
+        /// <param name="serializer">
+        ///     Serialiser used to serialize the messages that should be sent. You might want to pick a
+        ///     serializer which is reasonable fast.
+        /// </param>
         public MicroMessageEncoder(IMessageSerializer serializer)
         {
             if (serializer == null) throw new ArgumentNullException("serializer");
@@ -51,16 +61,22 @@ namespace Griffin.Net.Protocols.MicroMsg
         /// <summary>
         ///     Initializes a new instance of the <see cref="MicroMessageEncoder" /> class.
         /// </summary>
-        /// <param name="serializer">Serialiser used to serialize the messages that should be sent. You might want to pick a serializer which is reasonable fast.</param>
+        /// <param name="serializer">
+        ///     Serialiser used to serialize the messages that should be sent. You might want to pick a
+        ///     serializer which is reasonable fast.
+        /// </param>
         /// <param name="bufferSlice">Used when sending information.</param>
-        /// <exception cref="ArgumentOutOfRangeException">bufferSlice; At least the header should fit in the buffer, and the header can be up to 520 bytes in the current version.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     bufferSlice; At least the header should fit in the buffer, and the header
+        ///     can be up to 520 bytes in the current version.
+        /// </exception>
         public MicroMessageEncoder(IMessageSerializer serializer, IBufferSlice bufferSlice)
         {
             if (serializer == null) throw new ArgumentNullException("serializer");
             if (bufferSlice == null) throw new ArgumentNullException("bufferSlice");
             if (bufferSlice.Capacity < 520)
                 throw new ArgumentOutOfRangeException("bufferSlice", bufferSlice.Capacity,
-                                                      "At least the header should fit in the buffer, and the header can be up to 520 bytes in the current version");
+                    "At least the header should fit in the buffer, and the header can be up to 520 bytes in the current version");
 
 
             _serializer = serializer;
@@ -84,7 +100,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         }
 
         /// <summary>
-        /// Serialize message and sent it add it to the buffer
+        ///     Serialize message and sent it add it to the buffer
         /// </summary>
         /// <param name="args">Socket buffer</param>
         public void Send(ISocketBuffer args)
@@ -92,22 +108,23 @@ namespace Griffin.Net.Protocols.MicroMsg
             if (_bytesTransferred < _bytesEnqueued)
             {
                 //TODO: Is this faster than moving the bytes to the beginning of the buffer and append more bytes?
-                args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset + _bytesTransferred, _bytesEnqueued - _bytesTransferred);
+                args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset + _bytesTransferred,
+                    _bytesEnqueued - _bytesTransferred);
                 return;
             }
 
             if (!_headerIsSent)
             {
                 var headerLength = CreateHeader();
-                var bytesToWrite = (int)Math.Min(_bufferSlice.Capacity - headerLength, _bodyStream.Length);
+                var bytesToWrite = (int) Math.Min(_bufferSlice.Capacity - headerLength, _bodyStream.Length);
                 _bodyStream.Read(_bufferSlice.Buffer, _bufferSlice.Offset + headerLength, bytesToWrite);
                 args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset, bytesToWrite + headerLength);
                 _bytesEnqueued = headerLength + bytesToWrite;
-                _bytesLeftToSend = headerLength + (int)_bodyStream.Length;
+                _bytesLeftToSend = headerLength + (int) _bodyStream.Length;
             }
             else
             {
-                _bytesEnqueued = (int)Math.Min(_bufferSlice.Capacity, _bytesLeftToSend);
+                _bytesEnqueued = Math.Min(_bufferSlice.Capacity, _bytesLeftToSend);
                 _bodyStream.Write(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
                 args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
             }
@@ -170,12 +187,12 @@ namespace Griffin.Net.Protocols.MicroMsg
 
             if (_message is Stream)
             {
-                _bodyStream = (Stream)_message;
+                _bodyStream = (Stream) _message;
                 contentType = "stream";
             }
             else if (_message is byte[])
             {
-                var buffer = (byte[])_message;
+                var buffer = (byte[]) _message;
                 _bodyStream = new MemoryStream(buffer);
                 _bodyStream.SetLength(buffer.Length);
                 contentType = "byte[]";
@@ -197,10 +214,10 @@ namespace Griffin.Net.Protocols.MicroMsg
             _bodyStream.Position = 0;
             _headerSize = FixedHeaderLength + contentType.Length;
 
-            BitConverter2.GetBytes((ushort)_headerSize, sliceBuffer, sliceOffset);
+            BitConverter2.GetBytes((ushort) _headerSize, sliceBuffer, sliceOffset);
             _bufferSlice.Buffer[sliceOffset + 2] = Version;
-            BitConverter2.GetBytes((int)_bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
-            BitConverter2.GetBytes((byte)contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
+            BitConverter2.GetBytes((int) _bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
+            BitConverter2.GetBytes((byte) contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
             Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
 
             // the header length field is not included in _headerSize as it's a header prefix.

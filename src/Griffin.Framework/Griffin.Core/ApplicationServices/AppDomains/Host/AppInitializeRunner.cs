@@ -7,8 +7,11 @@ namespace Griffin.ApplicationServices.AppDomains.Host
     ///     Used to control the application within the new appdomain
     /// </summary>
     /// <remarks>
-    /// <para>Runs inside the new app domain to be able to allow the <see cref="HostedAppDomain"/> to control it.</para>
-    /// <para>this class starts your <see cref="IApplicationInitialize"/> inside the new appdomain to allow your application to run.</para>
+    ///     <para>Runs inside the new app domain to be able to allow the <see cref="HostedAppDomain" /> to control it.</para>
+    ///     <para>
+    ///         this class starts your <see cref="IApplicationInitialize" /> inside the new appdomain to allow your
+    ///         application to run.
+    ///     </para>
     /// </remarks>
     public class AppInitializeRunner : MarshalByRefObject
     {
@@ -32,6 +35,11 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             }
         }
 
+        /// <summary>
+        /// Start domain and the channel used for communication.
+        /// </summary>
+        /// <param name="pipeName">Pipe name</param>
+        /// <param name="id">App id identifier</param>
         public void Start(string pipeName, string id)
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -58,6 +66,9 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             _service.Start(args.Split(';'));
         }
 
+        /// <summary>
+        ///     Stop the running service.
+        /// </summary>
         public void StopService()
         {
             _service.Stop();

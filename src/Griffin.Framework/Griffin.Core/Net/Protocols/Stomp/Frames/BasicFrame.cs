@@ -3,14 +3,23 @@ using System.IO;
 
 namespace Griffin.Net.Protocols.Stomp.Frames
 {
+    /// <summary>
+    ///     Base class for STOMP frames.
+    /// </summary>
     public class BasicFrame : IFrame
     {
-        private HeaderCollection _headers = new HeaderCollection();
-        private string _name;
+        private readonly HeaderCollection _headers = new HeaderCollection();
         private Stream _body;
+        private string _name;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="BasicFrame" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <exception cref="System.ArgumentNullException">name</exception>
         public BasicFrame(string name)
         {
+            if (name == null) throw new ArgumentNullException("name");
             _name = name;
         }
 
@@ -37,11 +46,17 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             _headers.Add(name, value);
         }
 
+        /// <summary>
+        ///     A collection of headers
+        /// </summary>
         public IHeaderCollection Headers
         {
             get { return _headers; }
         }
 
+        /// <summary>
+        ///     Application message
+        /// </summary>
         public Stream Body
         {
             get { return _body; }
@@ -53,6 +68,9 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             }
         }
 
+        /// <summary>
+        ///     Size of the body
+        /// </summary>
         public int ContentLength
         {
             get
@@ -68,6 +86,10 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             set { _headers["content-length"] = value.ToString(); }
         }
 
+        /// <summary>
+        ///     Name of the STOMP frame
+        /// </summary>
+        /// <exception cref="System.ArgumentNullException">value</exception>
         public string Name
         {
             get { return _name; }

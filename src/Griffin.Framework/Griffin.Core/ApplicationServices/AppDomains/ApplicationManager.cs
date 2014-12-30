@@ -1,36 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using Griffin.ApplicationServices.AppDomains.Controller;
 using Griffin.ApplicationServices.AppDomains.Host;
-using Griffin.IO;
-using UnhandledExceptionEventArgs = Griffin.ApplicationServices.AppDomains.UnhandledExceptionEventArgs;
+using Griffin.Logging;
 
 namespace Griffin.ApplicationServices.AppDomains
 {
     /// <summary>
-    /// Takes care of all app domains that have been created due to new files.
+    ///     Takes care of all app domains that have been created due to new files.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Launches the application in a shadow coopeid
-    /// </para>
+    ///     <para>
+    ///         Launches the application in a shadow coopeid
+    ///     </para>
     /// </remarks>
     public class ApplicationManager<T> where T : class, IApplicationInitialize
     {
+        private readonly IConfigAdapter _config;
+        private readonly NamedPipeServer _server;
         private readonly ApplicationManagerSettings _settings;
         private DateTime _detectedChange;
         private DateTime _lastRunningDomainCreatedAt;
-        private HostedAppDomain _runningDomain;
-        private HostedAppDomain _pendingDomain;
         private string _latestWorkingVersion;
-        private IConfigAdapter _config;
+        private HostedAppDomain _pendingDomain;
+        private HostedAppDomain _runningDomain;
         private NewVersionDetector _versionDetector;
-        private NamedPipeServer _server;
+        private ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ApplicationManager{T}"/> class.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
         public ApplicationManager(ApplicationManagerSettings settings)
         {
+            _logger = LogManager.GetLogger(GetType());
             _settings = settings;
 
             _config = new RegistryConfigAdapter(settings.CompanyName, settings.ApplicationName);
@@ -51,10 +54,6 @@ namespace Griffin.ApplicationServices.AppDomains
                 _runningDomain.ProcessRemoteCommand(e.Command, e.Argv);
             else if (_pendingDomain != null && _pendingDomain.Id == e.ClientId)
                 _pendingDomain.ProcessRemoteCommand(e.Command, e.Argv);
-            else
-            {
-                //TODO: LOG
-            }
         }
 
         private void OnClientConnectionDisconnected(object sender, EventArgs e)
@@ -68,57 +67,60 @@ namespace Griffin.ApplicationServices.AppDomains
             {
                 if (_runningDomain != null)
                 {
-                    _runningDomain.Stop();
                     _runningDomain.PanicRequested -= OnClientDomainPanic;
                     _runningDomain.AppDomainException -= OnClientDomainException;
+                    _runningDomain.Stop();
                 }
-
             }
             catch (Exception exception)
             {
-                
+                //TODO: What to do? Application in incosistent state
+                _logger.Error("Failed to shut down the old version", exception);
             }
 
             try
             {
                 var id = Path.GetFileName(e.VersionPath);
-                var domain = new HostedAppDomain(typeof(T));
+                var domain = new HostedAppDomain(typeof (T));
                 domain.Configure(id, e.VersionPath);
                 domain.Start();
                 domain.AppDomainException += OnClientDomainException;
                 domain.PanicRequested += OnClientDomainPanic;
                 _runningDomain = domain;
                 _config["RunningVersion"] = id;
-
             }
             catch (Exception exception)
             {
-
+                //TODO: What to do? Application in incosistent state
+                _logger.Error("Fail to launch the new version", exception);
             }
         }
 
         private void OnClientDomainPanic(object sender, EventArgs e)
         {
-            
         }
 
 
         private void StartAppDomain(string versionDirectory)
         {
-          
         }
 
         private void StopAppDomain()
         {
-            
         }
 
         private void OnClientDomainException(object sender, UnhandledExceptionStringEventArgs e)
         {
-            
         }
 
-
+        /// <summary>
+        ///     Start application manager.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Starts the current version of the application and also begins to monitor for new versions.
+        ///     </para>
+        /// </remarks>
         public void Start()
         {
             _settings.Validate();
@@ -132,6 +134,9 @@ namespace Griffin.ApplicationServices.AppDomains
             _server.Start();
         }
 
+        /// <summary>
+        ///     Stop application manager
+        /// </summary>
         public void Stop()
         {
             _versionDetector.Stop();

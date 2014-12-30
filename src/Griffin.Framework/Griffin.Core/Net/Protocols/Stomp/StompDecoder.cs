@@ -5,6 +5,9 @@ using Griffin.Net.Protocols.Stomp.Frames;
 
 namespace Griffin.Net.Protocols.Stomp
 {
+    /// <summary>
+    /// Decode incoming bytes into STOMP frames.
+    /// </summary>
     public class StompDecoder : IMessageDecoder
     {
         private readonly HeaderParser _headerParser = new HeaderParser();
@@ -13,6 +16,9 @@ namespace Griffin.Net.Protocols.Stomp
         private bool _isHeaderParsed;
         private int _frameContentBytesLeft = 0;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StompDecoder"/> class.
+        /// </summary>
         public StompDecoder()
         {
             _headerParser.FrameNameParsed = OnFrameName;
@@ -90,6 +96,9 @@ namespace Griffin.Net.Protocols.Stomp
 
         }
 
+        /// <summary>
+        /// Clear state to allow this decoder to be reused.
+        /// </summary>
         public void Clear()
         {
             _frame = null;

@@ -92,6 +92,4 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             Write(command, argv);
         }
     }
-
-    public delegate void ReceivedCommandHandler(string command, string[] argv);
 }

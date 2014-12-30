@@ -4,6 +4,9 @@ using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Strings
 {
+    /// <summary>
+    /// Decodes messages that are represented as strings.
+    /// </summary>
     public class StringDecoder : IMessageDecoder
     {
         private byte[] _buffer = new byte[65535];
@@ -14,6 +17,9 @@ namespace Griffin.Net.Protocols.Strings
         private int _offsetInOurBuffer;
         private bool _readHeader = true;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringDecoder"/> class.
+        /// </summary>
         public StringDecoder()
         {
             _bytesLeftForCurrentMsg = 4;
@@ -22,6 +28,9 @@ namespace Griffin.Net.Protocols.Strings
             _encoding = Encoding.UTF8;
         }
 
+        /// <summary>
+        /// Text encoding to use.
+        /// </summary>
         public Encoding Encoding
         {
             get { return _encoding; }
@@ -71,6 +80,9 @@ namespace Griffin.Net.Protocols.Strings
             }
         }
 
+        /// <summary>
+        /// Reset decoder state.
+        /// </summary>
         public void Clear()
         {
             _offsetInOurBuffer = -1;

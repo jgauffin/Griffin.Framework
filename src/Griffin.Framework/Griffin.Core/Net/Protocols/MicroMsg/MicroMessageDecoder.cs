@@ -22,6 +22,10 @@ namespace Griffin.Net.Protocols.MicroMsg
     public class MicroMessageDecoder : IMessageDecoder
     {
         private readonly IMessageSerializer _serializer;
+
+        /// <summary>
+        /// Protocol version
+        /// </summary>
         public const byte Version = 1;
         /// <summary>
         /// Size of the fixed header: version (1), content length (4), type name length (1) = 8

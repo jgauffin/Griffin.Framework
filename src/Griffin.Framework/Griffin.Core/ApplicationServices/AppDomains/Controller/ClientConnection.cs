@@ -6,23 +6,46 @@ using System.Text;
 namespace Griffin.ApplicationServices.AppDomains.Controller
 {
     /// <summary>
-    /// Represents a connection to a client in the named pipe server.
+    ///     Represents a connection to a client in the named pipe server.
     /// </summary>
     public class ClientConnection
     {
         private readonly NamedPipeServerStream _pipe;
         private readonly byte[] _readBuffer = new byte[65535];
         private readonly StringBuilder _stringBuilder = new StringBuilder();
-        private int _restartAttempts = 0;
+        private int _restartAttempts;
 
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ClientConnection" /> class.
+        /// </summary>
+        /// <param name="pipeName">Name of the pipe.</param>
+        /// <param name="instanceCount">The instance count.</param>
+        /// <exception cref="System.ArgumentNullException">pipeName</exception>
         public ClientConnection(string pipeName, int instanceCount)
         {
-            _pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, instanceCount, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            if (pipeName == null) throw new ArgumentNullException("pipeName");
+            _pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, instanceCount, PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous);
         }
 
-        public object State { get; set; }
-        public bool Connected { get { return _pipe.IsConnected; } }
+        /// <summary>
+        ///     You can assign your own object here to identify the connection
+        /// </summary>
+        public object UserState { get; set; }
 
+        /// <summary>
+        ///     Checks if we are connected. Not thread safe nor 100% reliable as all disconnects such as network failure are not
+        ///     automatically detected.
+        /// </summary>
+        public bool Connected
+        {
+            get { return _pipe.IsConnected; }
+        }
+
+        /// <summary>
+        ///     Start receiving information from the remote end point.
+        /// </summary>
         public void Start()
         {
             _pipe.BeginWaitForConnection(OnAcceptConnection, this);
@@ -61,11 +84,19 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
             }
         }
 
+        /// <summary>
+        ///     Begin receiving information.
+        /// </summary>
         public void BeginRead()
         {
             _pipe.BeginRead(_readBuffer, 0, _readBuffer.Length, OnReceive, null);
         }
 
+        /// <summary>
+        ///     Write a command over the connection.
+        /// </summary>
+        /// <param name="command">Command name</param>
+        /// <param name="argv">Argument list</param>
         protected void Write(string command, params string[] argv)
         {
             try
@@ -106,7 +137,8 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
                         var commandParts = packet.Split('\x4');
 
                         ReceivedCommand(this,
-                            new ClientReceivedCommandEventArgs(commandParts[0], commandParts[1], commandParts.Skip(2).ToArray()));
+                            new ClientReceivedCommandEventArgs(commandParts[0], commandParts[1],
+                                commandParts.Skip(2).ToArray()));
                     }
                     catch (Exception exception)
                     {
@@ -129,10 +161,24 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
             }
         }
 
+        /// <summary>
+        ///     Received a command from the server.
+        /// </summary>
         public event EventHandler<ClientReceivedCommandEventArgs> ReceivedCommand = delegate { };
+
+        /// <summary>
+        ///     Detected a disconnected
+        /// </summary>
         public event EventHandler Disconnected = delegate { };
+
+        /// <summary>
+        ///     Something unexpected failed.
+        /// </summary>
         public event EventHandler<UnhandledExceptionEventArgs> UnhandledException = delegate { };
 
+        /// <summary>
+        ///     Stop server.
+        /// </summary>
         public void Stop()
         {
             _pipe.Close();

@@ -108,3 +108,5 @@ Backup*/
 UpgradeLog*.XML
 
 *_NCrunch_*
+
+src/Griffin.Framework/Help/*
