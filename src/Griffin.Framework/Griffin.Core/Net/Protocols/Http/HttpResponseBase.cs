@@ -22,15 +22,11 @@ namespace Griffin.Net.Protocols.Http
         /// <param name="reasonPhrase">The reason phrase.</param>
         /// <param name="httpVersion">The HTTP version.</param>
         /// <exception cref="System.ArgumentNullException">reasonPhrase</exception>
-        public HttpResponseBase(int statusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
+        internal HttpResponseBase(int statusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
-
             StatusCode = statusCode;
             ReasonPhrase = reasonPhrase;
-            Headers["Server"] = "griffinframework.net";
-            Headers["Date"] = DateTime.UtcNow.ToString("R");
-            Headers["Content-Type"] = "text/html";
         }
 
         /// <summary>
