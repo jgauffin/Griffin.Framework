@@ -16,7 +16,7 @@ namespace Griffin.Core.Tests.Logging
             LogManager.Provider = null;
             var actual = LogManager.GetLogger<LogManagerTests>();
 
-            actual.Should().BeOfType<NullLogger>();
+            actual.Should().BeAssignableTo<NullLogger>();
         }
 
         [Fact, ExclusivelyUses("LogManager")]
@@ -30,7 +30,7 @@ namespace Griffin.Core.Tests.Logging
             LogManager.Provider = provider;
             var actual2 = LogManager.GetLogger<LogManagerTests>();
 
-            actual1.Should().BeOfType<NullLogger>();
+            actual1.Should().BeAssignableTo<NullLogger>();
             actual2.Should().Be(expected);
         }
 

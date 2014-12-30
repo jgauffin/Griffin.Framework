@@ -72,13 +72,13 @@ namespace Griffin.Core.Tests.ApplicationServices
             var sut = new TestAppService();
             sut.FirstInterval = TimeSpan.FromMilliseconds(0);
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
-            sut.StoppedEvent.WaitOne(100);
+            sut.StoppedEvent.WaitOne(10000);
             sut.StartedEvent.Reset();
             sut.Start();
 
-            sut.StartedEvent.WaitOne(100).Should().BeTrue();
+            sut.StartedEvent.WaitOne(10000).Should().BeTrue();
         }
 
 
@@ -91,15 +91,15 @@ namespace Griffin.Core.Tests.ApplicationServices
             var sut = new TestAppService();
             sut.FirstInterval = TimeSpan.FromMilliseconds(0);
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
-            sut.StoppedEvent.WaitOne(100);
+            sut.StoppedEvent.WaitOne(10000);
             sut.StartedEvent.Reset();
             sut.Start();
 
 
 
-            sut.StartedEvent.WaitOne(100).Should().BeTrue();
+            sut.StartedEvent.WaitOne(10000).Should().BeTrue();
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.WorkFunc = () => { throw new InvalidOperationException(); };
 
             sut.Start();
-            sut.StartedEvent.WaitOne(100);
+            sut.StartedEvent.WaitOne(10000);
             sut.Stop();
             var actual = sut.StoppedEvent.WaitOne(10000);
 
