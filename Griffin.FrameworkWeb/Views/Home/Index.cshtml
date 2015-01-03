@@ -1,0 +1,206 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<div style="clear: both; padding-top: 100px;"></div>
+
+<div class="container">
+    <div class="row install-row">
+        <div class="col-md-6">
+            <p class="pitch">
+                <b>Griffin Framework</b> is an business application library
+                with features that .NET itself is missing.
+            </p>
+        </div>
+
+        <div class="col-md-4 install">
+            <a class="btn btn-primary btn-lg" id="inst-link"
+                href="http://nuget.org/" data-toggle="modal" data-target="#nuget-installation">Install</a>
+            <a class="btn btn-default" href="https://github.com/jgauffin/Griffin.Framework" role="button">Github</a>
+
+        </div>
+    </div>
+    <div class="modal fade" id="nuget-installation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">NuGet installation</h4>
+                </div>
+                <div class="modal-body">
+                    @Url.Content("~/Images/nuget.PNG")
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <br>
+    </div>
+    <div>
+        <br>
+    </div>
+    <div>
+        <br>
+    </div>
+    <div>
+        <br>
+    </div>
+    <div class="row">
+        <div class="col-md-3 features">
+            <h2>Featuring</h2>
+            <ul>
+                <li><a href="@Url.Content("~/doc/applicationservices/")">Application services</a></li>
+                <li><a href="@Url.Content("~/doc/data")">ADO.NET Extensions</a></li>
+                <li><a href="@Url.Content("~/doc/cqs/")">Command/Query</a></li>
+                <li><a href="@Url.Content("~/doc/data/mapper")">Data mapper</a></li>
+                <li><a href="@Url.Content("~/doc/ioc/")">IoC helpers</a></li>
+                <li><a href="@Url.Content("~/doc/logger/")">Logging</a></li>
+                <li><a href="@Url.Content("~/doc/networking/")">Networking</a></li>
+            </ul>
+        </div>
+        <div class="col-md-7">
+            <h2>Examples</h2>
+            <div role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#Mapper-example" aria-controls="Mapper-example" role="tab" data-toggle="tab">Data mapper</a></li>
+                    <li role="presentation"><a href="#Cqs-example" aria-controls="Cqs-example" role="tab" data-toggle="tab">Command/Query sample</a></li>
+                    <li role="presentation"><a href="#Server-example" aria-controls="Server-example" role="tab" data-toggle="tab">TCP Server sample</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="Mapper-example">
+                        <p>&nbsp;</p>
+                        <p>
+                            A data mapping layer. Can be used only for mapping or to take care of CRUD operations too.
+                            The mapping layer works as extension methods on the ADO.NET API, i.e. you write SQL queries
+                            and the layer takes care of the rest. 
+                        </p>
+                        <p>
+                            Works on Connection objects, Command objects and
+                            our own unit of work contract. The api supports both synchronous and asynchronous methods.
+                        </p>
+                        <pre><code class="language-csharp">// API
+var users = connection.ToList&lt;User&gt;("firstName LIKE @@1 AND lastName LIKE @@2", firstName, lastName);
+uow.Insert(user);
+</code></pre>
+                        <strong>Mapping class</strong>
+                        <pre><code class="language-csharp">public class UserMapping : CrudEntityMapper&lt;User&gt;
+{
+    public override void Configure(IDictionary&lt;string, PropertyMapping&gt; mappings)
+    {
+        base.Configure(mappings);
+
+        mappings["YourCustomKey"].IsPrimaryKey = true;
+    }
+}
+</code></pre>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="Cqs-example">
+                        <p>&nbsp;</p>
+                        <p>A Command/Query seperation layer wich also supports events and request/reply type of messages.</p>
+                        <p>
+                            Start small with our simple setup or our Inversion Of Control setup, later scale your appliction
+                            using our networking implementation.
+                        </p>
+                        <p>Allows you to build micro services easily.</p>
+                        <pre><code class="language-csharp">// requst/reply example
+public class Login : Request&lt;LoginReply&gt;
+{
+    public Login(string userName, string password)
+    {
+        Password = password;
+        UserName = userName;
+    }
+ 
+    public string UserName { get; private set; }
+    public string Password { get; private set; }
+}
+
+// the reply  
+public class LoginReply
+{
+    public bool Success { get; set; }
+    public Account Account { get; set; }
+}
+
+// Call that receives the request and generates the reply
+public class LoginHandler : IRequestHandler&lt;Login, LoginReply&gt;
+{
+    public Task&lt;LoginReply&gt; ExecuteAsync(Login request)
+    {
+        //do something
+        // exceptions will be handled by the library
+                            
+        return new LoginReply(blabla);
+    }
+}
+
+// Executed by the client
+// the requestBus implementation depends on your setup
+// * simple (works of the box(
+// * ioc (requires an ioc container)
+// * Net (requires a server i.e. nuget package griffinframework.cqs.server)
+var reply = await requestBus.ExecuteAsync(new Login("jonas", "arne"));
+if (reply.Success)
+{
+    Console.WriteLine("Authenticated as " + reply.Account.UserName);
+}
+
+</code></pre>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="Networking-example">
+                <p>&nbsp;</p>
+                <p>
+                    The networking library is fully asynchronous and it's easy to use existing protocols or create your own.
+
+                </p>
+                <p>
+                    Here is a sample using our own MicroMsg protocol.
+                </p>
+                <pre><code class="language-csharp">public class Server
+{
+    private readonly ChannelTcpListener _server;
+ 
+    public Server()
+    {
+        _server = new ChannelTcpListener();
+        _server.MessageReceived += OnMessage;
+        _server.ClientConnected += OnClientConnected;
+        _server.ClientDisconnected += OnClientDisconnected;
+    }
+ 
+    public int LocalPort
+    {
+        get { return _server.LocalPort; }
+    }
+ 
+    public void Start()
+    {
+        _server.Start(IPAddress.Any, 0);
+    }
+ 
+    private void OnClientConnected(object sender, ClientConnectedEventArgs e)
+    {
+        Console.WriteLine("Got connection from client with ip " + e.channel.RemoteEndPoint);
+    }
+ 
+    private void OnClientDisconnected(object sender, ClientDisconnectedEventArgs e)
+    {
+        Console.WriteLine("Disconnected: " + e.Channel.RemoteEndpoint);
+    }
+ 
+    private void OnMessage(ITcpChannel channel, object message)
+    {
+        Console.WriteLine("Server received: " + message);
+        channel.Send(Encoding.ASCII.GetBytes("Hello  world"));
+    }
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>

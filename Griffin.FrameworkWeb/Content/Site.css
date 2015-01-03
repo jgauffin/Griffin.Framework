@@ -1,0 +1,78 @@
+﻿
+.pitch {
+    font-size: 2.0em;
+}
+
+.install a.btn {
+    display: block;
+    margin-bottom: 15px;
+    padding: 15px;
+}
+
+.features ul {
+    list-style-type: square;
+    line-height: 150%;
+    font-size: 1.2em;
+}
+
+h1 {
+    margin-top: 50px;
+}
+
+h2 {
+    margin-top: 30px;
+}
+
+h3, h4, h5, h6 {
+    margin-top: 20px;
+}
+
+.navbar-default {
+    background-color: rgb(53, 140, 203);
+    border-color: rgb(53, 140, 203);
+}
+.navbar-default .navbar-brand {
+  color: #FFF;
+}
+
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #CCC;
+  background-color: transparent;
+}
+
+.navbar-default .navbar-text {
+  color: #FFF;
+}
+
+.navbar-default .navbar-nav > li > a {
+  color: #FFF;
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #99ccff;
+  background-color: rgb(43, 130, 193);
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #99ccff;
+  background-color: rgb(33, 120, 183);
+}
+
+.navbar-default .navbar-nav > .disabled > a,
+.navbar-default .navbar-nav > .disabled > a:hover,
+.navbar-default .navbar-nav > .disabled > a:focus {
+  color: #cccccc;
+  background-color: transparent;
+}
+
+body {
+    font-size: 16px;
+}
+
+.code-doc {
+    font-size: 18px;
+}
