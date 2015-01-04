@@ -72,13 +72,13 @@ Deletes can be done both on the connection and the unit of work, just as Inserts
 
 If you've already fetched the entity you can use it in the delete command:
 
-```charp
+```csharp
 _unitOfWork.Delete(user);
 ```
 
 You can also specify just the key in the entity:
 
-```charp
+```csharp
 _unitOfWork.Delete(new User { Id = userId });
 ```
 
@@ -86,7 +86,7 @@ _unitOfWork.Delete(new User { Id = userId });
 
 You can use an anonymous object (names must be same as the property names, and the value must be of the same type as defined in the properties):
 
-```charp
+```csharp
 _unitOfWork.Delete<User>(new { Id = userId });
 ```
 
@@ -94,7 +94,7 @@ _unitOfWork.Delete<User>(new { Id = userId });
 
 You can specify multiple columns:
 
-```charp
+```csharp
 _unitOfWork.Delete<User>(new { FirstName = firstName, LastName = lastName });
 ```
 
@@ -105,13 +105,13 @@ _unitOfWork.Delete<User>(new { FirstName = firstName, LastName = lastName });
 
 Short queries allows you to only specify the WHERE statement and to include the parameters directly.
 
-```charp
+```csharp
 _unitOfWork.Delete<User>("expires < @date", new { id = minDate ));
 ```
 
 You can use a value array:
 
-```charp
+```csharp
 _unitOfWork.Delete<User>("expires < @1 AND state = @2", minDate, UserState.ActivationRequired);
 ```
 
@@ -119,13 +119,13 @@ _unitOfWork.Delete<User>("expires < @1 AND state = @2", minDate, UserState.Activ
 
 You can also write complete queries:
 
-```charp
+```csharp
 _unitOfWork.Delete<User>("DELETE FROM Users WHERE expires < @date", new { id = minDate ));
 ```
 
 You can use a value array:
 
-```charp
+```csharp
 _unitOfWork.Delete<User>("DELETE FROM Users WHERE expires < @1 AND state = @2", minDate, UserState.ActivationRequired);
 ```
 

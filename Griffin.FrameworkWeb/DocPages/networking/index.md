@@ -247,7 +247,7 @@ public class MyProtocolEncoder : IMessageEncoder
 
 The decoder have to take into account that messages might be partial or that the incoming stream contains several messages.
 
-```
+```csharp
 public class MyProtocolDecoder : IMessageDecoder
 {
     private readonly byte[] _headerBuf = new byte[4];
@@ -314,7 +314,7 @@ public class MyProtocolDecoder : IMessageDecoder
 
 Here is a sample implementation which a custom protocol (length header + JSON). It can send any type of object over the network (as long as JSON.NET can serialize it).
 
-```
+```csharp
 class Program
 {
     static void Main(string[] args)
@@ -362,7 +362,7 @@ class Program
 
 Here is a sample HTTP server:
 
-```
+```csharp
 class Program2
 {
     static void Main(string[] args)

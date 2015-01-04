@@ -79,13 +79,13 @@ Deletes can be done both on the connection and the unit of work, just as Inserts
 
 If you've already fetched the entity you can use it in the delete command:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync(user);
 ```
 
 You can also specify just the key in the entity:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync(new User { Id = userId });
 ```
 
@@ -93,7 +93,7 @@ await _unitOfWork.DeleteAsync(new User { Id = userId });
 
 You can use an anonymous object (names must be same as the property names, and the value must be of the same type as defined in the properties):
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>(new { Id = userId });
 ```
 
@@ -101,7 +101,7 @@ await _unitOfWork.DeleteAsync<User>(new { Id = userId });
 
 You can specify multiple columns:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>(new { FirstName = firstName, LastName = lastName });
 ```
 
@@ -112,13 +112,13 @@ await _unitOfWork.DeleteAsync<User>(new { FirstName = firstName, LastName = last
 
 Short queries allows you to only specify the WHERE statement and to include the parameters directly.
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>("expires < @date", new { id = minDate ));
 ```
 
 You can use a value array:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>("expires < @1 AND state = @2", minDate, UserState.ActivationRequired);
 ```
 
@@ -126,13 +126,13 @@ await _unitOfWork.DeleteAsync<User>("expires < @1 AND state = @2", minDate, User
 
 You can also write complete queries:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>("DELETE FROM Users WHERE expires < @date", new { id = minDate ));
 ```
 
 You can use a value array:
 
-```charp
+```csharp
 await _unitOfWork.DeleteAsync<User>("DELETE FROM Users WHERE expires < @1 AND state = @2", minDate, UserState.ActivationRequired);
 ```
 

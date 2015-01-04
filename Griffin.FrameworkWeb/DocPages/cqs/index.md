@@ -86,6 +86,7 @@ At client side register CqsClient as ICommandBus, IQueryBus, IEventBus and IRequ
 
 Sample setup:
 
+```csharp
 class ClientDemo
 {
     private CqsClient _client;
@@ -115,8 +116,11 @@ class ClientDemo
         Console.WriteLine("Client: First discount: " + discounts[0].Name);
     }
 }
+```
+
 The server is configured like this:
 
+```csharp
 public class ServerDemo
 {
     private LiteServer _server;
@@ -155,6 +159,8 @@ public class ServerDemo
         _server.Start(IPAddress.Any, 0);
     }
 }
+```
+
 This implementation will also transport all exceptions from the server back to the client automatically. That makes the client/server implementation transparent (if you ignore the network latency) to the caller.
 
 

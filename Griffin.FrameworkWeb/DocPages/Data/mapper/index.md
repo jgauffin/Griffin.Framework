@@ -8,7 +8,7 @@ understand what went wrong.
 Do note that this is a mapping layer and not a OR/M. You still have to write your
 SQL queries, but with a simpler API. You can for instance write:
 
-```charp
+```csharp
 var users = connection.ToList<User>("firstName LIKE @1 AND lastName LIKE @2", firstName, lastName);
 ```
 
