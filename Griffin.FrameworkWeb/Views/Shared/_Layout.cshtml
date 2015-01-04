@@ -30,8 +30,12 @@
             </div>
             <div id="navbar" class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="@Url.Content("~/")">Home</a></li>
-                    <li><a href="@Url.Content("~/doc/")">Documentation</a></li>
+                    <li class="@if (Request.Path == Url.Action("Index", "Home")) { <text>active</text> }">
+                        <a href="@Url.Content("~/")">Home</a>
+                    </li>
+                    <li class="@if (Request.Path == Url.Action("Index", "Doc")) { <text>active</text> }">
+                        <a href="@Url.Content("~/doc")">Documentation</a>
+                    </li>
                     <li><a href="http://twitter.com/jgauffin">Twitter</a></li>
                 </ul>
             </div>
