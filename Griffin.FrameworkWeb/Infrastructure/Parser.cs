@@ -88,7 +88,7 @@ namespace GriffinFrameworkWeb.Infrastructure
 
                 var firstLine = line;
                 line = reader.ReadLine();
-                if (line == null)
+                if (string.IsNullOrEmpty(line))
                 {
                     sb.AppendLine(firstLine);
                     continue;
