@@ -5,13 +5,13 @@ This library have full support for asynchronous operations in the data layer.
 To see them, [go here](async_api).
 
 
-[CRUD](#CRUD) | [First & FirstOrDefault](#FIRST) | [ToEnumerable & ToList](TOENUMERABLE)
+[CRUD](#CRUD) | [First & FirstOrDefault](#FIRST) | [ToEnumerable & ToList](#TOENUMERABLE)
 
-<a name="CRUD"/>
+<a name="CRUD"></a>
 # CRUD operations
 
 CRUD operations are provided both for `IDbConnection`, `IAdoNetUnitOfWork` and `DbCommand`. All CRUD operations
-require that you have defined a `ICrudEntityMapper<T>` for your entity. For more information read the [Mappings](Mappings.md) page.
+require that you have defined a `ICrudEntityMapper<T>` for your entity. For more information read the [Mappings](Mappings) page.
 
 ## INSERT
 
@@ -129,7 +129,7 @@ You can use a value array:
 _unitOfWork.Delete<User>("DELETE FROM Users WHERE expires < @1 AND state = @2", minDate, UserState.ActivationRequired);
 ```
 
-<a name="FIRST" />
+<a name="FIRST"></a>
 #First & FirstOrDefault
 
 Sometimes you want to fetch a single item. These methods are specialized for that. The methods works for `IDbConnection`, `IAdoNetUnitOfWork` and `DbCommand`.
@@ -199,6 +199,7 @@ var user = _unitOfWork.First<Age>("SELECT Age FROM Users WHERE FirstName = @1 AN
 
 Works just like First, and the syntax is the same. The difference is just that `null` is returned if no rows are found.
 
+<a name="TOENUMERABLE"></a>
 #ToList
 
 ToList have the same API as `First()`/`FirstOrDefault()`, but a list is returned instead. 

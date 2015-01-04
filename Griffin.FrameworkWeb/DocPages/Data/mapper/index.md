@@ -31,7 +31,7 @@ There is also a repository pattern [sample](repository).
 
 # More info
 
-* [API)(api) / [Async api](async_api)
+* [API](api) / [Async api](async_api)
 * [Mappings](mappings)
 * [Repository](repository)
 
