@@ -12,8 +12,20 @@ namespace Griffin.Net.Protocols.Stomp.Frames
     {
         private readonly Dictionary<string, string> _items = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Amount of headers
+        /// </summary>
         public int Count { get { return _items.Count; } }
 
+        /// <summary>
+        /// Gets or sets the <see cref="System.String"/> with the specified name.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.String"/>.
+        /// </value>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">value</exception>
         public string this[string name]
         {
             get
@@ -63,6 +75,13 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             _items[name] = value;
         }
 
+        /// <summary>
+        /// Checks if the collection contains the specified header.
+        /// </summary>
+        /// <param name="name">Name of the header</param>
+        /// <returns>
+        ///   <c>true</c> if found; otherwise <c>false</c>.
+        /// </returns>
         public bool Contains(string name)
         {
             return _items.ContainsKey(name);
@@ -89,10 +108,5 @@ namespace Griffin.Net.Protocols.Stomp.Frames
         {
             return GetEnumerator();
         }
-    }
-
-    public class ParseException : Exception
-    {
-        
     }
 }

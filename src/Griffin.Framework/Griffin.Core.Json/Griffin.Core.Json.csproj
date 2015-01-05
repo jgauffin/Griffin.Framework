@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="JsonMessageSerializer.cs" />
     <Compile Include="JsonSerializer.cs" />
+    <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

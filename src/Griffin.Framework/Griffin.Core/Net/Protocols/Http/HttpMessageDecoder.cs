@@ -12,22 +12,22 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         Per default the body is not decoded. To change that behavior you should assign a decoder to the
-    ///         <see cref="BodyDecoder" /> property.
+    ///         Per default the body is not decoded. To change that behavior you should use the constructor that takes
+    ///         a message serializer.
     ///     </para>
     /// </remarks>
     public class HttpMessageDecoder : IMessageDecoder
     {
-        private readonly IMessageSerializer _messageSerializer;
+        private readonly HttpCookieParser _cookieParser = new HttpCookieParser();
         private readonly HeaderParser _headerParser;
-        private int _frameContentBytesLeft = 0;
+        private readonly IMessageSerializer _messageSerializer;
+        private int _frameContentBytesLeft;
         private bool _isHeaderParsed;
         private HttpMessage _message;
         private Action<object> _messageReceived;
-        private HttpCookieParser _cookieParser = new HttpCookieParser();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpMessageDecoder"/> class.
+        ///     Initializes a new instance of the <see cref="HttpMessageDecoder" /> class.
         /// </summary>
         public HttpMessageDecoder()
         {
@@ -39,7 +39,7 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpMessageDecoder"/> class.
+        ///     Initializes a new instance of the <see cref="HttpMessageDecoder" /> class.
         /// </summary>
         /// <param name="messageSerializer">The message serializer.</param>
         /// <exception cref="System.ArgumentNullException">messageSerializer</exception>
@@ -54,7 +54,7 @@ namespace Griffin.Net.Protocols.Http
             _messageReceived = delegate { };
         }
 
-       
+
         /// <summary>
         ///     A message have been received.
         /// </summary>
@@ -74,7 +74,7 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
-        /// We've received bytes from the socket. Build a message out of them.
+        ///     We've received bytes from the socket. Build a message out of them.
         /// </summary>
         /// <param name="buffer">Buffer</param>
         public void ProcessReadBytes(ISocketBuffer buffer)
@@ -122,7 +122,7 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
-        /// Reset decoder state so that we can decode a new message
+        ///     Reset decoder state so that we can decode a new message
         /// </summary>
         public void Clear()
         {
@@ -194,7 +194,6 @@ namespace Griffin.Net.Protocols.Http
                     }
                     else
                         throw new HttpException(500, "Unknown decoder result: " + result);
-                    
                 }
                 var cookies = request.Headers["Cookie"];
                 if (cookies != null)

@@ -108,14 +108,38 @@ namespace Griffin.Core.Tests.Net.Channels
 
             var buf = new byte[65535];
             var tmp = stream.Read(buf, 0, 65535);
-            var actual = Encoding.ASCII.GetString(buf, 4, tmp-4); // string encoder have a length header.
+            var actual = Encoding.ASCII.GetString(buf, 4, tmp - 4); // string encoder have a length header.
             actual.Should().Be("Hello world");
+        }
+
+        [Fact]
+        public void send_close_message()
+        {
+            var slice = new BufferSlice(new byte[65535], 0, 65535);
+            var encoder = new StringEncoder();
+            var decoder = new StringDecoder();
+
+            var sut = CreateClientChannel(slice, encoder, decoder);
+            sut.MessageReceived += (channel, message) => { };
+            var stream = new SslStream(new NetworkStream(_helper.Server));
+            stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
+            sut.Assign(_helper.Client);
+
+            Assert.True(sut.IsConnected);
+
+            sut.Close();
+
+            Assert.False(sut.IsConnected);
         }
 
         private void OnAuthenticated(IAsyncResult ar)
         {
-            var stream = (SslStream) ar.AsyncState;
-            stream.EndAuthenticateAsServer(ar);
+            try
+            {
+                var stream = (SslStream)ar.AsyncState;
+                stream.EndAuthenticateAsServer(ar);
+            }
+            catch (Exception e) { }
         }
 
         [Fact]
@@ -140,6 +164,8 @@ namespace Griffin.Core.Tests.Net.Channels
                 evt.Set();
             };
             sut1.Assign(_helper.Client);
+            evt.WaitOne(500); // wait on authentication
+            evt.Reset();
             stream.Write(outBuffer);
 
             evt.WaitOne(500).Should().BeTrue();
@@ -147,7 +173,7 @@ namespace Griffin.Core.Tests.Net.Channels
         }
 
 
-      
+
 
 
         /// <summary>

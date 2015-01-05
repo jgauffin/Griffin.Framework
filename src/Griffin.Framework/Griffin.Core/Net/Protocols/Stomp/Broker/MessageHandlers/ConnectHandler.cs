@@ -4,17 +4,45 @@ using Griffin.Net.Protocols.Stomp.Frames;
 
 namespace Griffin.Net.Protocols.Stomp.Broker.MessageHandlers
 {
+    /// <summary>
+    /// CONNECT frame. 
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Used instead of the initial STOMP frame for earlier versions.
+    /// </para>
+    /// </remarks>
     public class ConnectHandler : IFrameHandler
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly string _serverName;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectHandler"/> class.
+        /// </summary>
+        /// <param name="authenticationService">The authentication service.</param>
+        /// <param name="serverName">Name of the server.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// authenticationService
+        /// or
+        /// serverName
+        /// </exception>
         public ConnectHandler(IAuthenticationService authenticationService, string serverName)
         {
+            if (authenticationService == null) throw new ArgumentNullException("authenticationService");
+            if (serverName == null) throw new ArgumentNullException("serverName");
             _authenticationService = authenticationService;
             _serverName = serverName;
         }
 
+        /// <summary>
+        /// Process an inbound frame.
+        /// </summary>
+        /// <param name="client">Connection that received the frame</param>
+        /// <param name="request">Inbound frame to process</param>
+        /// <returns>
+        /// Frame to send back; <c>null</c> if no message should be returned;
+        /// </returns>
         public IFrame Process(IStompClient client, IFrame request)
         {
             var versions = request.Headers["accept-version"];

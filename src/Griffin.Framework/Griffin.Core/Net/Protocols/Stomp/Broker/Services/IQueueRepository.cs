@@ -2,6 +2,9 @@
 
 namespace Griffin.Net.Protocols.Stomp.Broker.Services
 {
+    /// <summary>
+    /// Data source for queues.
+    /// </summary>
     public interface IQueueRepository
     {
         /// <summary>

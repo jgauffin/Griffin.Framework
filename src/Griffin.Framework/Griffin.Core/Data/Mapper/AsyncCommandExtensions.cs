@@ -53,7 +53,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd)
+        public static Task<TEntity> FirstAsync<TEntity>(this IDbCommand cmd)
         {
             var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return FirstAsync(cmd, mapping);
@@ -87,7 +87,7 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         /// <seealso cref="CrudEntityMapper{TEntity}" />
-        public static async Task<TEntity> FirstAsync<TEntity>(this DbCommand cmd, IEntityMapper<TEntity> mapper)
+        public static async Task<TEntity> FirstAsync<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             var result = await cmd.FirstOrDefaultAsync(mapper);
             if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
@@ -125,7 +125,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd)
+        public static Task<TEntity> FirstOrDefaultAsync<TEntity>(this IDbCommand cmd)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
@@ -161,13 +161,14 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         /// <seealso cref="CrudEntityMapper{TEntity}" />
-        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this DbCommand cmd,
+        public static async Task<TEntity> FirstOrDefaultAsync<TEntity>(this IDbCommand cmd,
             IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            using (var reader = await cmd.ExecuteReaderAsync())
+            var command = GetDbCommandFromInterface(cmd);
+            using (var reader = await command.ExecuteReaderAsync())
             {
                 if (!await reader.ReadAsync())
                     return default(TEntity);
@@ -176,6 +177,15 @@ namespace Griffin.Data.Mapper
                 mapper.Map(reader, entity);
                 return entity;
             }
+        }
+
+        private static DbCommand GetDbCommandFromInterface(IDbCommand cmd)
+        {
+            var command = cmd as DbCommand;
+            if (command == null)
+                throw new NotSupportedException(
+                    "Microsoft didn't create a new interface for asynchronous operations and your implementation of IDbCommand do not inherit DbCommand which is required for async features.");
+            return command;
         }
 
 
@@ -217,12 +227,12 @@ namespace Griffin.Data.Mapper
         ///         allocations than building a complete list first.
         ///     </para>
         ///     <para>
-        ///         If the result returnd from the query is all records that you want it's probably more effecient to use
+        ///         If the result returned from the query is all records that you want it's probably more efficient to use
         ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
         ///     </para>
         ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
-        public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd)
+        public static Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbCommand cmd)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
@@ -252,12 +262,13 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
-        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
+        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbCommand cmd,
             bool ownsConnection)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
-            var reader = await cmd.ExecuteReaderAsync();
+            var command = GetDbCommandFromInterface(cmd);
+            var reader = await command.ExecuteReaderAsync();
             var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
@@ -290,13 +301,14 @@ namespace Griffin.Data.Mapper
         ///         <see cref="EntityMappingProvider" />.
         ///     </para>
         /// </remarks>
-        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this DbCommand cmd,
+        public static async Task<IEnumerable<TEntity>> ToEnumerableAsync<TEntity>(this IDbCommand cmd,
             bool ownsConnection, IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            var reader = await cmd.ExecuteReaderAsync();
+            var command = GetDbCommandFromInterface(cmd); 
+            var reader = await command.ExecuteReaderAsync();
             var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
         }
@@ -316,7 +328,7 @@ namespace Griffin.Data.Mapper
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
         ///     </para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd)
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbCommand cmd)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
@@ -336,14 +348,15 @@ namespace Griffin.Data.Mapper
         ///         Make sure that you <c>await</c> the method, as nothing the reader is not disposed directly if you don't.
         ///     </para>
         /// </remarks>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this DbCommand cmd,
+        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IDbCommand cmd,
             IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
             var items = new List<TEntity>();
-            using (var reader = await cmd.ExecuteReaderAsync())
+            var command = GetDbCommandFromInterface(cmd);
+            using (var reader = await command.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {

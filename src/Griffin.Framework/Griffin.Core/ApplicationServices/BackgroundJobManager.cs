@@ -262,6 +262,12 @@ namespace Griffin.ApplicationServices
         {
             private readonly Exception _exception;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="NoJob"/> class.
+            /// </summary>
+            /// <param name="jobType">Type of the job.</param>
+            /// <param name="exception">The exception.</param>
+            /// <exception cref="System.ArgumentNullException">exception</exception>
             public NoJob(Type jobType, Exception exception)
             {
                 if (exception == null) throw new ArgumentNullException("exception");

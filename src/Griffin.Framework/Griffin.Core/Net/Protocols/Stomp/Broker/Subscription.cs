@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Griffin.Net.Protocols.Stomp.Broker
 {
+    /// <summary>
+    /// A list of all queues that a client want to receive messages from.
+    /// </summary>
     public class Subscription
     {
         private List<IFrame> _pendingFrames = new List<IFrame>();
@@ -13,7 +16,7 @@ namespace Griffin.Net.Protocols.Stomp.Broker
         /// 
         /// </summary>
         /// <param name="client">Client that the subscription belongs to</param>
-        /// <param name="id">Arbitary string as specified by the client.</param>
+        /// <param name="id">Arbitrary string as specified by the client.</param>
         public Subscription(IStompClient client, string id)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -25,7 +28,7 @@ namespace Griffin.Net.Protocols.Stomp.Broker
         }
 
         /// <summary>
-        /// Arbitary string as specified by the client.
+        /// Arbitrary string as specified by the client.
         /// </summary>
         public string Id { get; private set; }
 
@@ -45,6 +48,9 @@ namespace Griffin.Net.Protocols.Stomp.Broker
 
         private IStompClient Client { get; set; }
 
+        /// <summary>
+        /// Messages have been delivered but not yet ACKed by the client
+        /// </summary>
         public bool IsPending
         {
             get
@@ -53,6 +59,9 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
         }
 
+        /// <summary>
+        /// May still send messages (i.e. have not been throttled and have ACK-ed enough messages)
+        /// </summary>
         public bool IsReady
         {
             get
@@ -61,6 +70,9 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
         }
 
+        /// <summary>
+        /// Checks if we have sent too many messages per second.
+        /// </summary>
         public bool IsThrottled
         {
             get
@@ -76,6 +88,20 @@ namespace Griffin.Net.Protocols.Stomp.Broker
         /// </summary>
         public int MaxMessagesPerSecond { get; set; }
 
+        /// <summary>
+        /// Enqueue another message for delivery.
+        /// </summary>
+        /// <param name="frame">Frame to deliver</param>
+        /// <exception cref="System.ArgumentNullException">frame</exception>
+        /// <exception cref="System.InvalidOperationException">
+        /// Only MESSAGE frames may be sent through a subscription.
+        /// or
+        /// Is either waiting on an ACK/NACK for the current message, or you've tried to send too many messages per second without acking them.
+        /// or
+        /// You've tried to send too many messages per second. Adjust the MaxMessagesPerSecond property.
+        /// or
+        /// Client already have more then 20 pending messages. Start ACK them.
+        /// </exception>
         public void Send(IFrame frame)
         {
             if (frame == null) throw new ArgumentNullException("frame");
@@ -104,6 +130,10 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             Client.Send(frame);
         }
 
+        /// <summary>
+        /// Ack a sent message
+        /// </summary>
+        /// <param name="id">ACK id</param>
         public void Ack(string id)
         {
             for (int i = 0; i < _pendingFrames.Count; i++)
@@ -117,6 +147,11 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
         }
 
+        /// <summary>
+        /// Nack messages
+        /// </summary>
+        /// <param name="id">ACK sequence number</param>
+        /// <returns>A list of frames that should be returned to the queue.</returns>
         public virtual IEnumerable<IFrame> Nack(string id)
         {
             for (int i = 0; i < _pendingFrames.Count; i++)
@@ -131,6 +166,11 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             }
         }
 
+        /// <summary>
+        /// Checkes if the specified message is already pending.
+        /// </summary>
+        /// <param name="messageId">Message id</param>
+        /// <returns><c>true</c> if message have already been enqueued for delivery; otherwise <c>false</c>.</returns>
         public bool IsMessagePending(string messageId)
         {
             foreach (var frame in _pendingFrames)
@@ -142,11 +182,9 @@ namespace Griffin.Net.Protocols.Stomp.Broker
             return false;
         }
 
+        /// <summary>
+        /// All messages have been delivered, we have nothing more to do.
+        /// </summary>
         public event EventHandler BecameIdle;
-    }
-
-    public interface ISubscriptionSubscriber
-    {
-        void OnMessageExpired();
     }
 }

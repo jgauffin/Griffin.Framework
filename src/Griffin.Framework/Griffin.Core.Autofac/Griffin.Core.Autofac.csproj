@@ -48,6 +48,7 @@
     <Compile Include="AutofacScopeAdapter.cs" />
     <Compile Include="AutofacAdapter.cs" />
     <Compile Include="Cqs\CqsExtensions.cs" />
+    <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegistrationExtensions.cs" />
   </ItemGroup>

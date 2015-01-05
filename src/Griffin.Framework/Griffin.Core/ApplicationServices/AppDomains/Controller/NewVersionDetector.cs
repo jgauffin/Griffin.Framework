@@ -1,46 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.AccessControl;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Griffin.IO;
 
 namespace Griffin.ApplicationServices.AppDomains.Controller
 {
     /// <summary>
-    /// The purpose is to monitor the pickup path for changes and then copy the new version to a new version folder.
+    ///     The purpose is to monitor the pickup path for changes and then copy the new version to a new version folder.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The class waits 30 seconds from the last change before initiating a copy. The wait is done so that we are sure that no new changes
-    /// have been added.
-    /// </para>
-    /// <para>
-    /// Version folders are just named as the DateTime (<c>date.ToString("yyyy-MM-dd_HHmmss")</c>) for the newest file in the pickup directory.
-    /// </para>
-    /// <para>
-    /// You can specify your own directory security for the version folders by setting the <see cref="Security"/> property.
-    /// </para>
+    ///     <para>
+    ///         The class waits 30 seconds from the last change before initiating a copy. The wait is done so that we are sure
+    ///         that no new changes
+    ///         have been added.
+    ///     </para>
+    ///     <para>
+    ///         Version folders are just named as the DateTime (<c>date.ToString("yyyy-MM-dd_HHmmss")</c>) for the newest file
+    ///         in the pickup directory.
+    ///     </para>
+    ///     <para>
+    ///         You can specify your own directory security for the version folders by setting the <see cref="Security" />
+    ///         property.
+    ///     </para>
     /// </remarks>
-    public class NewVersionDetector
+    public class NewVersionDetector : IDisposable
     {
-        private readonly string _pickupPath;
         private readonly string _appPath;
-        private FileSystemWatcher _fileSystemWatcher;
-        private bool _started;
+        private readonly string _pickupPath;
+        private readonly Timer _updateTimer;
         private DateTime _changeDetectedAt;
-        private Timer _updateTimer;
+        private readonly FileSystemWatcher _fileSystemWatcher;
         private DateTime _lastRunningDomainCreatedAt;
+        private bool _started;
 
 
         /// <summary>
-        /// 
+        /// Initializes a new instance of the <see cref="NewVersionDetector"/> class.
         /// </summary>
         /// <param name="pickupPath">Folder to monitor</param>
         /// <param name="appPath">Folder to create version folders under.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// pickupPath
+        /// or
+        /// appPath
+        /// </exception>
         public NewVersionDetector(string pickupPath, string appPath)
         {
             if (pickupPath == null) throw new ArgumentNullException("pickupPath");
@@ -48,7 +52,7 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
 
             _pickupPath = pickupPath;
             _appPath = appPath;
-            
+
             _fileSystemWatcher = new FileSystemWatcher(_pickupPath);
             _fileSystemWatcher.IncludeSubdirectories = true;
             _fileSystemWatcher.Changed += OnFilesChanges;
@@ -58,7 +62,7 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
         }
 
         /// <summary>
-        /// Custom security settings for the new (application) folders.
+        ///     Custom security settings for the new (application) folders.
         /// </summary>
         public DirectorySecurity Security { get; set; }
 
@@ -78,7 +82,6 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
                 return;
 
             CopyAppDomain();
-
         }
 
         private void CopyAppDomain()
@@ -98,22 +101,40 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
             {
                 DirectoryUtils.Copy(_pickupPath, newDomainPath, true);
             }
+            _lastRunningDomainCreatedAt = DateTime.UtcNow;
             VersionFound(this, new VersionFoundEventArgs(newDomainPath));
         }
 
-        public event EventHandler<VersionFoundEventArgs> VersionFound = delegate{};
+        /// <summary>
+        ///     A new version was found.
+        /// </summary>
+        public event EventHandler<VersionFoundEventArgs> VersionFound = delegate { };
 
 
+        /// <summary>
+        ///     Start monitoring for new releases in the <see cref="ApplicationManagerSettings.PickupPath" />,
+        /// </summary>
         public void Start()
         {
             _updateTimer.Change(1000, 1000);
             _started = true;
         }
 
+        /// <summary>
+        ///     Stop monitoring for new releases.
+        /// </summary>
         public void Stop()
         {
             _started = false;
             _updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _fileSystemWatcher.Dispose();
         }
     }
 }

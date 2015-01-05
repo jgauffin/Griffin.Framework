@@ -58,7 +58,7 @@ namespace Griffin.Net.Protocols.Http.Messages
                 return tmp;
             }
 
-            if (offset - buffer.BaseOffset  >= buffer.BytesTransferred)
+            if (offset - buffer.BaseOffset >= buffer.BytesTransferred)
                 return -1;
 
             return buffer.Buffer[offset++];
@@ -74,16 +74,8 @@ namespace Griffin.Net.Protocols.Http.Messages
                 return;
             if (ch == '\n')
             {
-                var line = _headerName.ToString().Split(' ');
-                if (line.Length != 3)
-                    throw new BadRequestException(string.Format("First line is not a valid REQUEST/RESPONSE line: '{0}'.", _headerName));
-
-                if (line[2].ToLower().StartsWith("http"))
-                    RequestLineParsed(line[0], line[1], line[2]);
-                else
-                {
-                    throw new NotSupportedException("Not supporting response parsing yet.");
-                }
+                var line = _headerName.ToString().Split(new char[] { ' ' }, 3);
+                RequestLineParsed(line[0], line[1], line[2]);
 
                 _headerName.Clear();
                 _parserMethod = Name_StripWhiteSpacesBefore;

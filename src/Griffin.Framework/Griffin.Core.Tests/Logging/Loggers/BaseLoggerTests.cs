@@ -212,7 +212,7 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    System.NotImplementedException: The method or operation is not implemented.\r\n");
+            actual.Should().StartWith("    System.NotImplementedException");
         }
 
         [Fact]
@@ -223,7 +223,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty' was thrown.\r\n    [UserId='10']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty");
+            actual.Should().EndWith("[UserId='10']\r\n");
         }
 
         [Fact]
@@ -234,7 +235,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2' was thrown.\r\n    [UserId='10',FirstName='Arne']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2");
+            actual.Should().EndWith("[UserId='10',FirstName='Arne']\r\n");
         }
 
         [Fact]
@@ -245,7 +247,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2' was thrown.\r\n    [UserId='10']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2");
+            actual.Should().EndWith("[UserId='10']\r\n");
         }
 
     }

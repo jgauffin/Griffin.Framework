@@ -16,12 +16,10 @@ namespace Griffin.IO
     public class PersistentQueue<T> : IQueue<T>
     {
         private readonly string _dataDirectory;
-        private readonly string _queueName;
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private readonly ISerializer _serializer;
-        private PersistentCircularIndex _index;
+        private readonly PersistentCircularIndex _index;
         private const int RecordSize = 32;//Guid.NewGuid().ToString("N").Length;
-        private string _indexFileName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersistentQueue{T}"/> class.
@@ -35,12 +33,15 @@ namespace Griffin.IO
             _serializer = configuration.Serializer;
             CreateDirectoryIfNotExists();
 
-            _indexFileName = Path.Combine(configuration.DataDirectory, configuration.QueueName + ".idx");
-            _index = new PersistentCircularIndex(_indexFileName, RecordSize, configuration.MaxCount);
+            var indexFileName = Path.Combine(configuration.DataDirectory, configuration.QueueName + ".idx");
+            _index = new PersistentCircularIndex(indexFileName, RecordSize, configuration.MaxCount);
 
             Encoding = Encoding.UTF8;
         }
 
+        /// <summary>
+        /// Encoding used during serialization
+        /// </summary>
         public Encoding Encoding { get; set; }
 
         private void CreateDirectoryIfNotExists()
@@ -62,6 +63,10 @@ namespace Griffin.IO
         }
 
 
+        /// <summary>
+        /// Dequeue an item
+        /// </summary>
+        /// <returns>Task that will complete once an item have been successfully read from disk</returns>
         public async Task<T> DequeueAsync()
         {
             //var tempFile = Path.Combine(_dataDirectory, _indexFileName.Remove(_indexFileName.Length - 4, 4) + "TMP.idx");
@@ -106,6 +111,11 @@ namespace Griffin.IO
             return result;
         }
 
+        /// <summary>
+        /// enqueue an item
+        /// </summary>
+        /// <param name="item">Item to enqueue</param>
+        /// <returns>Task that completes once the item have been successfully written to disk.</returns>
         public async Task EnqueueAsync(T item)
         {
             var filename = Guid.NewGuid().ToString("N") + ".json";

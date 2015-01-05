@@ -39,6 +39,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Net.LiteServer", "G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Cqs.Server", "Griffin.Cqs.Server\Griffin.Cqs.Server.csproj", "{589198BA-DC4F-4947-BD73-F63DBB6685DF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{EB389127-7F92-43E4-AC48-B0F7D8CE4750}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Autofac.Tests", "Griffin.Core.Autofac.Tests\Griffin.Core.Autofac.Tests.csproj", "{3EBC37D9-DACD-430F-89DC-9838CC7A0F18}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +101,10 @@ Global
 		{589198BA-DC4F-4947-BD73-F63DBB6685DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{589198BA-DC4F-4947-BD73-F63DBB6685DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{589198BA-DC4F-4947-BD73-F63DBB6685DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EBC37D9-DACD-430F-89DC-9838CC7A0F18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EBC37D9-DACD-430F-89DC-9838CC7A0F18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EBC37D9-DACD-430F-89DC-9838CC7A0F18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EBC37D9-DACD-430F-89DC-9838CC7A0F18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-using UnhandledExceptionEventArgs = Griffin.ApplicationServices.AppDomains.UnhandledExceptionEventArgs;
 
 namespace Griffin.ApplicationServices.AppDomains.Host
 {
@@ -9,14 +8,17 @@ namespace Griffin.ApplicationServices.AppDomains.Host
     ///     Represents a running appdomain instance.
     /// </summary>
     /// <remarks>
-    /// <para>this class is run in the main app domain and communicates with the application AppDomain using <see cref="AppInitializeRunner"/>.</para>
+    ///     <para>
+    ///         this class is run in the main app domain and communicates with the application AppDomain using
+    ///         <see cref="AppInitializeRunner" />.
+    ///     </para>
     /// </remarks>
     public class HostedAppDomain
     {
-        private AppDomainSetup _appDomainSetup;
-        private string _appName;
         private readonly Type _startType;
         private AppDomain _appDomain;
+        private AppDomainSetup _appDomainSetup;
+        private string _appName;
         private AppInitializeRunner _domainManager;
         private string _shadowFolder;
 
@@ -32,8 +34,21 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             _startType = startType;
         }
 
-        public DateTime RunningSince { get; set; }
+        /// <summary>
+        /// When this domain was started (UTC)
+        /// </summary>
+        public DateTime RunningSince { get; private set; }
 
+        /// <summary>
+        ///     Generated id for this specific app domain
+        /// </summary>
+        public string Id { get; private set; }
+
+        /// <summary>
+        /// Configure this domain
+        /// </summary>
+        /// <param name="id">AppDomain identifier</param>
+        /// <param name="appDirectory">Directory where new versions are stored (in sub folders)</param>
         public void Configure(string id, string appDirectory)
         {
             Id = id;
@@ -51,13 +66,15 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             };
         }
 
-        public string Id { get; private set; }
-
+        /// <summary>
+        ///     Launch app domain and start the services in it.
+        /// </summary>
         public void Start()
         {
             if (Id == null)
                 throw new InvalidOperationException("Run Configure() first.");
 
+            RunningSince = DateTime.UtcNow;
             _appDomain = AppDomain.CreateDomain(_appName, null, _appDomainSetup);
             _domainManager =
                 (AppInitializeRunner)
@@ -66,10 +83,10 @@ namespace Griffin.ApplicationServices.AppDomains.Host
         }
 
         /// <summary>
-        /// A command received from the <see cref="AppInitializeRunner"/> through the named pipe.
+        ///     A command received from the <see cref="AppInitializeRunner" /> through the named pipe.
         /// </summary>
-        /// <param name="command"></param>
-        /// <param name="argv"></param>
+        /// <param name="command">command to execute</param>
+        /// <param name="argv">arguments for the command</param>
         public void ProcessRemoteCommand(string command, string[] argv)
         {
             switch (command)
@@ -90,9 +107,20 @@ namespace Griffin.ApplicationServices.AppDomains.Host
             AppDomainException(this, new UnhandledExceptionStringEventArgs(exception));
         }
 
-        public event EventHandler<UnhandledExceptionStringEventArgs> AppDomainException = delegate {};
+        /// <summary>
+        ///     An exception was caught in the hosted app domain
+        /// </summary>
+        public event EventHandler<UnhandledExceptionStringEventArgs> AppDomainException = delegate { };
+
+        /// <summary>
+        ///     Failed to launch or run this version. Roll back to previous version.
+        /// </summary>
         public event EventHandler PanicRequested = delegate { };
 
+
+        /// <summary>
+        ///     Stop this app domain
+        /// </summary>
         public void Stop()
         {
             _domainManager.StopService();

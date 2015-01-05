@@ -29,7 +29,9 @@ namespace Griffin
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
+#pragma warning disable 1998
         public async Task EnqueueAsync(T item)
+#pragma warning restore 1998
         {
             _queue.Enqueue(item);
         }

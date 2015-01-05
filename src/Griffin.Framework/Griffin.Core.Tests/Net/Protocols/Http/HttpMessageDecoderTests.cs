@@ -242,5 +242,71 @@ hello queue a");
             sw.ReadToEnd().Should().Be("hello queue a");
         }
 
+        [Fact]
+        public void basic_response()
+        {
+            IHttpResponse actual = null;
+            var buffer = new SocketBufferFake();
+            buffer.Buffer = Encoding.ASCII.GetBytes("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\n\r\n");
+            buffer.BytesTransferred = buffer.Buffer.Length;
+
+            var decoder = new HttpMessageDecoder();
+            decoder.MessageReceived = o => actual = (IHttpResponse)o;
+            decoder.ProcessReadBytes(buffer);
+
+            actual.Should().NotBeNull();
+            actual.StatusCode.Should().Be(404);
+            actual.HttpVersion.Should().Be("HTTP/1.1");
+            actual.ReasonPhrase.Should().Be("Failed to find it dude");
+            actual.Headers["Server"].Should().Be("griffinframework.net");
+        }
+
+        [Fact]
+        public void response_with_body()
+        {
+            IHttpResponse actual = null;
+            var buffer = new SocketBufferFake();
+            buffer.Buffer = Encoding.ASCII.GetBytes("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nContent-Type: text/plain\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a\r\n\r\n");
+            buffer.BytesTransferred = buffer.Buffer.Length;
+
+            var decoder = new HttpMessageDecoder();
+            decoder.MessageReceived = o => actual = (IHttpResponse)o;
+            decoder.ProcessReadBytes(buffer);
+
+            actual.Should().NotBeNull();
+            actual.StatusCode.Should().Be(404);
+            actual.HttpVersion.Should().Be("HTTP/1.1");
+            actual.ReasonPhrase.Should().Be("Failed to find it dude");
+            actual.Headers["Server"].Should().Be("griffinframework.net");
+            actual.Headers["X-Requested-With"].Should().Be("XHttpRequest");
+            actual.ContentType.Should().Be("text/plain");
+            actual.ContentLength.Should().Be(13);
+            new StreamReader(actual.Body).ReadToEnd().Should().Be("hello queue a");
+        }
+
+        [Fact]
+        public void response_with_body_encoding()
+        {
+            IHttpResponse actual = null;
+            var buffer = new SocketBufferFake();
+            buffer.Buffer = Encoding.ASCII.GetBytes("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nContent-Type: text/plain;charset=utf-8\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a\r\n\r\n");
+            buffer.BytesTransferred = buffer.Buffer.Length;
+
+            var decoder = new HttpMessageDecoder();
+            decoder.MessageReceived = o => actual = (IHttpResponse)o;
+            decoder.ProcessReadBytes(buffer);
+
+            actual.Should().NotBeNull();
+            actual.StatusCode.Should().Be(404);
+            actual.HttpVersion.Should().Be("HTTP/1.1");
+            actual.ReasonPhrase.Should().Be("Failed to find it dude");
+            actual.Headers["Server"].Should().Be("griffinframework.net");
+            actual.Headers["X-Requested-With"].Should().Be("XHttpRequest");
+            actual.ContentType.Should().Be("text/plain");
+            actual.ContentLength.Should().Be(13);
+            actual.ContentCharset.Should().Be(Encoding.UTF8);
+            new StreamReader(actual.Body, actual.ContentCharset).ReadToEnd().Should().Be("hello queue a");
+        }
+
     }
 }

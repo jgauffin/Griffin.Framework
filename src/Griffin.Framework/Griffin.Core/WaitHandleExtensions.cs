@@ -4,12 +4,17 @@ using System.Threading.Tasks;
 
 namespace Griffin
 {
+    /// <summary>
+    /// Extensions to make it easier to work with thread synchronization objects.
+    /// </summary>
     public static class WaitHandleExtensions
     {
         /// <summary>
+        /// Convert a wait handle to a TPL Task.
         /// </summary>
-        /// <param name="handle"></param>
-        /// <returns></returns>
+        /// <param name="handle">Handle to convert</param>
+        /// <returns>Generated task.</returns>
+        /// 
         //credits: http://stackoverflow.com/questions/18756354/wrapping-manualresetevent-as-awaitable-task
         public static Task AsTask(this WaitHandle handle)
         {
@@ -17,10 +22,11 @@ namespace Griffin
         }
 
         /// <summary>
+        /// Convert a wait handle to a task
         /// </summary>
-        /// <param name="handle"></param>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
+        /// <param name="handle">Wait handle</param>
+        /// <param name="timeout">Max time to wait</param>
+        /// <returns>Created task.</returns>
         // credits: http://stackoverflow.com/questions/18756354/wrapping-manualresetevent-as-awaitable-task
         public static Task AsTask(this WaitHandle handle, TimeSpan timeout)
         {

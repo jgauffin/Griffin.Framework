@@ -272,6 +272,7 @@ namespace Griffin.Net.Channels
             _encoder.Clear();
             _decoder.Clear();
             _currentOutboundMessage = null;
+            _socket = null;
             _remoteEndPoint = EmptyEndpoint.Instance;
             _connected = false;
             if (_closeEvent.CurrentCount == 1)
@@ -410,10 +411,17 @@ namespace Griffin.Net.Channels
 
         private void ReadAsync()
         {
-            var isPending = _socket.ReceiveAsync(_readArgs);
-            if (!isPending)
+            try
             {
-                OnReadCompleted(_socket, _readArgs);
+                var isPending = _socket.ReceiveAsync(_readArgs);
+                if (!isPending)
+                {
+                    OnReadCompleted(_socket, _readArgs);
+                }
+            }
+            catch (Exception e)
+            {
+                HandleDisconnect(SocketError.ConnectionReset);
             }
         }
 
@@ -422,7 +430,14 @@ namespace Griffin.Net.Channels
             // Allows us to send everything before closing the connection.
             if (_currentOutboundMessage == CloseMessage)
             {
-                _socket.Shutdown(SocketShutdown.Both);
+                try
+                {
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+                catch (Exception e)
+                {
+                    HandleDisconnect(SocketError.ConnectionReset);
+                }
                 _currentOutboundMessage = null;
                 _closeEvent.Release();
                 return;
@@ -430,9 +445,16 @@ namespace Griffin.Net.Channels
 
             _encoder.Prepare(_currentOutboundMessage);
             _encoder.Send(_writeArgsWrapper);
-            var isPending = _socket.SendAsync(_writeArgs);
-            if (!isPending)
-                OnSendCompleted(this, _writeArgs);
+            try
+            {
+                var isPending = _socket.SendAsync(_writeArgs);
+                if (!isPending)
+                    OnSendCompleted(this, _writeArgs);
+            }
+            catch (Exception e)
+            {
+                HandleDisconnect(SocketError.ConnectionReset);
+            }
         }
     }
 }

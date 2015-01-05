@@ -4,17 +4,23 @@ using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Stomp
 {
+    /// <summary>
+    ///     Encode STOMP frames for delivery
+    /// </summary>
     public class StompEncoder : IMessageEncoder
     {
+        private readonly byte[] _buffer = new byte[65535];
+        private readonly MemoryStream _stream;
+        private readonly StreamWriter _writer;
         private int _bytesToSend;
         private IFrame _frame;
         private bool _isHeaderSent;
         private int _offset;
-        private byte[] _buffer = new byte[65535];
-        private MemoryStream _stream;
         private int _totalAmountToSend;
-        private StreamWriter _writer;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="StompEncoder" /> class.
+        /// </summary>
         public StompEncoder()
         {
             _stream = new MemoryStream(_buffer);

@@ -5,13 +5,16 @@ using System.Reflection;
 
 namespace Griffin
 {
+    /// <summary>
+    /// Extension methods for object.
+    /// </summary>
     public static class ObjectExtensions
     {
         /// <summary>
         ///     Turn anonymous object to dictionary
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">Anonymous object</param>
+        /// <returns>Dictionary</returns>
         public static Dictionary<string, object> ToDictionary(this object data)
         {
             return (from property in data.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)

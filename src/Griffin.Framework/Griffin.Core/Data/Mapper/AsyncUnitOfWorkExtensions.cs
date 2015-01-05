@@ -274,7 +274,7 @@ namespace Griffin.Data.Mapper
         /// }
         /// </code>
         /// </example>
-        public static async Task InsertAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
+        public static async Task<object> InsertAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
             if (EqualityComparer<TEntity>.Default.Equals(default(TEntity), entity)) throw new ArgumentNullException("entity");
@@ -289,7 +289,7 @@ namespace Griffin.Data.Mapper
                 //    var id = await cmd.ExecuteScalarAsync();
                 //    mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
                 //}
-                await cmd.ExecuteNonQueryAsync();
+                return await cmd.ExecuteScalarAsync();
             }
         }
 
@@ -511,7 +511,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, string query, params object[] parameters)
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, string query, params object[] parameters)
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
             if (query == null) throw new ArgumentNullException("query");
@@ -556,7 +556,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static async Task<IList<TEntity>> ToListAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
             if (mapping == null) throw new ArgumentNullException("mapping");

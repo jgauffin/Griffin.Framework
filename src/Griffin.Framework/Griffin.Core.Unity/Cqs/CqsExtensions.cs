@@ -11,6 +11,17 @@ namespace Griffin.Core.Unity.Cqs
     /// </summary>
     public static class CqsExtensions
     {
+        /// <summary>
+        ///     Register all application event handlers
+        /// </summary>
+        /// <param name="container">instance</param>
+        /// <param name="assemblies">Assemblies to scan</param>
+        /// <remarks>
+        ///     <para>
+        ///         Will search for all classes that implement one <c>IApplicationEventHandler</c> interface that is defined in the
+        ///         <c>DotNetCqs</c> library.
+        ///     </para>
+        /// </remarks>
         public static void RegisterApplicationEventHandlers(this IUnityContainer container, params Assembly[] assemblies)
         {
             foreach (var type in ForTypes(IsEventHandler))
@@ -19,6 +30,17 @@ namespace Griffin.Core.Unity.Cqs
             }
         }
 
+        /// <summary>
+        ///     Register all command handlers .
+        /// </summary>
+        /// <param name="container">instance</param>
+        /// <param name="assemblies">Assemblies to scan</param>
+        /// <remarks>
+        ///     <para>
+        ///         Will search for all classes that implement one <c>ICommandHandler</c> interface that is defined in the
+        ///         <c>DotNetCqs</c> library.
+        ///     </para>
+        /// </remarks>
         public static void RegisterCommandHandlers(this IUnityContainer container, params Assembly[] assemblies)
         {
             foreach (var type in ForTypes(IsCommandHandler))
@@ -47,6 +69,17 @@ namespace Griffin.Core.Unity.Cqs
             RegisterRequestReplyHandlers(container, assemblies);
         }
 
+        /// <summary>
+        ///     Register all query handlers
+        /// </summary>
+        /// <param name="container">instance</param>
+        /// <param name="assemblies">Assemblies to scan</param>
+        /// <remarks>
+        ///     <para>
+        ///         Will search for all classes that implement one <c>IQueryHandler</c> interface that is defined in the
+        ///         <c>DotNetCqs</c> library.
+        ///     </para>
+        /// </remarks>
         public static void RegisterQueryHandlers(this IUnityContainer container, params Assembly[] assemblies)
         {
             foreach (var type in ForTypes(IsQueryHandler))
@@ -55,6 +88,17 @@ namespace Griffin.Core.Unity.Cqs
             }
         }
 
+        /// <summary>
+        ///     Register all request/reply handlers
+        /// </summary>
+        /// <param name="container">instance</param>
+        /// <param name="assemblies">Assemblies to scan</param>
+        /// <remarks>
+        ///     <para>
+        ///         Will search for all classes that implement one <c>IRequestReply</c> interface that is defined in the
+        ///         <c>DotNetCqs</c> library.
+        ///     </para>
+        /// </remarks>
         public static void RegisterRequestReplyHandlers(this IUnityContainer container, params Assembly[] assemblies)
         {
             foreach (var type in ForTypes(IsRequestReplyHandler))

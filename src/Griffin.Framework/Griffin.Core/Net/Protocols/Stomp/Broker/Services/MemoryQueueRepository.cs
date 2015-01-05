@@ -3,6 +3,9 @@ using System.Collections.Concurrent;
 
 namespace Griffin.Net.Protocols.Stomp.Broker.Services
 {
+    /// <summary>
+    /// Stores queues in memory. 
+    /// </summary>
     public class MemoryQueueRepository : IQueueRepository
     {
         ConcurrentDictionary<string, StompQueue>  _queues = new ConcurrentDictionary<string, StompQueue>();
@@ -23,6 +26,15 @@ namespace Griffin.Net.Protocols.Stomp.Broker.Services
         }
 
 
+        /// <summary>
+        /// Fetch a queue
+        /// </summary>
+        /// <param name="queueName">Name of the queue</param>
+        /// <returns>
+        /// Queue
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">queueName</exception>
+        /// <exception cref="Griffin.Net.Protocols.Stomp.Broker.NotFoundException">Queue ' + queueName + ' do not exist</exception>
         public IStompQueue Get(string queueName)
         {
             if (queueName == null) throw new ArgumentNullException("queueName");

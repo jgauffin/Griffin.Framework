@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Griffin.ApplicationServices
+﻿namespace Griffin.ApplicationServices.AppDomains
 {
+    /// <summary>
+    /// Information about a detected application update.
+    /// </summary>
     public interface IUpdateInformation
     {
         

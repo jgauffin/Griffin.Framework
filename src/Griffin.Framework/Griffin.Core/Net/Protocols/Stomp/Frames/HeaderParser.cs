@@ -66,7 +66,7 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             set
             {
                 if (value == null)
-                    _frameNameParsed = (name) => { };
+                    _frameNameParsed = name => { };
                 else
                     _frameNameParsed = value;
             }
@@ -76,7 +76,7 @@ namespace Griffin.Net.Protocols.Stomp.Frames
         ///     Will try to parse everything in the buffer
         /// </summary>
         /// <param name="buffer">Buffer to read from.</param>
-        /// <remarks>offset where the parser ended.</remarks>
+        /// <param name="offset">offset where the parser ended.</param>
         /// <remarks>
         ///     <para>
         ///         Do note that the parser is for the header only. The <see cref="Completed" /> event will
@@ -107,6 +107,9 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             _parserMethod = Firstline_Before;
         }
 
+        /// <summary>
+        ///     Completed parsing a header line, reset so we can parse another one.
+        /// </summary>
         protected void ResetLineParsing()
         {
             _headerName.Clear();
@@ -251,8 +254,4 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             _lookAhead = ch;
         }
     }
-
-    public delegate void FrameHeaderHandler(string name, string value);
-
-    public delegate void FrameNameHandler(string name);
 }
