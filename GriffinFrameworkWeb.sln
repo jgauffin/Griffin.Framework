@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GriffinFrameworkWeb", "SharpMessaggingWeb\GriffinFrameworkWeb.csproj", "{EE66D4A4-33E5-4895-8D43-5060A5DA006C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GriffinFrameworkWeb", "Griffin.FrameworkWeb\GriffinFrameworkWeb.csproj", "{EE66D4A4-33E5-4895-8D43-5060A5DA006C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
