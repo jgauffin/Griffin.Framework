@@ -264,8 +264,8 @@ namespace Griffin.ApplicationServices
 
             public NoJob(Type jobType, Exception exception)
             {
-                JobType = jobType;
                 if (exception == null) throw new ArgumentNullException("exception");
+                JobType = jobType ?? GetType();
                 _exception = exception;
             }
 
@@ -300,9 +300,9 @@ namespace Griffin.ApplicationServices
             /// </returns>
             public override string ToString()
             {
-                return
-                    "NoJob, scope.ResolveAll<IBackgroundJob>() failed. Check exception property for more information. '" +
-                    Exception.Message + "'";
+                return string.Format(
+                        "scope.ResolveAll<IBackgroundJob>() failed for {0}. Check exception property for more information. '{1}'",
+                        JobType.FullName, Exception.Message);
             }
         }
     }
