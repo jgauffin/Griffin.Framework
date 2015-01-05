@@ -18,7 +18,7 @@ way of
 Simply add the `[ContainerService]` attribute to your classes and then register them using the `RegisterServices()` extension method.
 
 
-## example
+## Example
 
 ```csharp
 // Add this attribute.
