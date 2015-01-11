@@ -5,6 +5,11 @@ Griffin.Framework is an business application library that allows you to build ap
 
 http://griffinframework.net
 
+
+***License:***
+
+Apache License 2.0
+
 -----------------------------------------------
 
 * Commercial support is available through Gauffin Interactive AB: support@gauffin.com.
