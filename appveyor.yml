@@ -1,2 +1,11 @@
 before_build:
   - nuget restore
+
+build:
+  publish_wap_xcopy: true
+
+deploy:
+  - provider: Environment
+    name: Azure FTP
+    on:
+      branch: Website
