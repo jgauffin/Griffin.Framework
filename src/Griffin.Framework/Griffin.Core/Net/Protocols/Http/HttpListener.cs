@@ -77,6 +77,8 @@ namespace Griffin.Net.Protocols.Http
             var pos = error.Message.IndexOfAny(new[] {'\r', '\n'});
             var descr = pos == -1 ? error.Message : error.Message.Substring(0, pos);
             var response = new HttpResponseBase(HttpStatusCode.BadRequest, descr, "HTTP/1.1");
+            var counter = (int)channel.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 1);
+            response.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
             channel.Send(response);
             channel.Close();
         }
