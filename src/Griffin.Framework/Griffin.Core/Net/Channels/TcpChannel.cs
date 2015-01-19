@@ -313,6 +313,7 @@ namespace Griffin.Net.Channels
 
 
         /// <summary>
+        /// Detected a disconnect
         /// </summary>
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         private void HandleDisconnect(SocketError socketError)
@@ -328,6 +329,27 @@ namespace Griffin.Net.Channels
                 ChannelFailure(this, exception);
             }
         }
+
+
+        /// <summary>
+        /// Detected a disconnect
+        /// </summary>
+        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
+        /// <param name="exception">Why we got disconnected</param>
+        private void HandleDisconnect(SocketError socketError, Exception exception)
+        {
+            try
+            {
+                _socket.Close();
+                _connected = false;
+                _disconnectAction(this, exception);
+            }
+            catch (Exception ex)
+            {
+                ChannelFailure(this, ex);
+            }
+        }
+
 
         private void OnMessageReceived(object obj)
         {
@@ -421,7 +443,7 @@ namespace Griffin.Net.Channels
             }
             catch (Exception e)
             {
-                HandleDisconnect(SocketError.ConnectionReset);
+                HandleDisconnect(SocketError.ConnectionReset, e);
             }
         }
 
@@ -436,7 +458,7 @@ namespace Griffin.Net.Channels
                 }
                 catch (Exception e)
                 {
-                    HandleDisconnect(SocketError.ConnectionReset);
+                    HandleDisconnect(SocketError.ConnectionReset, e);
                 }
                 _currentOutboundMessage = null;
                 _closeEvent.Release();
@@ -453,7 +475,7 @@ namespace Griffin.Net.Channels
             }
             catch (Exception e)
             {
-                HandleDisconnect(SocketError.ConnectionReset);
+                HandleDisconnect(SocketError.ConnectionReset, e);
             }
         }
     }

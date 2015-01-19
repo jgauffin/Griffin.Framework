@@ -139,7 +139,7 @@ namespace Griffin.Core.Tests.Net.Channels
                 var stream = (SslStream)ar.AsyncState;
                 stream.EndAuthenticateAsServer(ar);
             }
-            catch (Exception e) { }
+            catch{ }
         }
 
         [Fact]

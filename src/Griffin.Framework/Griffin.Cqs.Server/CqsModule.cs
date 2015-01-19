@@ -62,7 +62,9 @@ namespace Griffin.Cqs.Server
         /// </summary>
         /// <param name="context">Context information</param>
         /// <returns>If message processing can continue</returns>
+#pragma warning disable 1998
         public async Task BeginRequestAsync(IClientContext context)
+#pragma warning restore 1998
         {
         }
 
@@ -70,7 +72,9 @@ namespace Griffin.Cqs.Server
         ///    The client expects a ClientResposne to be able to map responses to requests.
         /// </summary>
         /// <param name="context">Context information</param>
+#pragma warning disable 1998
         public async Task EndRequest(IClientContext context)
+#pragma warning restore 1998
         {
             if (context.ResponseMessage is ClientResponse)
                 return;

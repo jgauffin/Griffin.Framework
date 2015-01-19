@@ -115,7 +115,10 @@ namespace Griffin.Cqs.InversionOfControl
             await _queue.EnqueueAsync(e);
             if (await _semaphore.WaitAsync(0))
             {
+                //TODO: Should await instead?
+#pragma warning disable 4014
                 Task.Run((Func<Task>)ExecuteFirstTask);
+#pragma warning restore 4014
             }
         }
 

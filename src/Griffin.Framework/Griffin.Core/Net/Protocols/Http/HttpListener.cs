@@ -30,7 +30,7 @@ namespace Griffin.Net.Protocols.Http
         public HttpListener()
         {
             var config = new ChannelTcpListenerConfiguration(
-                () => new HttpMessageDecoder(BodyDecoder),
+                () => BodyDecoder == null ? new HttpMessageDecoder() : new HttpMessageDecoder(BodyDecoder),
                 () => new HttpMessageEncoder());
 
             Configure(config);

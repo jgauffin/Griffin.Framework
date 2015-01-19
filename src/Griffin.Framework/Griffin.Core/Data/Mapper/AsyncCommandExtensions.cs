@@ -228,7 +228,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         If the result returned from the query is all records that you want it's probably more efficient to use
-        ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
+        ///         <see cref="ToListAsync{TEntity}(IDbCommand)" />.
         ///     </para>
         ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>

@@ -24,15 +24,20 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// <param name="payload">payload</param>
         public WebSocketMessage(WebSocketOpcode opcode, Stream payload)
         {
-            if (opcode == null) throw new ArgumentNullException("opcode");
             if (payload == null) throw new ArgumentNullException("payload");
 
             Opcode = opcode;
             Payload = payload;
         }
 
+        /// <summary>
+        /// Kind of web socket message
+        /// </summary>
         public WebSocketOpcode Opcode { get; set; }
 
+        /// <summary>
+        /// Received message
+        /// </summary>
         public Stream Payload { get; set; }
     }
 }

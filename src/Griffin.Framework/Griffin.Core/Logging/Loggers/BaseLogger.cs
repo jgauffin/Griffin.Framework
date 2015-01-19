@@ -8,7 +8,7 @@ namespace Griffin.Logging.Loggers
     /// <summary>
     /// Base class for loggers.
     /// </summary>
-    /// <remarks>All you have to do is to override <see cref="Write"/>.</remarks>
+    /// <remarks>All you have to do is to override the <see cref="Write(LogEntry)"/> method.</remarks>
     public abstract class BaseLogger : ILogger
     {
         private readonly Type _loggedType;
