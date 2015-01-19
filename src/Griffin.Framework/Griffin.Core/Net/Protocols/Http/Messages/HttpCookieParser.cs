@@ -145,6 +145,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         private void OnCookie(string name, string value)
         {
             if (name == null) throw new ArgumentNullException("name");
+            if (name == "") return; // ignore empty cookie names as defined in rfc 6265 http://tools.ietf.org/html/rfc6265
 
             _cookies.Add(new HttpCookie(name, value));
         }

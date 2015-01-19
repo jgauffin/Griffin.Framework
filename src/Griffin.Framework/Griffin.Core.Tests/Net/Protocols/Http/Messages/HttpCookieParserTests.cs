@@ -21,5 +21,14 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.Messages
             Assert.Equal("28603", cookies["km_ni"].Value);
             Assert.Equal("140029553.1355396765.179.62.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)", cookies["__utmz"].Value);
         }
+
+        [Fact]
+        public void Test_empty_name()
+        {
+            var parser = new HttpCookieParser();
+            var cookies = parser.Parse("=abc");
+
+            Assert.Equal(0, cookies.Count);
+        }
     }
 }
