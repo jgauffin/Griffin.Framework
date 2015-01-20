@@ -17,7 +17,7 @@
         Off = 0x0,
 
         /// <summary>
-        ///     Off
+        ///     On
         /// </summary>
         On = 0x1,
     }
