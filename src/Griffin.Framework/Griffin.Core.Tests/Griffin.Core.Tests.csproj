@@ -135,6 +135,7 @@
     <Compile Include="Net\LoadCertificateTest.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\AuthenticationUserStub.cs" />
     <Compile Include="Net\Protocols\Http\Authentication\DigestAuthenticatorTests.cs" />
+    <Compile Include="Net\Protocols\Http\ListenerTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HeaderParserTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HttpCookieParserTests.cs" />
     <Compile Include="Net\Protocols\Http\Messages\HttpMessageDecoderTests.cs" />
@@ -175,6 +176,7 @@
     <Compile Include="Net\Protocols\Strings\StringEncoderTests.cs" />
     <Compile Include="Net\SocketBufferFake.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Signals\SignalTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Net\cert\GriffinNetworkingTemp.pfx">

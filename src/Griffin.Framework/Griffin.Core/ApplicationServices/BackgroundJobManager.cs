@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Container;
 using Griffin.Logging;
+using Griffin.Signals;
 
 namespace Griffin.ApplicationServices
 {
@@ -31,6 +32,15 @@ namespace Griffin.ApplicationServices
     ///         when we are going to execute each job we use <c><![CDATA[scope.Resolve(jobType)]]></c> for every job that is
     ///         about to be executed.
     ///     </para>
+    /// <para>
+    /// The following signals are implemented (see <see cref="Signals"/>):
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <term>ApplicationServices[fullTypeNameForServiceClass].Faulted</term>
+    /// <description>Failed to execute job successfully.</description>
+    /// </item>
+    /// </list>
     /// </remarks>
     /// <example>
     ///     <para>
@@ -194,10 +204,12 @@ namespace Griffin.ApplicationServices
                                 job = (IBackgroundJob)scope.Resolve(jobType);
                                 ScopeCreated(this, new ScopeCreatedEventArgs(scope));
                                 job.Execute();
+                                Signal.Reset("ApplicationServices[" + job.GetType() + "].Failed");
                                 ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
                             }
                             catch (Exception exception)
                             {
+                                Signal.Raise("ApplicationServices[" + jobType.FullName + "].Failed", "Failed to execute job.", exception);
                                 var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
                                 JobFailed(this, args);
                                 ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
@@ -237,11 +249,13 @@ namespace Griffin.ApplicationServices
                         job = (IBackgroundJobAsync) scope.Resolve(jobType);
                         ScopeCreated(this, new ScopeCreatedEventArgs(scope));
                         await job.ExecuteAsync();
+                        Signal.Reset("ApplicationServices[" + job.GetType() + "].Failed");
                         ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
                     }
                     catch (Exception exception)
                     {
-                        var args = new BackgroundJobFailedEventArgs((object) job ?? new NoJob(jobType, exception),
+                        Signal.Raise("ApplicationServices[" + jobType.FullName + "].Failed", "Failed to execute async job.", exception);
+                        var args = new BackgroundJobFailedEventArgs((object)job ?? new NoJob(jobType, exception),
                             exception);
                         JobFailed(this, args);
                         ScopeClosing(this, new ScopeClosingEventArgs(scope, false) {Exception = exception});

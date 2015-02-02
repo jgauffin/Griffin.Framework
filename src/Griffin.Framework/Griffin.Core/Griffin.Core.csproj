@@ -130,6 +130,7 @@
     <Compile Include="Data\UnitOfWorkExtensions.cs" />
     <Compile Include="Data\UnitOfWorkFactory.cs" />
     <Compile Include="External\Inflector.cs" />
+    <Compile Include="External\Json.cs" />
     <Compile Include="GuidFactory.cs" />
     <Compile Include="InstanceFactory.cs" />
     <Compile Include="IO\DirectoryUtils.cs" />
@@ -359,6 +360,13 @@
     <Compile Include="QueueFullException.cs" />
     <Compile Include="Security\IPasswordHasher.cs" />
     <Compile Include="Security\PasswordHasherRfc2898.cs" />
+    <Compile Include="Signals\NamespaceDoc.cs" />
+    <Compile Include="Signals\Signal.cs" />
+    <Compile Include="Signals\SignalDTO.cs" />
+    <Compile Include="Signals\SignalManager.cs" />
+    <Compile Include="Signals\SignalRaisedEventArgs.cs" />
+    <Compile Include="Signals\SignalSubmitter.cs" />
+    <Compile Include="Signals\SignalSupressedEventArgs.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>

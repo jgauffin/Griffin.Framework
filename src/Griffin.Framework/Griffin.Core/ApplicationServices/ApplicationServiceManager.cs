@@ -27,6 +27,23 @@ namespace Griffin.ApplicationServices
     ///         If you are using a inversion of control container your classes should be registered as "Single Instance" in it
     ///         for this class to work properly.
     ///     </para>
+    /// <para>
+    /// The following signals are implemented (see <see cref="Signals"/>):
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <term>ApplicationServices[fullTypeNameForServiceClass].Disabled</term>
+    /// <description>Application service have been disabled through configuration</description>
+    /// </item>
+    /// <item>
+    /// <term>ApplicationServices[fullTypeNameForServiceClass].Running</term>
+    /// <description>Application service is currently running</description>
+    /// </item>
+    /// <item>
+    /// <term>ApplicationServices[fullTypeNameForServiceClass].Faulted</term>
+    /// <description>Fails to start service successfully.</description>
+    /// </item>
+    /// </list>
     /// </remarks>
     /// <example>
     ///     <para>Start by creating a class:</para>
@@ -264,17 +281,22 @@ namespace Griffin.ApplicationServices
 
                 if (!IsEnabled(service.GetType()))
                 {
+                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Disabled", "Disabled through configuration.");
                     _logger.Debug("Service is disabled '" + service.GetType().FullName + "'.");
                     continue;
                 }
+                Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Disabled");
 
                 try
                 {
                     _logger.Info("Starting service '" + service.GetType().FullName + "'.");
                     service.Start();
+                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Faulted");
+                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Started", "Started through ApplicationserviceManager.Start().");
                 }
                 catch (Exception exception)
                 {
+                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Faulted", exception.Message, exception);
                     exceptions.Add(new StartServiceException(service, exception));
                 }
             }
@@ -310,6 +332,7 @@ namespace Griffin.ApplicationServices
                 try
                 {
                     _logger.Info("Stopping service '" + service.GetType().FullName + "'.");
+                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Started");
                     service.Stop();
                 }
                 catch (Exception exception)
@@ -342,21 +365,25 @@ namespace Griffin.ApplicationServices
                     {
                         if (guarded.IsRunning)
                         {
+                            Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Disabled", "Disabled during runtime.");
                             _logger.Info("Stopping service that have been disabled '" + service.GetType().FullName +
                                          "'.");
                             service.Stop();
                         }
                         continue;
                     }
+                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Disabled");
 
                     if (guarded.IsRunning)
                         continue;
 
                     _logger.Info("Starting service that should be running '" + service.GetType().FullName + "'.");
                     service.Start();
+                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Started", "Started during runtime.");
                 }
                 catch (Exception exception)
                 {
+                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Faulted", exception.Message, exception);
                     var args = new ApplicationServiceFailedEventArgs(service, exception);
                     ServiceStartFailed(this, args);
                     if (!args.CanContinue)
