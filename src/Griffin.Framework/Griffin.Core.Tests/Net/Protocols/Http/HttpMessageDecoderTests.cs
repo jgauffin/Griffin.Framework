@@ -309,7 +309,7 @@ hello queue a");
         }
 
         [Fact]
-        public void invalid_requests()
+        public void header_parser_should_be_reset_when_the_decoder_is_reset()
         {
             var actual = new List<IHttpRequest>();
             var buffer1 = new SocketBufferFake();
