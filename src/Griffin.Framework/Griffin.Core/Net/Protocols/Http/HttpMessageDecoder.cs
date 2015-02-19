@@ -128,6 +128,7 @@ namespace Griffin.Net.Protocols.Http
         {
             _message = null;
             _isHeaderParsed = false;
+            _headerParser.Reset();
             _frameContentBytesLeft = 0;
         }
 
