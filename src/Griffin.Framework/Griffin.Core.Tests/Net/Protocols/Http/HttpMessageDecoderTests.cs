@@ -308,5 +308,30 @@ hello queue a");
             new StreamReader(actual.Body, actual.ContentCharset).ReadToEnd().Should().Be("hello queue a");
         }
 
+        [Fact]
+        public void header_parser_should_be_reset_when_the_decoder_is_reset()
+        {
+            var actual = new List<IHttpRequest>();
+            var buffer1 = new SocketBufferFake();
+            buffer1.Buffer = Encoding.ASCII.GetBytes("GET / invalid_request1\r\n");
+            buffer1.BytesTransferred = buffer1.Buffer.Length;
+
+            var buffer2 = new SocketBufferFake();
+            buffer2.Buffer = Encoding.ASCII.GetBytes("GET / invalid_request2\r\n");
+            buffer2.BytesTransferred = buffer2.Buffer.Length;
+
+            var decoder = new HttpMessageDecoder();
+            decoder.MessageReceived = o => actual.Add((IHttpRequest)o);
+
+            var ex1 = Assert.Throws<BadRequestException>(() => decoder.ProcessReadBytes(buffer1));
+            ex1.Message.Should().Contain("'invalid_request1'");
+
+            decoder.Clear();
+
+            var ex2 = Assert.Throws<BadRequestException>(() => decoder.ProcessReadBytes(buffer2));
+            ex2.Message.Should().Contain("'invalid_request2'");
+
+            actual.Count.Should().Be(0);
+        }  
     }
 }
