@@ -39,7 +39,7 @@ namespace Griffin.Signals
         /// <param name="signalName"></param>
         /// <param name="addFunction"></param>
         /// <returns></returns>
-        public Signal GetOrAdd(string signalName, Func<object, Signal> addFunction)
+        public Signal GetOrAdd(string signalName, Func<string, Signal> addFunction)
         {
             return _signals.GetOrAdd(signalName, addFunction);
         }

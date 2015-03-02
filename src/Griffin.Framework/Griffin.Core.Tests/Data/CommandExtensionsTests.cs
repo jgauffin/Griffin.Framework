@@ -15,7 +15,7 @@ namespace Griffin.Core.Tests.Data
     public class CommandExtensionsTests
     {
         [Fact]
-        public void Do_not_allow_command_to_be_null()
+        public void cant_operate_when_command_is_null()
         {
 
             IDbCommand sut = null;
@@ -25,7 +25,7 @@ namespace Griffin.Core.Tests.Data
         }
 
         [Fact]
-        public void do_not_allow_name_to_be_null()
+        public void cant_operate_if_supplied_argument_do_not_specify_a_name()
         {
 
             var sut = new FakeCommand();

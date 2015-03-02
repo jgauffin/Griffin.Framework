@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -15,6 +16,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 {
     public class IocEventBusTests
     {
+
         [Fact]
         public void must_get_container_to_work_successfully()
         {
@@ -90,7 +92,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task should_dispose_scope_wWhen_done()
+        public async Task should_dispose_scope_when_done()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();

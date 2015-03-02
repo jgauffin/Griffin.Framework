@@ -27,7 +27,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         public override void InsertCommand(IDbCommand command, object entity)
         {
             base.InsertCommand(command, entity);
-            command.CommandText += ";select @@IDENTITY";
+            command.CommandText += ";select SCOPE_IDENTITY()";
         }
 
         /// <summary>

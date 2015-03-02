@@ -81,6 +81,7 @@
     <Compile Include="Data\Mapper\AdoNetEntityEnumeratorTests.cs" />
     <Compile Include="Data\Mapper\AssemblyScanningMappingProviderTests.cs" />
     <Compile Include="Data\Mapper\AsyncCommandExtensionsTests.cs" />
+    <Compile Include="Data\Mapper\AsyncUnitOfWorkExtensionsTests.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderTests.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\FakePropertyMapping.cs" />
     <Compile Include="Data\Mapper\CommandExtensionsTests.cs" />
@@ -176,6 +177,7 @@
     <Compile Include="Net\Protocols\Strings\StringEncoderTests.cs" />
     <Compile Include="Net\SocketBufferFake.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Signals\SignalSubmitterTests.cs" />
     <Compile Include="Signals\SignalTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -238,16 +238,24 @@ namespace Griffin.Data.Mapper
         /// <summary>
         /// Insert a new item.
         /// </summary>
-        /// <typeparam name="TEntity">Type of entity (must have a mapping registred in the <see cref="EntityMappingProvider"/>)</typeparam>
+        /// <typeparam name="TEntity">Type of entity (must have a mapping registered in the <see cref="EntityMappingProvider"/>)</typeparam>
         /// <param name="unitOfWork">Uow to extend</param>
         /// <param name="entity">The entity to create.</param>
-        public static void Insert<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
+        public static object Insert<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
                 mapper.CommandBuilder.InsertCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                var keys = mapper.GetKeys(entity);
+                if (keys.Length == 1)
+                {
+                    var id = cmd.ExecuteScalar();
+                    if (id != null && id != DBNull.Value)
+                        mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                    return id;
+                }
+                return cmd.ExecuteScalar();
             }
         }
 

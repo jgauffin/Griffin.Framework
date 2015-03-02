@@ -18,7 +18,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <param name="command">Command that will be executed after this method call.</param>
         /// <param name="entity">Entity specified; If possible, set the entity primary key value when done.</param>
         /// <remarks>
-        /// <para>The command should not be executed in the imlementation of this interface. </para>
+        /// <para>The command should not be executed in the implementation of this interface. </para>
         /// <para>You may however execute commads </para>
         /// </remarks>
         void InsertCommand(IDbCommand command, object entity);

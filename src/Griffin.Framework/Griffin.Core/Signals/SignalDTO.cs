@@ -10,7 +10,7 @@ namespace Griffin.Signals
     [DataContract]
     public class SignalDTO
     {
-        public SignalDTO(string appName,  Signal signal)
+        public SignalDTO(string appName, Signal signal)
         {
             if (appName == null) throw new ArgumentNullException("appName");
             if (signal == null) throw new ArgumentNullException("signal");
@@ -25,7 +25,7 @@ namespace Griffin.Signals
 
         public SignalDTO()
         {
-            
+
         }
 
         /// <summary>
@@ -89,7 +89,13 @@ namespace Griffin.Signals
         /// Additional properties
         /// </summary>
         [DataMember(Order = 11)]
-        public Dictionary<string,string> Properties { get; set; }
+        public Dictionary<string, string> Properties { get; set; }
+
+        /// <summary>
+        /// "Undefined", "Running", "Fault"
+        /// </summary>
+        [DataMember(Order = 12)]
+        public string Kind { get; set; }
 
         /// <summary>
         ///     AMount of times that <c>Raise()</c> have been invoked since last reset.

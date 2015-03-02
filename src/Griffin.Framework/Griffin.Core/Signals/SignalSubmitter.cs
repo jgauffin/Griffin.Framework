@@ -42,14 +42,14 @@ namespace Griffin.Signals
         /// <summary>
         ///     Activate the submitter.
         /// </summary>
-        /// <param name="appliationName">Your application name</param>
+        /// <param name="applicationName">Your application name</param>
         /// <param name="destination"></param>
-        public static void Configure(string appliationName, Uri destination)
+        public static void Configure(string applicationName, Uri destination)
         {
-            if (appliationName == null) throw new ArgumentNullException("appliationName");
+            if (applicationName == null) throw new ArgumentNullException("applicationName");
             if (destination == null) throw new ArgumentNullException("destination");
 
-            _appName = appliationName;
+            _appName = applicationName;
             _uri = destination;
         }
 
@@ -105,12 +105,19 @@ namespace Griffin.Signals
             if (_appName == null)
                 throw new InvalidOperationException("You must Configure() first.");
 
-            Signal.SignalRaised += (sender, args) => Send(new SignalDTO(_appName, (Signal)sender)
+            Signal.SignalRaised += (sender, args) =>
             {
-                CallingMethod = args.CallingMethod,
-                Exception = args.Exception.ToString(),
-                Reason = args.Reason
-            });
+                string ex = null;
+                if (args.Exception != null)
+                    ex = args.Exception.ToString();
+                var dto = new SignalDTO(_appName, (Signal) sender)
+                {
+                    CallingMethod = args.CallingMethod,
+                    Exception = ex,
+                    Reason = args.Reason
+                };
+                Send(dto);
+            };
             Signal.SignalSupressed += (sender, args) => Send((Signal) sender);
         }
 

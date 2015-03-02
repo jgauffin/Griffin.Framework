@@ -116,7 +116,8 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => CrudEntityMapper<NoDefaultConstructor>.CreateInstanceFactory()();
 
-            actual.ShouldThrow<MappingException>().And.Message.Should().StartWith("Failed to find a default constructor ");
+actual.ShouldThrow<MappingException>()
+    .And.Message.Should().StartWith("Failed to find a default constructor ");
         }
 
         [Fact]

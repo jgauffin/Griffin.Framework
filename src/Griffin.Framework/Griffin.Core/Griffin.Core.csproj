@@ -114,11 +114,12 @@
     <Compile Include="Data\Mapper\CrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMappingProvider.cs" />
+    <Compile Include="Data\Mapper\FluentPropertyMapping.cs" />
     <Compile Include="Data\Mapper\ICrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\IMappingProvider.cs" />
     <Compile Include="Data\Mapper\IPropertyMapping.cs" />
     <Compile Include="Data\Mapper\IEntityMapper.cs" />
-    <Compile Include="Data\Mapper\IUnitOfWorkExtensions.cs" />
+    <Compile Include="Data\Mapper\UnitOfWorkExtensions.cs" />
     <Compile Include="Data\Mapper\MappingException.cs" />
     <Compile Include="Data\Mapper\MappingForAttribute.cs" />
     <Compile Include="Data\Mapper\MappingNotFoundException.cs" />
@@ -355,9 +356,9 @@
     <Compile Include="Net\Channels\TcpChannelFactory.cs" />
     <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
     <Compile Include="ObjectExtensions.cs" />
-    <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueFullException.cs" />
+    <Compile Include="Reflection\ExpressionExtensions.cs" />
     <Compile Include="Security\IPasswordHasher.cs" />
     <Compile Include="Security\PasswordHasherRfc2898.cs" />
     <Compile Include="Signals\NamespaceDoc.cs" />
@@ -367,6 +368,7 @@
     <Compile Include="Signals\SignalRaisedEventArgs.cs" />
     <Compile Include="Signals\SignalSubmitter.cs" />
     <Compile Include="Signals\SignalSupressedEventArgs.cs" />
+    <Compile Include="Signals\SignalKind.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>

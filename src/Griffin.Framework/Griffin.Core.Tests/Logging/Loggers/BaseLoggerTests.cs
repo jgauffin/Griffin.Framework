@@ -8,18 +8,18 @@ namespace Griffin.Core.Tests.Logging.Loggers
 {
     public class BaseLoggerTests
     {
-        [Fact]
-        public void trace_without_exception()
-        {
+[Fact]
+public void trace_without_exception()
+{
 
-            var sut = new BaseLoggerWrapper(GetType());
-            sut.Trace("Heloo");
+    var sut = new BaseLoggerWrapper(GetType());
+    sut.Trace("Heloo");
 
-            sut.Entries.Count.Should().Be(1);
-            sut.Entries[0].Message.Should().Be("Heloo");
-            sut.Entries[0].LogLevel.Should().Be(LogLevel.Trace);
-            sut.Entries[0].Exception.Should().BeNull();
-        }
+    sut.Entries.Count.Should().Be(1);
+    sut.Entries[0].Message.Should().Be("Heloo");
+    sut.Entries[0].LogLevel.Should().Be(LogLevel.Trace);
+    sut.Entries[0].Exception.Should().BeNull();
+}
 
         [Fact]
         public void trace_formatted()

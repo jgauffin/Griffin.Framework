@@ -233,7 +233,7 @@ namespace Griffin.Data.Mapper
         /// connection.Insert(user);
         /// </code>
         /// </example>
-        public static void Insert<TEntity>(this IDbConnection connection, TEntity entity)
+        public static object Insert<TEntity>(this IDbConnection connection, TEntity entity)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -241,7 +241,15 @@ namespace Griffin.Data.Mapper
             using (var cmd = connection.CreateCommand())
             {
                 mapper.CommandBuilder.InsertCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                var keys = mapper.GetKeys(entity);
+                if (keys.Length == 1)
+                {
+                    var id = cmd.ExecuteScalar();
+                    if (id != null && id != DBNull.Value)
+                        mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                    return id;
+                }
+                return cmd.ExecuteScalar();
             }
         }
 

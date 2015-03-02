@@ -94,9 +94,23 @@ namespace Griffin.Core.Tests.Data.Mapper
             var actual = new Ok();
 
             var sut = new PropertyMapping<Ok>("FirstName", (o, o1) => o.FirstName = (string)o1, ok => ok.FirstName);
+            sut.PropertyType = typeof (string);
             sut.SetColumnValue(actual, "Hello");
 
             actual.FirstName.Should().Be("Hello");
+        }
+
+        [Fact]
+        public void convert_if_Required()
+        {
+            var record = Substitute.For<IDataRecord>();
+            var actual = new Ok();
+
+            var sut = new PropertyMapping<Ok>("Age", (o, o1) => o.Age = (int)o1, ok => ok.Age);
+            sut.PropertyType = typeof(int);
+            sut.SetColumnValue(actual, (decimal)1);
+
+            actual.Age.Should().Be(1);
         }
     }
 }

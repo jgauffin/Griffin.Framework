@@ -24,24 +24,24 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
 
-        [Fact]
-        public void may_only_have_one_command_handler_to_avoid_ambiguity()
+[Fact]
+public void may_only_have_one_command_handler_to_avoid_ambiguity()
+{
+    var container = Substitute.For<IContainer>();
+    var scope = Substitute.For<IContainerScope>();
+    container.CreateScope().Returns(scope);
+    scope.ResolveAll<ICommandHandler<TestCommand>>()
+        .Returns(new[]
         {
-            var container = Substitute.For<IContainer>();
-            var scope = Substitute.For<IContainerScope>();
-            container.CreateScope().Returns(scope);
-            scope.ResolveAll<ICommandHandler<TestCommand>>()
-                .Returns(new[]
-                {
-                    Substitute.For<ICommandHandler<TestCommand>>(),
-                    Substitute.For<ICommandHandler<TestCommand>>()
-                });
+            Substitute.For<ICommandHandler<TestCommand>>(),
+            Substitute.For<ICommandHandler<TestCommand>>()
+        });
 
-            var sut = new IocCommandBus(container);
-            Action x = () => sut.ExecuteAsync(new TestCommand()).Wait();
+    var sut = new IocCommandBus(container);
+    Action x = () => sut.ExecuteAsync(new TestCommand()).Wait();
 
-            x.ShouldThrow<OnlyOneHandlerAllowedException>();
-        }
+    x.ShouldThrow<OnlyOneHandlerAllowedException>();
+}
 
         [Fact]
         public void must_have_one_handler_to_be_able_to_execute_command()

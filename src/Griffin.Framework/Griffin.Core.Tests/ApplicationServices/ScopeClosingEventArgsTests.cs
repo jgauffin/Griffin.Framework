@@ -21,9 +21,9 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void the_constructor_should_assign_success_to_the_property()
         {
-            var scope = Substitute.For<IContainerScope>();
+var scope = Substitute.For<IContainerScope>();
 
-            var sut = new ScopeClosingEventArgs(scope, true);
+var sut = new ScopeClosingEventArgs(scope, true);
 
             sut.Successful.Should().BeTrue();
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -10,10 +9,10 @@ namespace Griffin.Signals
     /// </summary>
     public class Signal
     {
-        private static SignalManager _signalManager = new SignalManager();
+        private static readonly SignalManager _signalManager = new SignalManager();
+        private bool _disabled;
         private string _message;
         private int _raiseCountSinceLastReset;
-        private bool _disabled;
 
         internal Signal(string name)
         {
@@ -49,6 +48,11 @@ namespace Griffin.Signals
         public TimeSpan Expiration { get; set; }
 
         /// <summary>
+        ///     Kind of signal
+        /// </summary>
+        public SignalKind Kind { get; set; }
+
+        /// <summary>
         ///     When the signal was raised
         /// </summary>
         /// <value>
@@ -57,14 +61,14 @@ namespace Griffin.Signals
         public DateTime RaisedSinceUtc { get; private set; }
 
         /// <summary>
-        /// Allows you to attach state etc 
+        ///     Allows you to attach state etc
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Typically used when you want to do additional filtering in the server that receives signal changes.
-        /// </para>
+        ///     <para>
+        ///         Typically used when you want to do additional filtering in the server that receives signal changes.
+        ///     </para>
         /// </remarks>
-        public IDictionary<string,string> Properties { get; private set; }
+        public IDictionary<string, string> Properties { get; private set; }
 
         /// <summary>
         ///     A token which you can use to keep track of if the signal should be raised or not.
@@ -128,7 +132,30 @@ namespace Griffin.Signals
         }
 
         /// <summary>
-        /// Disable notifications for this signal
+        ///     Create a new signal
+        /// </summary>
+        /// <param name="signalName">Must be unique in the application</param>
+        /// <param name="kind">Indicates if this signal represents that something is working or failing.</param>
+        /// <returns>Created signal</returns>
+        /// <remarks>
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">A signal with that name have already been added.</exception>
+        public static Signal Create(string signalName, SignalKind kind)
+        {
+            if (signalName == null) throw new ArgumentNullException("signalName");
+
+            var signal = new Signal(signalName);
+            if (!_signalManager.TryAdd(signalName, signal))
+                throw new InvalidOperationException("A signal with name '" + signalName + "' have already been added.");
+
+            signal.Kind = kind;
+            signal.Raised += OnTriggerGlobalRaise;
+            signal.Supressed += OnTriggerGlobalSupress;
+            return signal;
+        }
+
+        /// <summary>
+        ///     Disable notifications for this signal
         /// </summary>
         public void Disable()
         {
@@ -136,7 +163,7 @@ namespace Griffin.Signals
         }
 
         /// <summary>
-        /// Enable notfications for this signal (if you have previously called <c>Disable()</c>).
+        ///     Enable notfications for this signal (if you have previously called <c>Disable()</c>).
         /// </summary>
         public void Enable()
         {
@@ -178,6 +205,28 @@ namespace Griffin.Signals
             });
 
             return signal.Raise(msg);
+        }
+
+        /// <summary>
+        ///     Configure a signal
+        /// </summary>
+        /// <param name="signalName">Name of signal</param>
+        /// <param name="configureMethod">Used to configure the signal</param>
+        /// <param name="addIfMissing">Create it if it's missing.</param>
+        public static void Configure(string signalName, Action<Signal> configureMethod, bool addIfMissing = false)
+        {
+            Signal signal;
+            if (addIfMissing)
+            {
+                signal = _signalManager.GetOrAdd(signalName, name => new Signal(name));
+            }
+            else
+            {
+                if (!_signalManager.TryGet(signalName, out signal))
+                    return;
+            }
+
+            configureMethod(signal);
         }
 
         /// <summary>
@@ -239,7 +288,7 @@ namespace Griffin.Signals
                 IdleSinceUtc = DateTime.MinValue;
                 IsRaised = true;
                 _message = string.Format(reason, reasonFormatters);
-                Raised(this, new SignalRaisedEventArgs(Name, _message, caller));
+                TriggerRaised(_message, caller);
             }
 
             return true;
@@ -248,7 +297,7 @@ namespace Griffin.Signals
         /// <summary>
         ///     Raise a signal.
         /// </summary>
-        /// <param name="msg">Reason to why we are raising the signal</param>
+        /// <param name="reason">Reason to why we are raising the signal</param>
         /// <param name="exception">Exception that caused the signal to be raised.</param>
         /// <returns><c>true</c> if the signal was not already raised; <c>false</c> if it's already in signaled state.</returns>
         /// <remarks>
@@ -256,9 +305,9 @@ namespace Griffin.Signals
         ///         Will create a new signal if no one have been registered with the specified name.
         ///     </para>
         /// </remarks>
-        public bool Raise(string msg, Exception exception)
+        public bool Raise(string reason, Exception exception)
         {
-            if (msg == null) throw new ArgumentNullException("msg");
+            if (reason == null) throw new ArgumentNullException("reason");
             if (exception == null) throw new ArgumentNullException("exception");
             if (_disabled)
                 return false;
@@ -275,10 +324,21 @@ namespace Griffin.Signals
                 RaisedSinceUtc = DateTime.UtcNow;
                 IdleSinceUtc = DateTime.MinValue;
                 IsRaised = true;
-                _message = msg;
-                Raised(this, new SignalRaisedEventArgs(Name, msg, caller, exception));
+                _message = reason;
+                TriggerRaised(reason, caller, exception);
                 return true;
             }
+        }
+
+        private void TriggerRaised(string msg, string caller, Exception exception = null)
+        {
+            if (Raised == null)
+                return;
+
+            if (exception == null)
+                Raised(this, new SignalRaisedEventArgs(Name, msg, caller));
+            else
+                Raised(this, new SignalRaisedEventArgs(Name, msg, caller, exception));
         }
 
         /// <summary>
@@ -309,7 +369,7 @@ namespace Griffin.Signals
 
                 var callFrame = new StackFrame(1);
                 var caller = callFrame.GetMethod().DeclaringType.FullName + "." + callFrame.GetMethod().Name;
-                Supressed(this, new SignalSupressedEventArgs(Name, caller));
+                TriggerSupressed(caller);
                 IsRaised = false;
                 _raiseCountSinceLastReset = 0;
                 RaisedSinceUtc = DateTime.MinValue;
@@ -337,21 +397,29 @@ namespace Griffin.Signals
                     return;
 
                 IsRaised = false;
-                Supressed(this, new SignalSupressedEventArgs(Name, "Signal.ExpireTimer") {Automated = true});
+                TriggerSupressed("Signal.Expire()", true);
                 RaisedSinceUtc = DateTime.MinValue;
                 _raiseCountSinceLastReset = 0;
                 IdleSinceUtc = DateTime.UtcNow;
             }
         }
 
+        private void TriggerSupressed(string callingMethod, bool automated = false)
+        {
+            if (Supressed != null)
+                Supressed(this, new SignalSupressedEventArgs(Name, callingMethod) {Automated = automated});
+        }
+
         internal static void OnTriggerGlobalRaise(object sender, SignalRaisedEventArgs e)
         {
-            SignalRaised(sender, e);
+            if (SignalRaised != null)
+                SignalRaised(sender, e);
         }
 
         internal static void OnTriggerGlobalSupress(object sender, SignalSupressedEventArgs e)
         {
-            SignalSupressed(sender, e);
+            if (SignalSupressed != null)
+                SignalSupressed(sender, e);
         }
 
         internal static void ClearForTests()

@@ -203,6 +203,14 @@ namespace Griffin.Data.Mapper
             using (var cmd = connection.CreateDbCommand())
             {
                 mapper.CommandBuilder.InsertCommand(cmd, entity);
+                var keys = mapper.GetKeys(entity);
+                if (keys.Length == 1)
+                {
+                    var id = await cmd.ExecuteScalarAsync();
+                    if (id != null && id != DBNull.Value)
+                        mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                    return id;
+                }
                 return await cmd.ExecuteScalarAsync();
             }
         }
