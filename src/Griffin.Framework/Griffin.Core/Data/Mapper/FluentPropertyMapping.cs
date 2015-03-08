@@ -56,6 +56,17 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Do not map this propery.
+        /// </summary>
+        /// <returns></returns>
+        public FluentPropertyMapping<TEntity, TPropertyType> Ignore()
+        {
+            _inner.NotForCrud();
+            _inner.NotForQueries();
+            return this;
+        }
+
+        /// <summary>
         /// Primary key (composite keys are supported).
         /// </summary>
         /// <returns>this</returns>

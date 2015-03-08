@@ -35,7 +35,7 @@ namespace Griffin.Data.Mapper
             ColumnName = propertyName;
             ColumnToPropertyAdapter = value => value;
             PropertyToColumnAdapter = value => value;
-            if (propertyName.EndsWith("id", StringComparison.OrdinalIgnoreCase))
+            if (propertyName.Equals("id", StringComparison.OrdinalIgnoreCase))
                 IsPrimaryKey = true;
         }
 

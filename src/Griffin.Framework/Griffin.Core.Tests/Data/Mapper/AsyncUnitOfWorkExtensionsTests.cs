@@ -19,6 +19,28 @@ namespace Griffin.Core.Tests.Data.Mapper
             public string Name { get; set; }
         }
 
+        
+
+
+        //[Fact]
+        //public void Try_Get_identity_from_my_local_LocalDb_so_that_this_test_is_screwed_on_the_build_server()
+        //{
+        //    var entity = new MyEntity { Id = 1, Name = "Arne" };
+        //    EntityMappingProvider.Provider = this;
+        //    var conStr = @"Data Source=(localdb)\ProjectsV12;Initial Catalog=GriffinFrameworkTests;Integrated Security=True;";
+        //    using (var connection = new SqlConnection(conStr))
+        //    {
+        //        connection.Open();
+
+        //        using (var uow = new AdoNetUnitOfWork(connection))
+        //        {
+        //            uow.Insert(entity);
+        //            uow.SaveChanges();
+        //        }
+        //    }
+
+        //    entity.Id.Should().NotBe(0);
+        //}
 
 
         //[Fact]

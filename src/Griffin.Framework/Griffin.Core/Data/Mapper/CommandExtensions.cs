@@ -281,16 +281,23 @@ namespace Griffin.Data.Mapper
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
 
-            using (var reader = cmd.ExecuteReader())
+            try
             {
-                if (!reader.Read())
-                    return default(TEntity);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read())
+                        return default(TEntity);
 
 
-                var mapping = EntityMappingProvider.GetMapper<TEntity>();
-                var entity = (TEntity)mapping.Create(reader);
-                mapping.Map(reader, entity);
-                return entity;
+                    var mapping = EntityMappingProvider.GetMapper<TEntity>();
+                    var entity = (TEntity)mapping.Create(reader);
+                    mapping.Map(reader, entity);
+                    return entity;
+                }
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
             }
         }
 
@@ -321,14 +328,21 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            using (var reader = cmd.ExecuteReader())
+            try
             {
-                if (!reader.Read())
-                    return default(TEntity);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.Read())
+                        return default(TEntity);
 
-                var entity = mapper.Create(reader);
-                mapper.Map(reader, entity);
-                return (TEntity)entity;
+                    var entity = mapper.Create(reader);
+                    mapper.Map(reader, entity);
+                    return (TEntity)entity;
+                }
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
             }
         }
 
@@ -550,8 +564,15 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            var reader = cmd.ExecuteReader();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapper, ownsConnection);
+            try
+            {
+                var reader = cmd.ExecuteReader();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapper, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
 
@@ -634,17 +655,24 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            var items = new List<TEntity>(10);
-            using (var reader = cmd.ExecuteReader())
+            try
             {
-                while (reader.Read())
+                var items = new List<TEntity>(10);
+                using (var reader = cmd.ExecuteReader())
                 {
-                    var entity = mapper.Create(reader);
-                    mapper.Map(reader, entity);
-                    items.Add((TEntity)entity);
+                    while (reader.Read())
+                    {
+                        var entity = mapper.Create(reader);
+                        mapper.Map(reader, entity);
+                        items.Add((TEntity)entity);
+                    }
                 }
+                return items;
             }
-            return items;
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
     }
 }

@@ -37,8 +37,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = (DbCommand) unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.DeleteCommand(cmd, entity);
-                await cmd.ExecuteNonQueryAsync();
+                try
+                {
+                    mapper.CommandBuilder.DeleteCommand(cmd, entity);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
        
@@ -67,9 +74,16 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = (DbCommand) unitOfWork.CreateCommand())
             {
-                cmd.CommandText = string.Format("DELETE FROM {0} WHERE ", mapper.TableName);
-                cmd.ApplyConstraints(mapper, constraints);
-                await cmd.ExecuteNonQueryAsync();
+                try
+                {
+                    cmd.CommandText = string.Format("DELETE FROM {0} WHERE ", mapper.TableName);
+                    cmd.ApplyConstraints(mapper, constraints);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -283,16 +297,23 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = (DbCommand) unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.InsertCommand(cmd, entity);
-                var keys = mapper.GetKeys(entity);
-                if (keys.Length == 1)
+                try
                 {
-                    var id = await cmd.ExecuteScalarAsync();
-                    if (id != null && id != DBNull.Value)
-                        mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
-                    return id;
+                    mapper.CommandBuilder.InsertCommand(cmd, entity);
+                    var keys = mapper.GetKeys(entity);
+                    if (keys.Length == 1)
+                    {
+                        var id = await cmd.ExecuteScalarAsync();
+                        if (id != null && id != DBNull.Value)
+                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                        return id;
+                    }
+                    return await cmd.ExecuteScalarAsync();
                 }
-                return await cmd.ExecuteScalarAsync();
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -325,8 +346,15 @@ namespace Griffin.Data.Mapper
 
             using (var cmd = (DbCommand) unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.UpdateCommand(cmd, entity);
-                await cmd.ExecuteNonQueryAsync();
+                try
+                {
+                    mapper.CommandBuilder.UpdateCommand(cmd, entity);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -421,10 +449,18 @@ namespace Griffin.Data.Mapper
 
             var mapping = EntityMappingProvider.GetMapper<TEntity>();
 
+            //no using since AdoNetEntityEnumerable will own it.
             var cmd = unitOfWork.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-            var reader = await cmd.ExecuteReaderAsync();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            try
+            {
+                cmd.ApplyQuerySql(mapping, query, parameters);
+                var reader = await cmd.ExecuteReaderAsync();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
         /// <summary>
@@ -473,10 +509,19 @@ namespace Griffin.Data.Mapper
             if (query == null) throw new ArgumentNullException("query");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
+            //no using since the adonetenum will own it
             var cmd = unitOfWork.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-            var reader = await cmd.ExecuteReaderAsync();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+
+            try
+            {
+                cmd.ApplyQuerySql(mapping, query, parameters);
+                var reader = await cmd.ExecuteReaderAsync();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
 
@@ -566,20 +611,29 @@ namespace Griffin.Data.Mapper
             if (query == null) throw new ArgumentNullException("query");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            var cmd = unitOfWork.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-
-            var items = new List<TEntity>();
-            using (var reader = await cmd.ExecuteReaderAsync())
+            using (var cmd = unitOfWork.CreateDbCommand())
             {
-                while (await reader.ReadAsync())
+                cmd.ApplyQuerySql(mapping, query, parameters);
+
+                try
                 {
-                    var entity = mapping.Create(reader);
-                    mapping.Map(reader, entity);
-                    items.Add((TEntity)entity);
+                    var items = new List<TEntity>();
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var entity = mapping.Create(reader);
+                            mapping.Map(reader, entity);
+                            items.Add((TEntity)entity);
+                        }
+                    }
+                    return items;
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
                 }
             }
-            return items;
         }
 
     }

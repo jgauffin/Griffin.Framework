@@ -221,7 +221,15 @@ namespace Griffin.Data.Mapper
             {
                 //already mapped in the constructor.
                 if (_mappings.ContainsKey(property.Name))
+                {
+                    //remove mapping if not actions are allowed.
+                    var mapping2 = _mappings[property.Name];
+                    if (!mapping2.CanRead && !mapping2.CanWrite)
+                        _mappings.Remove(property.Name);
+                    
                     continue;
+                }
+                    
 
                 var setter = BuildSetter(type, property);
                 var getter = BuildGetter(type, property);

@@ -246,16 +246,23 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.InsertCommand(cmd, entity);
-                var keys = mapper.GetKeys(entity);
-                if (keys.Length == 1)
+                try
                 {
-                    var id = cmd.ExecuteScalar();
-                    if (id != null && id != DBNull.Value)
-                        mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
-                    return id;
+                    mapper.CommandBuilder.InsertCommand(cmd, entity);
+                    var keys = mapper.GetKeys(entity);
+                    if (keys.Length == 1)
+                    {
+                        var id = cmd.ExecuteScalar();
+                        if (id != null && id != DBNull.Value)
+                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                        return id;
+                    }
+                    return cmd.ExecuteScalar();
                 }
-                return cmd.ExecuteScalar();
+                catch (Exception ex)
+                {
+                    throw cmd.CreateDataException(ex);
+                }
             }
         }
 
@@ -270,8 +277,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.UpdateCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.UpdateCommand(cmd, entity);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -286,8 +300,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
-                mapper.CommandBuilder.DeleteCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.DeleteCommand(cmd, entity);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -379,10 +400,72 @@ namespace Griffin.Data.Mapper
 
             var mapping = EntityMappingProvider.GetMapper<TEntity>();
 
+                var cmd = unitOfWork.CreateDbCommand();
+            try
+            {
+                cmd.ApplyQuerySql(mapping, query, parameters);
+                var reader = cmd.ExecuteReader();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
+        }
+
+
+        /// <summary>
+        ///     Return an enumerable which uses lazy loading of each row.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="unitOfWork">Connection to invoke <c>ExecuteReader()</c> on (through a created <c>DbCommand</c>).</param>
+        /// <param name="ownsConnection">
+        ///     <c>true</c> if the connection should be disposed together with the command/datareader. See
+        ///     remarks.
+        /// </param>
+        /// <returns>Lazy loaded enumerator</returns>
+        /// <remarks>
+        ///     <para>
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = unitOfWork.ToEnumerable<User>(true, "Age < 10");
+        /// var users = unitOfWork.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = 37");
+        /// var users = unitOfWork.ToEnumerable<User>(true, "FirstName = @name", new { name = user.FirstName });
+        /// var users = unitOfWork.ToEnumerable<User>(true, "FirstName = @1 AND Age < @2", 'A%', 35);
+        /// var users = unitOfWork.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = unitOfWork.ToEnumerable<User>(true, "SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static IEnumerable<TEntity> ToEnumerable<TEntity>(this IAdoNetUnitOfWork unitOfWork, bool ownsConnection)
+        {
+            if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
+
+            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+
             var cmd = unitOfWork.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-            var reader = cmd.ExecuteReader();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            try
+            {
+                var reader = cmd.ExecuteReader();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
         /// <summary>
@@ -519,19 +602,26 @@ namespace Griffin.Data.Mapper
             if (mapping == null) throw new ArgumentNullException("mapping");
 
             var cmd = unitOfWork.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-
-            var items = new List<TEntity>();
-            using (var reader = cmd.ExecuteReader())
+            try
             {
-                while (reader.Read())
+                cmd.ApplyQuerySql(mapping, query, parameters);
+
+                var items = new List<TEntity>();
+                using (var reader = cmd.ExecuteReader())
                 {
-                    var entity = mapping.Create(reader);
-                    mapping.Map(reader, entity);
-                    items.Add((TEntity)entity);
+                    while (reader.Read())
+                    {
+                        var entity = mapping.Create(reader);
+                        mapping.Map(reader, entity);
+                        items.Add((TEntity)entity);
+                    }
                 }
+                return items;
             }
-            return items;
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
     }
 }
