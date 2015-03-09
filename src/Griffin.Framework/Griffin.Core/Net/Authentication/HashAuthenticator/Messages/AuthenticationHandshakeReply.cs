@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Griffin.Net.Authentication.Messages;
 
-namespace Griffin.Net.Authentication.Messages
+namespace Griffin.Net.Authentication.HashAuthenticator.Messages
 {
     /// <summary>
     ///     Default implementation supporting data contracts

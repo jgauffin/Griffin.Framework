@@ -51,7 +51,7 @@ namespace Griffin.Cqs.Simple
         /// <param name="assembly">Assembly to scan for handlers (implementing <see cref="IRequestHandler{TRequest,TReply}" />).</param>
         public void Register(Assembly assembly)
         {
-            var handlers = assembly.GetTypes().Where(IsHandler);
+            var handlers = assembly.GetTypes().Where(IsRequestHandler);
             foreach (var handler in handlers)
             {
                 var constructor = handler.GetConstructor(new Type[0]);
@@ -107,10 +107,15 @@ namespace Griffin.Cqs.Simple
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 
-        private static bool IsHandler(Type arg)
+        /// <summary>
+        /// Determines whether the specified type implements the request handler interface.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static bool IsRequestHandler(Type type)
         {
-            var intfc = arg.GetInterface("IRequestHandler`2");
-            return intfc != null && !arg.IsAbstract && !arg.IsInterface;
+            var intfc = type.GetInterface("IRequestHandler`2");
+            return intfc != null && !type.IsAbstract && !type.IsInterface;
         }
     }
 }

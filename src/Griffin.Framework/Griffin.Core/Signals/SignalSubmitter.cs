@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using System.Threading;
+using Griffin.Core.External.SimpleJson;
 using Griffin.Logging;
 
 namespace Griffin.Signals
@@ -139,7 +140,7 @@ namespace Griffin.Signals
                             continue;
                     }
 
-                    var json = SimpleJson.SimpleJson.SerializeObject(dto);
+                    var json = SimpleJson.SerializeObject(dto);
                     var bytes = Encoding.UTF8.GetBytes(json);
                     var request = (HttpWebRequest) WebRequest.Create(_uri);
                     request.Method = "POST";

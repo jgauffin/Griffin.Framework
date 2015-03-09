@@ -29,10 +29,10 @@
 #define SIMPLE_JSON_DYNAMIC
 
 // NOTE: uncomment the following line to enable DataContract support.
-#define SIMPLE_JSON_DATACONTRACT
+//#define SIMPLE_JSON_DATACONTRACT
 
 // NOTE: uncomment the following line to enable IReadOnlyCollection<T> and IReadOnlyList<T> support.
-//#define SIMPLE_JSON_READONLY_COLLECTIONS
+#define SIMPLE_JSON_READONLY_COLLECTIONS
 
 // NOTE: uncomment the following line to disable linq expressions/compiled lambda (better performance) instead of method.invoke().
 // define if you are using .net framework <= 3.0 or < WP7.5
@@ -66,12 +66,12 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using SimpleJson.Reflection;
+using Griffin.Core.External.SimpleJson.Reflection;
 
 // ReSharper disable LoopCanBeConvertedToQuery
 // ReSharper disable RedundantExplicitArrayCreation
 // ReSharper disable SuggestUseVarKeywordEvident
-namespace SimpleJson
+namespace Griffin.Core.External.SimpleJson
 {
     /// <summary>
     /// Represents the json array.
@@ -484,7 +484,7 @@ namespace SimpleJson
     }
 }
 
-namespace SimpleJson
+namespace Griffin.Core.External.SimpleJson
 {
     /// <summary>
     /// This class encodes and decodes JSON strings.
@@ -1181,17 +1181,7 @@ namespace SimpleJson
         private static IJsonSerializerStrategy _currentJsonSerializerStrategy;
         public static IJsonSerializerStrategy CurrentJsonSerializerStrategy
         {
-            get
-            {
-                return _currentJsonSerializerStrategy ??
-                    (_currentJsonSerializerStrategy =
-#if SIMPLE_JSON_DATACONTRACT
- DataContractJsonSerializerStrategy
-#else
- PocoJsonSerializerStrategy
-#endif
-);
-            }
+            get { return _currentJsonSerializerStrategy ?? PocoJsonSerializerStrategy; }
             set
             {
                 _currentJsonSerializerStrategy = value;
@@ -1513,85 +1503,6 @@ namespace SimpleJson
             return true;
         }
     }
-
-#if SIMPLE_JSON_DATACONTRACT
-    [GeneratedCode("simple-json", "1.0.0")]
-#if SIMPLE_JSON_INTERNAL
-    internal
-#else
-    public
-#endif
- class DataContractJsonSerializerStrategy : PocoJsonSerializerStrategy
-    {
-        public DataContractJsonSerializerStrategy()
-        {
-            GetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, ReflectionUtils.GetDelegate>>(GetterValueFactory);
-            SetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>>(SetterValueFactory);
-        }
-
-        internal override IDictionary<string, ReflectionUtils.GetDelegate> GetterValueFactory(Type type)
-        {
-            bool hasDataContract = ReflectionUtils.GetAttribute(type, typeof(DataContractAttribute)) != null;
-            if (!hasDataContract)
-                return base.GetterValueFactory(type);
-            string jsonKey;
-            IDictionary<string, ReflectionUtils.GetDelegate> result = new Dictionary<string, ReflectionUtils.GetDelegate>();
-            foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
-            {
-                if (propertyInfo.CanRead)
-                {
-                    MethodInfo getMethod = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
-                    if (!getMethod.IsStatic && CanAdd(propertyInfo, out jsonKey))
-                        result[jsonKey] = ReflectionUtils.GetGetMethod(propertyInfo);
-                }
-            }
-            foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
-            {
-                if (!fieldInfo.IsStatic && CanAdd(fieldInfo, out jsonKey))
-                    result[jsonKey] = ReflectionUtils.GetGetMethod(fieldInfo);
-            }
-            return result;
-        }
-
-        internal override IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> SetterValueFactory(Type type)
-        {
-            bool hasDataContract = ReflectionUtils.GetAttribute(type, typeof(DataContractAttribute)) != null;
-            if (!hasDataContract)
-                return base.SetterValueFactory(type);
-            string jsonKey;
-            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
-            foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
-            {
-                if (propertyInfo.CanWrite)
-                {
-                    MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
-                    if (!setMethod.IsStatic && CanAdd(propertyInfo, out jsonKey))
-                        result[jsonKey] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
-                }
-            }
-            foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
-            {
-                if (!fieldInfo.IsInitOnly && !fieldInfo.IsStatic && CanAdd(fieldInfo, out jsonKey))
-                    result[jsonKey] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
-            }
-            // todo implement sorting for DATACONTRACT.
-            return result;
-        }
-
-        private static bool CanAdd(MemberInfo info, out string jsonKey)
-        {
-            jsonKey = null;
-            if (ReflectionUtils.GetAttribute(info, typeof(IgnoreDataMemberAttribute)) != null)
-                return false;
-            DataMemberAttribute dataMemberAttribute = (DataMemberAttribute)ReflectionUtils.GetAttribute(info, typeof(DataMemberAttribute));
-            if (dataMemberAttribute == null)
-                return false;
-            jsonKey = string.IsNullOrEmpty(dataMemberAttribute.Name) ? info.Name : dataMemberAttribute.Name;
-            return true;
-        }
-    }
-
-#endif
 
     namespace Reflection
     {

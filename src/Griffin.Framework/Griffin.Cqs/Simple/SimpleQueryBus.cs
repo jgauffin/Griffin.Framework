@@ -51,7 +51,7 @@ namespace Griffin.Cqs.Simple
         /// <param name="assembly">Assembly to scan for handlers (implementing <see cref="IQueryHandler{TQuery,TResult}" />).</param>
         public void Register(Assembly assembly)
         {
-            var handlers = assembly.GetTypes().Where(IsHandler);
+            var handlers = assembly.GetTypes().Where(IsQueryHandler);
             foreach (var handler in handlers)
             {
                 var constructor = handler.GetConstructor(new Type[0]);
@@ -110,10 +110,15 @@ namespace Griffin.Cqs.Simple
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 
-        private static bool IsHandler(Type arg)
+        /// <summary>
+        /// Determines whether the type implements the query handler interface
+        /// </summary>
+        /// <param name="type">Type to check.</param>
+        /// <returns></returns>
+        public static bool IsQueryHandler(Type type)
         {
-            var intfc = arg.GetInterface("IQueryHandler`2");
-            return intfc != null && !arg.IsAbstract && !arg.IsInterface;
+            var intfc = type.GetInterface("IQueryHandler`2");
+            return intfc != null && !type.IsAbstract && !type.IsInterface;
         }
     }
 }

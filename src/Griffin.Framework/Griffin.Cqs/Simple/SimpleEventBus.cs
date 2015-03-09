@@ -49,7 +49,7 @@ namespace Griffin.Cqs.Simple
         /// <param name="assembly">Assembly to scan for handlers (implementing <see cref="IApplicationEventSubscriber{TEvent}" />).</param>
         public void Register(Assembly assembly)
         {
-            var handlers = assembly.GetTypes().Where(IsHandler);
+            var handlers = assembly.GetTypes().Where(IsEventHandler);
             foreach (var handler in handlers)
             {
                 var constructor = handler.GetConstructor(new Type[0]);
@@ -104,10 +104,15 @@ namespace Griffin.Cqs.Simple
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 
-        private static bool IsHandler(Type arg)
+        /// <summary>
+        /// Determines whether type implements the event handler interface.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        private static bool IsEventHandler(Type type)
         {
-            var intfc = arg.GetInterface("IApplicationEventSubscriber`1");
-            return intfc != null && !arg.IsAbstract && !arg.IsInterface;
+            var intfc = type.GetInterface("IApplicationEventSubscriber`1");
+            return intfc != null && !type.IsAbstract && !type.IsInterface;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Griffin.Net.Protocols.Serializers
             var serializer = new DataContractSerializer(source.GetType());
             serializer.WriteObject(destination, source);
             contentType = string.Format("{0};type={1}", MimeType,
-                source.GetType().GetSimplifiedAssemblyQualifiedName().Replace(',', '-'));
+                source.GetType().GetSimpleAssemblyQualifiedName().Replace(',', '-'));
         }
 
         /// <summary>

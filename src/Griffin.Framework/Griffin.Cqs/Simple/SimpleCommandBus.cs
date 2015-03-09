@@ -111,10 +111,10 @@ namespace Griffin.Cqs.Simple
             _commandHandlers[intfc.GetGenericArguments()[0]] = action;
         }
 
-        private static bool IsCommandHandler(Type arg)
+        public static bool IsCommandHandler(Type type)
         {
-            var intfc = arg.GetInterface("ICommandHandler`1");
-            return intfc != null && !arg.IsAbstract && !arg.IsInterface;
+            var intfc = type.GetInterface("ICommandHandler`1");
+            return intfc != null && !type.IsAbstract && !type.IsInterface;
         }
     }
 }
