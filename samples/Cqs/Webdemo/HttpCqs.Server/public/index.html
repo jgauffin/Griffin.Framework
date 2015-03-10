@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Demo</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+    $.ajax({
+        type: "POST",
+        url: 'http://localhost:8899/cqs',
+        data: { /* no query data */ },
+        headers: {
+            'X-Cqs-Name': "GetUsers"
+        },
+        dataType: 'json'
+    }).done(function (data) {
+
+        // here is the result from the query
+        console.log(data.Items);
+    });
+</script>
+</body>
+</html>

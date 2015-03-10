@@ -83,7 +83,7 @@ namespace Griffin.Net.Protocols.Http
         /// </code>
         /// </para>
         /// </remarks>
-        public virtual IHttpResponse CreateResponse()
+        public virtual HttpResponseBase CreateResponse()
         {
             var response = new HttpResponseBase(200, "OK", HttpVersion);
             var pipeline = Headers[PipelineIndexKey];
@@ -93,6 +93,18 @@ namespace Griffin.Net.Protocols.Http
             }
             return response;
         }
+
+        IHttpResponse IHttpRequest.CreateResponse()
+        {
+            var response = new HttpResponseBase(200, "OK", HttpVersion);
+            var pipeline = Headers[PipelineIndexKey];
+            if (pipeline != null)
+            {
+                response.Headers[PipelineIndexKey] = pipeline;
+            }
+            return response;
+        }
+
 
         /// <summary>
         /// Invoked every time a HTTP header is modified.
