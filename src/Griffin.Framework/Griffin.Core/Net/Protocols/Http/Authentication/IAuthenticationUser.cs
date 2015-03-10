@@ -1,6 +1,8 @@
 ﻿namespace Griffin.Net.Protocols.Http.Authentication
 {
-    /// <remarks>The </remarks>
+    /// <summary>
+    /// USer stored in the database.
+    /// </summary>
     public interface IAuthenticationUser
     {
         /// <summary>

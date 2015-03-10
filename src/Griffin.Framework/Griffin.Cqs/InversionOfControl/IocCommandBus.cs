@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Authorization;
 
 namespace Griffin.Cqs.InversionOfControl
 {
@@ -19,6 +20,7 @@ namespace Griffin.Cqs.InversionOfControl
     public class IocCommandBus : ICommandBus
     {
         private readonly IContainer _container;
+        private IAuthorizationFilter _authorizationFilter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IocCommandBus"/> class.
@@ -30,6 +32,7 @@ namespace Griffin.Cqs.InversionOfControl
             if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
+
 
         /// <summary>
         ///     Request that a command should be executed.
@@ -53,9 +56,15 @@ namespace Griffin.Cqs.InversionOfControl
             {
                 var handlers = scope.ResolveAll<ICommandHandler<T>>().ToList();
                 if (handlers.Count == 0)
-                    throw new CqsHandlerMissingException(typeof (T));
+                    throw new CqsHandlerMissingException(typeof(T));
                 if (handlers.Count > 1)
-                    throw new OnlyOneHandlerAllowedException(typeof (T));
+                    throw new OnlyOneHandlerAllowedException(typeof(T));
+
+                if (GlobalConfiguration.AuthorizationFilter != null)
+                {
+                    var ctx = new AuthorizationFilterContext(command, handlers);
+                    GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
+                }
 
                 await handlers[0].ExecuteAsync(command);
                 CommandInvoked(this, new CommandInvokedEventArgs(scope, command));

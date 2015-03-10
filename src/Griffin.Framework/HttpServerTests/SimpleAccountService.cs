@@ -32,6 +32,17 @@ namespace HttpServerTests
             return password;
         }
 
+        /// <summary>
+        /// Allows you to manage passwords by your self. Only works if the client supplies clear text passwords.
+        /// </summary>
+        /// <param name="user">User that your service returned from <c>Lookup</c>.</param>
+        /// <param name="password">Password supplied by the client (web browser / http client)</param>
+        /// <returns><c>true</c> if the user was authenticated</returns>
+        public bool ComparePassword(IAuthenticationUser user, string password)
+        {
+            return user.Password.Equals(password);
+        }
+
         public class BasicUser : IAuthenticationUser
         {
             /// <summary>

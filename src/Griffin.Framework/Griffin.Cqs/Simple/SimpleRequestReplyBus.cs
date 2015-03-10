@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DotNetCqs;
+using Griffin.Cqs.Authorization;
 
 namespace Griffin.Cqs.Simple
 {
@@ -52,22 +53,31 @@ namespace Griffin.Cqs.Simple
         public void Register(Assembly assembly)
         {
             var handlers = assembly.GetTypes().Where(IsRequestHandler);
-            foreach (var handler in handlers)
+            foreach (var handlerType2 in handlers)
             {
-                var constructor = handler.GetConstructor(new Type[0]);
+                var handlerType = handlerType2;
+
+                var constructor = handlerType.GetConstructor(new Type[0]);
                 var factory = constructor.CreateFactory();
-                var handlerMethod = handler.GetMethod("ExecuteAsync");
+                var handlerMethod = handlerType.GetMethod("ExecuteAsync");
                 var deleg = handlerMethod.ToFastDelegate();
-                Func<IRequest, Task> action = cmd =>
+                Func<IRequest, Task> action = request =>
                 {
-                    var t = factory(handler);
-                    var task = (Task) deleg(t, new object[] {cmd});
-                    if (t is IDisposable)
-                        task.ContinueWith(t2 => ((IDisposable) t).Dispose());
+                    var handler = factory(handlerType);
+
+                    if (GlobalConfiguration.AuthorizationFilter != null)
+                    {
+                        var ctx = new AuthorizationFilterContext(request, new[] { handler });
+                        GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
+                    }
+
+                    var task = (Task) deleg(handler, new object[] {request});
+                    if (handler is IDisposable)
+                        task.ContinueWith(t2 => ((IDisposable) handler).Dispose());
                     return task;
                 };
 
-                var intfc = handler.GetInterface("IRequestHandler`2");
+                var intfc = handlerType.GetInterface("IRequestHandler`2");
                 _handlers[intfc.GetGenericArguments()[0]] = action;
             }
         }
@@ -89,21 +99,28 @@ namespace Griffin.Cqs.Simple
             where THandler : IQueryHandler<TQuery, TResult>
             where TQuery : Query<TResult>
         {
-            var handler = typeof (THandler);
-            var constructor = handler.GetConstructor(new Type[0]);
+            var handlerType = typeof (THandler);
+            var constructor = handlerType.GetConstructor(new Type[0]);
             var factory = constructor.CreateFactory();
-            var handlerMethod = handler.GetMethod("ExecuteAsync", new[] {typeof (TQuery)});
+            var handlerMethod = handlerType.GetMethod("ExecuteAsync", new[] {typeof (TQuery)});
             var deleg = handlerMethod.ToFastDelegate();
-            Func<IRequest, Task> action = cmd =>
+            Func<IRequest, Task> action = request =>
             {
-                var t = factory(handler);
-                var task = (Task) deleg(t, new object[] {cmd});
-                if (t is IDisposable)
-                    task.ContinueWith(t2 => ((IDisposable) t).Dispose());
+                var handler = factory(handlerType);
+
+                if (GlobalConfiguration.AuthorizationFilter != null)
+                {
+                    var ctx = new AuthorizationFilterContext(request, new[] { handler });
+                    GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
+                }
+
+                var task = (Task) deleg(handler, new object[] {request});
+                if (handler is IDisposable)
+                    task.ContinueWith(t2 => ((IDisposable) handler).Dispose());
                 return task;
             };
 
-            var intfc = handler.GetInterface("IRequestHandler`2");
+            var intfc = handlerType.GetInterface("IRequestHandler`2");
             _handlers[intfc.GetGenericArguments()[0]] = action;
         }
 

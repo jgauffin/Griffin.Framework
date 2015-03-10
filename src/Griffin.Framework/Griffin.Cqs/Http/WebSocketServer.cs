@@ -1,30 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Core.External.SimpleJson;
 using Griffin.Cqs.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Authentication;
-using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
+using Griffin.Net.Protocols.Http.WebSocket;
 
 namespace Griffin.Cqs.Http
 {
     /// <summary>
-    ///     Recieves CQS objects over HTTP, processes them and return replies.
+    /// CQS server that works over WebSockets.
     /// </summary>
-    public class CqsHttpListener
+    public class CqsWebSocketServer
     {
         private readonly Dictionary<string, Type> _cqsTypes =
             new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly HttpListener _listener = new HttpListener();
+        private readonly WebSocketListener _listener = new WebSocketListener();
         private readonly CqsMessageProcessor _messageProcessor;
         private Action<string> _logger;
         private Func<ITcpChannel, HttpRequestBase, HttpResponseBase> _requestFilter;
@@ -33,7 +35,7 @@ namespace Griffin.Cqs.Http
         ///     Initializes a new instance of the <see cref="CqsHttpListener" /> class.
         /// </summary>
         /// <param name="messageProcessor">Used to execute the actual messages.</param>
-        public CqsHttpListener(CqsMessageProcessor messageProcessor)
+        public CqsWebSocketServer(CqsMessageProcessor messageProcessor)
         {
             if (messageProcessor == null) throw new ArgumentNullException("messageProcessor");
             _messageProcessor = messageProcessor;
@@ -157,14 +159,111 @@ namespace Griffin.Cqs.Http
         public void Start(IPEndPoint endPoint)
         {
             _listener.Start(endPoint.Address, endPoint.Port);
-            _listener.MessageReceived += OnMessage;
+            //_listener.MessageReceived += OnMessage;
+            _listener.WebSocketClientConnect += OnWebSocketConnect;
+            _listener.WebSocketMessageReceived = OnWebsocketMessage;
         }
 
-        private bool AuthenticateUser(ITcpChannel channel, HttpRequestBase request)
+        private void OnWebsocketMessage(ITcpChannel channel, object message)
+        {
+            var request = (WebSocketRequest)message;
+            if (request.Opcode != WebSocketOpcode.Text)
+            {
+                Logger("Unexpected msg");
+                return;
+            }
+
+            var streamReader = new StreamReader(request.Payload);
+            var data = streamReader.ReadToEnd();
+            var pos = data.IndexOf(':');
+            if (pos == -1 || pos > 50)
+            {
+                Logger("cqsObjectName is missing.");
+                return;
+            }
+
+            var cqsName = data.Substring(0, pos);
+            var json = data.Substring(pos + 1);
+
+            Type type;
+            if (!_cqsTypes.TryGetValue(cqsName, out type))
+            {
+                var response = CreateWebSocketResponse(@"{ ""error"": ""Unknown type: " + cqsName + "\" }");
+                channel.Send(response);
+                Logger("Unknown type: " + cqsName + ".");
+                return;
+            }
+
+
+            var cqs = SimpleJson.DeserializeObject(json, type);
+            ClientResponse cqsReplyObject;
+
+            try
+            {
+                cqsReplyObject = _messageProcessor.ProcessAsync(cqs).Result;
+            }
+            catch (HttpException ex)
+            {
+                var responseJson = SimpleJson.SerializeObject(new
+                {
+                    error = ex.Message,
+                    statusCode = ex.HttpCode
+                });
+                var response = CreateWebSocketResponse(responseJson);
+                channel.Send(response);
+                return;
+            }
+            catch (Exception ex)
+            {
+                var responseJson = SimpleJson.SerializeObject(new
+                {
+                    error = ex.Message,
+                    statusCode = 500
+                });
+                var response = CreateWebSocketResponse(responseJson);
+                channel.Send(response);
+                return;
+            }
+
+
+            if (cqsReplyObject.Body is Exception)
+            {
+                var responseJson = SimpleJson.SerializeObject(new
+                {
+                    error = ((Exception)cqsReplyObject.Body).Message,
+                    statusCode = 500
+                });
+                var response = CreateWebSocketResponse(responseJson);
+                channel.Send(response);
+            }
+            else
+            {
+                json = SimpleJson.SerializeObject(cqsReplyObject.Body);
+                var reply = CreateWebSocketResponse(json);
+                channel.Send(reply);
+            }
+        }
+
+        private static WebSocketResponse CreateWebSocketResponse(string json)
+        {
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes(json)) {Position = 0};
+            var frame = new WebSocketFrame(WebSocketFin.Final, WebSocketOpcode.Text,
+                WebSocketMask.Unmask, ms);
+            return new WebSocketResponse(frame);
+        }
+
+        private void OnWebSocketConnect(object sender, WebSocketClientConnectEventArgs e)
+        {
+            var success = AuthenticateUser(e.Channel, e.Request);
+            if (!success)
+                e.CancelConnection();
+        }
+
+        private bool AuthenticateUser(ITcpChannel channel, IHttpRequest request)
         {
             if (channel.Data["Principal"] != null)
             {
-                Thread.CurrentPrincipal = (IPrincipal) channel.Data["Principal"];
+                Thread.CurrentPrincipal = (IPrincipal)channel.Data["Principal"];
                 return true;
             }
 
@@ -205,7 +304,7 @@ namespace Griffin.Cqs.Http
 
         private string FirstLine(string msg)
         {
-            var pos = msg.IndexOfAny(new[] {'\r', '\n'});
+            var pos = msg.IndexOfAny(new[] { '\r', '\n' });
             if (pos == -1)
                 return msg;
 
@@ -222,114 +321,21 @@ namespace Griffin.Cqs.Http
             if (cqsType.IsAbstract || cqsType.IsInterface)
                 return false;
 
-            if (cqsType.IsSubclassOf(typeof (Command))
-                || cqsType.IsSubclassOf(typeof (ApplicationEvent)))
+            if (cqsType.IsSubclassOf(typeof(Command))
+                || cqsType.IsSubclassOf(typeof(ApplicationEvent)))
                 return true;
 
-            if (cqsType.BaseType == typeof (object))
+            if (cqsType.BaseType == typeof(object))
                 return false;
 
             var typeDef = cqsType.BaseType.GetGenericTypeDefinition();
-            if (typeDef == typeof (Query<>)
-                || typeDef == typeof (Request<>))
+            if (typeDef == typeof(Query<>)
+                || typeDef == typeof(Request<>))
                 return true;
 
 
             return false;
         }
 
-        private void OnMessage(ITcpChannel channel, object message)
-        {
-            var request = (HttpRequestBase) message;
-            var name = request.Headers["X-Cqs-Type"];
-            var dotNetType = request.Headers["X-Cqs-Object-Type"];
-            var cqsName = request.Headers["X-Cqs-Name"];
-
-            if (AuthenticationService != null)
-            {
-                if (!AuthenticateUser(channel, request))
-                    return;
-            }
-
-            Type type;
-            if (!string.IsNullOrEmpty(dotNetType))
-            {
-                type = Type.GetType(dotNetType);
-                if (type == null)
-                {
-                    var response = request.CreateResponse();
-                    response.StatusCode = 400;
-                    response.ReasonPhrase = "Unknown type: " + dotNetType;
-                    Logger("Unknown type: " + dotNetType + " for " + request.Uri);
-                    channel.Send(response);
-                    return;
-                }
-            }
-            else if (!string.IsNullOrEmpty(cqsName))
-            {
-                if (!_cqsTypes.TryGetValue(cqsName, out type))
-                {
-                    var response = request.CreateResponse();
-                    response.StatusCode = 400;
-                    response.ReasonPhrase = "Unknown type: " + cqsName;
-                    Logger("Unknown type: " + cqsName + " for " + request.Uri);
-                    channel.Send(response);
-                    return;
-                }
-            }
-            else
-            {
-                var response = request.CreateResponse();
-                response.StatusCode = 400;
-                response.ReasonPhrase =
-                    "Expected a class name in the header 'X-Cqs-Name' or a .NET type name in the header 'X-Cqs-Object-Type'.";
-                Logger(
-                    "Expected a class name in the header 'X-Cqs-Name' or a .NET type name in the header 'X-Cqs-Object-Type' for " +
-                    request.Uri);
-                channel.Send(response);
-                return;
-            }
-
-
-            var reader = new StreamReader(request.Body);
-            var json = reader.ReadToEnd();
-
-            var cqs = SimpleJson.DeserializeObject(json, type);
-            ClientResponse cqsReplyObject;
-
-            try
-            {
-                cqsReplyObject = _messageProcessor.ProcessAsync(cqs).Result;
-            }
-            catch (HttpException ex)
-            {
-                var response = request.CreateResponse();
-                response.StatusCode = ex.HttpCode;
-                response.ReasonPhrase = FirstLine(ex.Message);
-                channel.Send(response);
-                return;
-            }
-            catch (Exception ex)
-            {
-                var response = request.CreateResponse();
-                response.StatusCode = 500;
-                response.ReasonPhrase = FirstLine(ex.Message);
-                channel.Send(response);
-                return;
-            }
-
-            var reply = request.CreateResponse();
-            reply.ContentType = "application/json";
-            reply.AddHeader("X-Cqs-Object-Type", cqsReplyObject.Body.GetType().GetSimpleAssemblyQualifiedName());
-            reply.AddHeader("X-Cqs-Name", cqsReplyObject.Body.GetType().Name);
-            if (cqsReplyObject.Body is Exception)
-                reply.StatusCode = 500;
-
-            json = SimpleJson.SerializeObject(cqsReplyObject.Body);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            reply.Body = new MemoryStream();
-            reply.Body.Write(buffer, 0, buffer.Length);
-            channel.Send(reply);
-        }
     }
 }

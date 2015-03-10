@@ -47,7 +47,7 @@ namespace Griffin.Cqs.Http
         /// <summary>
         ///     Sub path for commands (i.e. the full uri is <code>Uri + CommandUri</code>).
         /// </summary>
-        /// <value>Default is <c>/command/</c></value>
+        /// <value>Default is empty.</value>
         public string CommandUri
         {
             get { return _commandUri; }
@@ -57,7 +57,7 @@ namespace Griffin.Cqs.Http
         /// <summary>
         ///     Sub path for events (i.e. the full uri is <code>Uri + EventUri</code>).
         /// </summary>
-        /// <value>Default is <c>/event/</c></value>
+        /// <value>Default is empty.</value>
         public string EventUri
         {
             get { return _eventUri; }
@@ -67,7 +67,7 @@ namespace Griffin.Cqs.Http
         /// <summary>
         ///     Sub path for queries (i.e. the full uri is <code>Uri + QueryUri</code>).
         /// </summary>
-        /// <value>Default is <c>/query/</c></value>
+        /// <value>Default is empty.</value>
         public string QueryUri
         {
             get { return _queryUri; }
@@ -77,7 +77,7 @@ namespace Griffin.Cqs.Http
         /// <summary>
         ///     Sub path for request/reply (i.e. the full uri is <code>Uri + RequestUri</code>).
         /// </summary>
-        /// <value>Default is <c>/request/</c></value>
+        /// <value>Default is empty.</value>
         public string RequestUri
         {
             get { return _requestUri; }

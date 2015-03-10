@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Configuration;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
@@ -83,7 +84,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                         WebSocketClientConnected(this,
                             new WebSocketClientConnectedEventArgs(source, (IHttpRequest) httpMessage, response));
                     }
-                    else
+                    else if (args.SendResponse)
                     {
                         var response = new HttpResponseBase(HttpStatusCode.NotImplemented, "Not Implemented", "HTTP/1.1");
                         if (args.Response != null)

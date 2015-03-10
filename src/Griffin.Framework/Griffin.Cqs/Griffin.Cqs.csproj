@@ -46,14 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorization\AuthorizationException.cs" />
+    <Compile Include="Authorization\AuthorizationFilterContext.cs" />
     <Compile Include="Authorization\AuthorizeAttribute.cs" />
+    <Compile Include="Authorization\IAuthorizationFilter.cs" />
     <Compile Include="Authorization\IEntityWithRoles.cs" />
+    <Compile Include="Authorization\RoleAuthorizer.cs" />
     <Compile Include="BusFailedEventArgs.cs" />
     <Compile Include="CommandHandlerFailedEventArgs.cs" />
+    <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="Http\CqsHttpClient.cs" />
     <Compile Include="Http\CqsHttpListener.cs" />
-    <Compile Include="ICommandExecutor.cs" />
-    <Compile Include="IEventExecutor.cs" />
+    <Compile Include="Http\WebSocketServer.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
     <Compile Include="InversionOfControl\QueryExecutedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />
@@ -68,8 +72,6 @@
     <Compile Include="HandlerFailure.cs" />
     <Compile Include="InversionOfControl\MemoryQueue.cs" />
     <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
-    <Compile Include="IQueryExecutor.cs" />
-    <Compile Include="IRequestReplyExecutor.cs" />
     <Compile Include="Net\ClientResponse.cs" />
     <Compile Include="Net\CqsClient.cs" />
     <Compile Include="Net\CqsExtensions.cs" />

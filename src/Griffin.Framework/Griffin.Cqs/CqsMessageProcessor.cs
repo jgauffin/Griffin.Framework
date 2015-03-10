@@ -15,8 +15,7 @@ namespace Griffin.Cqs
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Uses the different bus's in the <see cref="Griffin.Cqs.Simple"/> namespace unless you configure the properties
-    /// in this class.
+    /// You MUST configure the BUS properties for this class to work as expected.
     /// </para>
     /// </remarks>
     public class CqsMessageProcessor
@@ -34,10 +33,6 @@ namespace Griffin.Cqs
         /// </summary>
         public CqsMessageProcessor()
         {
-            CommandBus = new SimpleCommandBus();
-            QueryBus = new SimpleQueryBus();
-            EventBus = new SimpleEventBus();
-            RequestReplyBus = new SimpleRequestReplyBus();
             _requestMethod = GetType().GetMethod("ExecuteRequest", BindingFlags.NonPublic | BindingFlags.Instance);
             _commandMethod = GetType().GetMethod("ExecuteCommand", BindingFlags.NonPublic | BindingFlags.Instance);
             _queryMethod = GetType().GetMethod("ExecuteQuery", BindingFlags.NonPublic | BindingFlags.Instance);

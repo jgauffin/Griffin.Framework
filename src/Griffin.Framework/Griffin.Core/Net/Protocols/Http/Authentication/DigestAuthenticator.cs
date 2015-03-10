@@ -113,7 +113,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
         /// UserName if successful; otherwise null.
         /// </returns>
         /// <exception cref="HttpException">Invalid nonce/nc.</exception>
-        public string Authenticate(IHttpRequest request)
+        public IAuthenticationUser Authenticate(IHttpRequest request)
         {
             var authHeader = request.Headers["Authorization"];
             if (authHeader == null)
@@ -147,7 +147,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
             //validate
             if (parameters["response"] == hashedDigest)
             {
-                return user.Username;
+                return user;
             }
 
             return null;
