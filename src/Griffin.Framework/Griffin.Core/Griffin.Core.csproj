@@ -107,6 +107,7 @@
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderFactory.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\ICommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\NamespaceDoc.cs" />
+    <Compile Include="Data\Mapper\CommandBuilders\PostgreSqlCommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\SqlServerCommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandExtensions.cs" />
     <Compile Include="Data\Mapper\ConnectionExtensions.cs" />

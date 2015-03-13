@@ -52,6 +52,14 @@ namespace Griffin.Data.Mapper.CommandBuilders
         public virtual char ParameterPrefix { get { return '@'; }}
 
         /// <summary>
+        /// Mapper that this builder is for.
+        /// </summary>
+        protected ICrudEntityMapper Mapper
+        {
+            get { return _mapper; }
+        }
+
+        /// <summary>
         /// Generate an insert command, should end with a command that returns the insert identity.
         /// </summary>
         /// <param name="command">Command to add the query to</param>
@@ -71,6 +79,9 @@ namespace Griffin.Data.Mapper.CommandBuilders
             var values = "";
             foreach (var key in _keys)
             {
+                if (key.IsAutoIncrement)
+                    continue;
+
                 var value = key.GetValue(entity);
                 if (value == null || value.Equals(0))
                     continue;
@@ -190,6 +201,17 @@ namespace Griffin.Data.Mapper.CommandBuilders
             if (command == null) throw new ArgumentNullException("command");
 
             command.CommandText = string.Format("DELETE FROM {0}", TableName);
+        }
+
+        /// <summary>
+        /// Modify SQL statement so that the result is paged.
+        /// </summary>
+        /// <param name="command">Command to modify</param>
+        /// <param name="pageNumber">One based index</param>
+        /// <param name="pageSize">Items per page.</param>
+        public virtual void Paging(IDbCommand command, int pageNumber, int pageSize)
+        {
+            throw new NotSupportedException();
         }
     }
 }

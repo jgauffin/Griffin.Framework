@@ -77,6 +77,18 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Primary key (composite keys are supported).
+        /// </summary>
+        /// <param name="isAutoIncremented">Specified as a auto incremented (identity) field. i.e. the DB generates the value, do not specify the field in INSERT statements.</param>
+        /// <returns>this</returns>
+        public FluentPropertyMapping<TEntity, TPropertyType> PrimaryKey(bool isAutoIncremented)
+        {
+            _inner.IsPrimaryKey = true;
+            _inner.IsAutoIncrement = isAutoIncremented;
+            return this;
+        }
+
+        /// <summary>
         /// Use if the column type differs from the property type.
         /// </summary>
         /// <param name="fromPropertyConverter">From property converter.</param>

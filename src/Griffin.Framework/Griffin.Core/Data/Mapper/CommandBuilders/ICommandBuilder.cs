@@ -45,5 +45,13 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <para>Some dialects have a special command which can be used to DELETE all rows from a table, everyone else should just use a DELETE statement without a WHERE clause.</para>
         /// </remarks>
         void TruncateCommand(IDbCommand command);
+
+        /// <summary>
+        /// Modify SQL statement so that the result is paged.
+        /// </summary>
+        /// <param name="command">Command to modify</param>
+        /// <param name="pageNumber">One based index</param>
+        /// <param name="pageSize">Items per page.</param>
+        void Paging(IDbCommand command, int pageNumber, int pageSize);
     }
 }
