@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using DotNetCqs;
 using Griffin.Core.External.SimpleJson;
+using Griffin.Cqs.Authorization;
 using Griffin.Cqs.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http;
@@ -57,7 +58,7 @@ namespace Griffin.Cqs.Http
         /// <summary>
         ///     Assign to authenticate inbound requests.
         /// </summary>
-        public IAuthenticator AuthenticationService { get; set; }
+        public IAuthenticator Authenticator { get; set; }
 
         /// <summary>
         ///     Use to filter inbound requests (or to perform authentication).
@@ -170,7 +171,7 @@ namespace Griffin.Cqs.Http
 
             try
             {
-                var user = AuthenticationService.Authenticate(request);
+                var user = Authenticator.Authenticate(request);
                 if (user == null)
                     return true;
 
@@ -226,7 +227,10 @@ namespace Griffin.Cqs.Http
                 || cqsType.IsSubclassOf(typeof (ApplicationEvent)))
                 return true;
 
-            if (cqsType.BaseType == typeof (object))
+            if (cqsType.BaseType == typeof (object) || cqsType.BaseType == null)
+                return false;
+
+            if (!cqsType.BaseType.IsGenericType)
                 return false;
 
             var typeDef = cqsType.BaseType.GetGenericTypeDefinition();
@@ -241,11 +245,21 @@ namespace Griffin.Cqs.Http
         private void OnMessage(ITcpChannel channel, object message)
         {
             var request = (HttpRequestBase) message;
+
+            if (_requestFilter != null)
+            {
+                var resp = _requestFilter(channel, request);
+                if (resp != null)
+                {
+                    channel.Send(resp);
+                    return;
+                }
+            }
             var name = request.Headers["X-Cqs-Type"];
             var dotNetType = request.Headers["X-Cqs-Object-Type"];
             var cqsName = request.Headers["X-Cqs-Name"];
 
-            if (AuthenticationService != null)
+            if (Authenticator != null)
             {
                 if (!AuthenticateUser(channel, request))
                     return;
@@ -291,25 +305,46 @@ namespace Griffin.Cqs.Http
             }
 
 
-            var reader = new StreamReader(request.Body);
-            var json = reader.ReadToEnd();
+            string json = "{}";
+
+            //empty json
+            if (request.Body != null)
+            {
+                var reader = new StreamReader(request.Body);
+                json = reader.ReadToEnd();
+            }
 
             var cqs = SimpleJson.DeserializeObject(json, type);
-            ClientResponse cqsReplyObject;
+            ClientResponse cqsReplyObject = null;
 
+            Exception ex = null;
             try
             {
                 cqsReplyObject = _messageProcessor.ProcessAsync(cqs).Result;
             }
-            catch (HttpException ex)
+            catch (AggregateException e1)
+            {
+                ex = e1.InnerException;
+            }
+
+            if (ex is HttpException)
             {
                 var response = request.CreateResponse();
-                response.StatusCode = ex.HttpCode;
+                response.StatusCode = ((HttpException)ex).HttpCode;
                 response.ReasonPhrase = FirstLine(ex.Message);
                 channel.Send(response);
                 return;
             }
-            catch (Exception ex)
+            else if (ex is AuthorizationException)
+            {
+                var authEx = (AuthorizationException) ex;
+                var response = request.CreateResponse();
+                response.StatusCode = 401;
+                response.ReasonPhrase = FirstLine(ex.Message);
+                channel.Send(response);
+                return;
+            }
+            else if (ex != null)
             {
                 var response = request.CreateResponse();
                 response.StatusCode = 500;

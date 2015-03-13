@@ -15,7 +15,7 @@ namespace Griffin.Cqs.Tests.Http
 {
     public class IntegrationTest
     {
-        
+
         [Fact]
         public async Task Try_server_and_client_together()
         {
@@ -24,7 +24,7 @@ namespace Griffin.Cqs.Tests.Http
             commandBus.Register(Assembly.GetExecutingAssembly());
 
             //takes care of execution
-            var processor = new CqsMessageProcessor {CommandBus = commandBus};
+            var processor = new CqsMessageProcessor { CommandBus = commandBus };
 
             //receive through HTTP
             var server = new CqsHttpListener(processor);
@@ -33,7 +33,7 @@ namespace Griffin.Cqs.Tests.Http
 
             //Our cqs HTTP client.
             var client = new CqsHttpClient("http://localhost:" + server.LocalPort);
-            await client.ExecuteAsync(new RaiseHands {Reason = "all YOUR base"});
+            await client.ExecuteAsync(new RaiseHands { Reason = "all YOUR base" });
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Griffin.Cqs.Tests.Http
 
             //Our cqs HTTP client.
             var client = new CqsHttpClient("http://localhost:" + server.LocalPort);
-            var result = await client.QueryAsync(new GetUsers{FirstName = "Jonas"});
+            var result = await client.QueryAsync(new GetUsers { FirstName = "Jonas" });
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace Griffin.Cqs.Tests.Http
             queryBus.Register(Assembly.GetExecutingAssembly());
 
             //takes care of execution
-            var processor = new CqsMessageProcessor {CommandBus = commandBus, QueryBus = queryBus};
+            var processor = new CqsMessageProcessor { CommandBus = commandBus, QueryBus = queryBus };
 
             //receive through HTTP
             var server = new CqsHttpListener(processor);
@@ -113,7 +113,7 @@ namespace Griffin.Cqs.Tests.Http
     {
         public async Task ExecuteAsync(RaiseHands command)
         {
-            
+
         }
     }
 
@@ -131,7 +131,7 @@ namespace Griffin.Cqs.Tests.Http
     {
         public async Task<GetUsersResult> ExecuteAsync(GetUsers command)
         {
-            return new GetUsersResult() {Count = 10};
+            return new GetUsersResult() { Count = 10 };
         }
     }
 }

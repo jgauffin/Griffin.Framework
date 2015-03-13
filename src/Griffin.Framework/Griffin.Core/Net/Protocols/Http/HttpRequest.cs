@@ -52,7 +52,7 @@ namespace Griffin.Net.Protocols.Http
         /// </code>
         /// </para>
         /// </remarks>
-        public override IHttpResponse CreateResponse()
+        public override HttpResponseBase CreateResponse()
         {
             var response = new HttpResponse(200, "OK", HttpVersion);
             var pipeline = Headers[PipelineIndexKey];
