@@ -41,7 +41,7 @@ namespace Griffin.Net.Channels
         /// <param name="encoder">Used to encode messages before they are put in the MicroMessage body of outbound messages.</param>
         /// <param name="decoder">
         ///     Used to decode the body of incoming MicroMessages. The <c>MessageReceived</c> delegate will be
-        ///     overriden by this class.
+        ///     overridden by this class.
         /// </param>
         public TcpChannel(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
@@ -93,7 +93,7 @@ namespace Griffin.Net.Channels
         /// <remarks>
         /// <para>
         /// This property exists so that you can switch implementation.  This is used by the HttpListener so that we can add support
-        /// for message pipelininig
+        /// for message pipelining
         /// </para>
         /// </remarks>
         public IMessageQueue OutboundMessageQueue
@@ -265,7 +265,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Cleanup everything so that the channel can be resused.
+        ///     Cleanup everything so that the channel can be reused.
         /// </summary>
         public void Cleanup()
         {

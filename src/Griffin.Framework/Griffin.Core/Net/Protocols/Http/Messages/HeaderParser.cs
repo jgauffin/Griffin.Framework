@@ -110,11 +110,11 @@ namespace Griffin.Net.Protocols.Http.Messages
             if (IsHorizontalWhitespace(ch))
                 return;
 
-            _parserMethod = Value_ParseUntilQouteOrNewLine;
+            _parserMethod = Value_ParseUntilQuoteOrNewLine;
             _lookAhead = ch;
         }
 
-        private void Value_ParseUntilQouteOrNewLine(char ch)
+        private void Value_ParseUntilQuoteOrNewLine(char ch)
         {
             if (ch == '"')
             {
@@ -137,8 +137,8 @@ namespace Griffin.Net.Protocols.Http.Messages
         {
             if (ch == '"')
             {
-                // exited the quouted string
-                _parserMethod = Value_ParseUntilQouteOrNewLine;
+                // exited the quoted string
+                _parserMethod = Value_ParseUntilQuoteOrNewLine;
                 return;
             }
 

@@ -43,7 +43,7 @@
         ///     Start offset for the next socket operation. (Typically same as BaseOffset unless this is a continuation of a
         ///     partial message send).
         /// </summary>
-        /// <seeAlso cref="Count" />
+        /// <seealso cref="Count" />
         int Offset { get; }
 
         /// <summary>
