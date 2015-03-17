@@ -28,7 +28,7 @@ namespace Griffin.Net.LiteServer
         private readonly List<IServerModule> _requestModules = new List<IServerModule>();
 
         /// <summary>
-        ///     Add a module which is used to authenticate (identitfy) the user.
+        ///     Add a module which is used to authenticate (identify) the user.
         /// </summary>
         /// <param name="module">Module to add</param>
         /// <remarks>

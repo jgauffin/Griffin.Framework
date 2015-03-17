@@ -33,7 +33,7 @@ namespace Griffin.Net.Channels
         MessageHandler MessageSent { get; set; }
 
         /// <summary>
-        ///     Invoked if the decoder failes to handle an incoming message
+        ///     Invoked if the decoder fails to handle an incoming message
         /// </summary>
         /// <remarks>
         ///     <para>
