@@ -38,7 +38,7 @@ namespace Griffin.Signals
         public bool IsRaised { get; private set; }
 
         /// <summary>
-        ///     When the raised signaled is automatically supressed again
+        ///     When the raised signaled is automatically suppressed again
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -98,7 +98,7 @@ namespace Griffin.Signals
         /// <summary>
         ///     One of the signals was reset
         /// </summary>
-        public static event EventHandler<SignalSupressedEventArgs> SignalSupressed = delegate { };
+        public static event EventHandler<SignalSuppressedEventArgs> SignalSuppressed = delegate { };
 
         /// <summary>
         ///     Signal was raised.
@@ -106,9 +106,9 @@ namespace Griffin.Signals
         public event EventHandler<SignalRaisedEventArgs> Raised = delegate { };
 
         /// <summary>
-        ///     Signal was supressed.
+        ///     Signal was suppressed.
         /// </summary>
-        public event EventHandler<SignalSupressedEventArgs> Supressed = delegate { };
+        public event EventHandler<SignalSuppressedEventArgs> Suppressed = delegate { };
 
         /// <summary>
         ///     Create a new signal
@@ -127,7 +127,7 @@ namespace Griffin.Signals
                 throw new InvalidOperationException("A signal with name '" + signalName + "' have already been added.");
 
             signal.Raised += OnTriggerGlobalRaise;
-            signal.Supressed += OnTriggerGlobalSupress;
+            signal.Suppressed += OnTriggerGlobalSuppress;
             return signal;
         }
 
@@ -150,7 +150,7 @@ namespace Griffin.Signals
 
             signal.Kind = kind;
             signal.Raised += OnTriggerGlobalRaise;
-            signal.Supressed += OnTriggerGlobalSupress;
+            signal.Suppressed += OnTriggerGlobalSuppress;
             return signal;
         }
 
@@ -200,7 +200,7 @@ namespace Griffin.Signals
             {
                 var x = new Signal(signalName);
                 x.Raised += OnTriggerGlobalRaise;
-                x.Supressed += OnTriggerGlobalSupress;
+                x.Suppressed += OnTriggerGlobalSuppress;
                 return x;
             });
 
@@ -250,7 +250,7 @@ namespace Griffin.Signals
             {
                 var x = new Signal(signalName);
                 x.Raised += OnTriggerGlobalRaise;
-                x.Supressed += OnTriggerGlobalSupress;
+                x.Suppressed += OnTriggerGlobalSuppress;
                 return x;
             });
 
@@ -369,7 +369,7 @@ namespace Griffin.Signals
 
                 var callFrame = new StackFrame(1);
                 var caller = callFrame.GetMethod().DeclaringType.FullName + "." + callFrame.GetMethod().Name;
-                TriggerSupressed(caller);
+                TriggerSuppressed(caller);
                 IsRaised = false;
                 _raiseCountSinceLastReset = 0;
                 RaisedSinceUtc = DateTime.MinValue;
@@ -397,17 +397,17 @@ namespace Griffin.Signals
                     return;
 
                 IsRaised = false;
-                TriggerSupressed("Signal.Expire()", true);
+                TriggerSuppressed("Signal.Expire()", true);
                 RaisedSinceUtc = DateTime.MinValue;
                 _raiseCountSinceLastReset = 0;
                 IdleSinceUtc = DateTime.UtcNow;
             }
         }
 
-        private void TriggerSupressed(string callingMethod, bool automated = false)
+        private void TriggerSuppressed(string callingMethod, bool automated = false)
         {
-            if (Supressed != null)
-                Supressed(this, new SignalSupressedEventArgs(Name, callingMethod) {Automated = automated});
+            if (Suppressed != null)
+                Suppressed(this, new SignalSuppressedEventArgs(Name, callingMethod) {Automated = automated});
         }
 
         internal static void OnTriggerGlobalRaise(object sender, SignalRaisedEventArgs e)
@@ -416,10 +416,10 @@ namespace Griffin.Signals
                 SignalRaised(sender, e);
         }
 
-        internal static void OnTriggerGlobalSupress(object sender, SignalSupressedEventArgs e)
+        internal static void OnTriggerGlobalSuppress(object sender, SignalSuppressedEventArgs e)
         {
-            if (SignalSupressed != null)
-                SignalSupressed(sender, e);
+            if (SignalSuppressed != null)
+                SignalSuppressed(sender, e);
         }
 
         internal static void ClearForTests()

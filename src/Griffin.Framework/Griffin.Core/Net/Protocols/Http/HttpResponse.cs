@@ -3,7 +3,7 @@
 namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
-    /// Complete HTTP resposne.
+    /// Complete HTTP response.
     /// </summary>
     public class HttpResponse : HttpResponseBase
     {

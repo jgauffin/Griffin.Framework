@@ -3,16 +3,16 @@
 namespace Griffin.Signals
 {
     /// <summary>
-    ///     Arguments for <see cref="Signal.Supressed" />
+    ///     Arguments for <see cref="Signal.Suppressed" />
     /// </summary>
-    public class SignalSupressedEventArgs : EventArgs
+    public class SignalSuppressedEventArgs : EventArgs
     {
         /// <summary>
         ///     Create a new instance of <see cref="SignalRaisedEventArgs" />.
         /// </summary>
-        /// <param name="signalName">Name of the supressed signal (as registered by <c>Signal.Create()</c>).</param>
-        /// <param name="callingMethod">Type/Method that supressed the signal</param>
-        public SignalSupressedEventArgs(string signalName, string callingMethod)
+        /// <param name="signalName">Name of the suppressed signal (as registered by <c>Signal.Create()</c>).</param>
+        /// <param name="callingMethod">Type/Method that suppressed the signal</param>
+        public SignalSuppressedEventArgs(string signalName, string callingMethod)
         {
             if (signalName == null) throw new ArgumentNullException("signalName");
             if (callingMethod == null) throw new ArgumentNullException("callingMethod");
@@ -21,12 +21,12 @@ namespace Griffin.Signals
         }
 
         /// <summary>
-        ///     Name of the supressed signal (as registered by <c>Signal.Create()</c>)
+        ///     Name of the suppressed signal (as registered by <c>Signal.Create()</c>)
         /// </summary>
         public string SignalName { get; private set; }
 
         /// <summary>
-        ///     Type/Method that supressed the signal
+        ///     Type/Method that suppressed the signal
         /// </summary>
         public string CallingMethod { get; private set; }
 

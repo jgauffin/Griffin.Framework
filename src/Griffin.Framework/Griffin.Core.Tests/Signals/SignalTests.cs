@@ -19,7 +19,7 @@ namespace Griffin.Core.Tests.Signals
             sut.Raise("mofo");
             sut.Reset();
             sut.Expiration = TimeSpan.FromMilliseconds(1);
-            sut.Supressed += (sender, args) => actual = true;
+            sut.Suppressed += (sender, args) => actual = true;
 
             sut.Expire();
 
@@ -34,7 +34,7 @@ namespace Griffin.Core.Tests.Signals
             var sut = Signal.Create(signalName);
             sut.Raise("mofo");
             sut.Expiration = TimeSpan.FromMilliseconds(1);
-            sut.Supressed += (sender, args) => actual = args.Automated;
+            sut.Suppressed += (sender, args) => actual = args.Automated;
 
             sut.Expire();
 
@@ -42,7 +42,7 @@ namespace Griffin.Core.Tests.Signals
         }
 
         [Fact]
-        public void Raise_signal_on_first_invocatin()
+        public void Raise_signal_on_first_invocation()
         {
             var sut = new Signal("name");
 
@@ -75,7 +75,7 @@ namespace Griffin.Core.Tests.Signals
         }
 
         [Fact]
-        public void increse_signal_counter_on_every_Raise_invocation()
+        public void increase_signal_counter_on_every_Raise_invocation()
         {
             var sut = new Signal("myname");
 
@@ -101,7 +101,7 @@ namespace Griffin.Core.Tests.Signals
         public void raise_signal_on_second_invocation_should_not_raise_event()
         {
             var sut = new Signal("name");
-            sut.Raise("no rerason");
+            sut.Raise("no reason");
             var actual = false;
 
             sut.Raised += (sender, args) => actual = true;
@@ -114,7 +114,7 @@ namespace Griffin.Core.Tests.Signals
         public void raise_signal_on_second_invocation_should_not_raise_event_with_the_exception_overload()
         {
             var sut = new Signal("name");
-            sut.Raise("no rerason", new ExternalException());
+            sut.Raise("no reason", new ExternalException());
             var actual = false;
 
             sut.Raised += (sender, args) => actual = true;
@@ -141,7 +141,7 @@ namespace Griffin.Core.Tests.Signals
             sut.Raise("not here");
             var actual = false;
 
-            sut.Supressed += (sender, args) => actual = true;
+            sut.Suppressed += (sender, args) => actual = true;
             sut.Reset();
 
             actual.Should().BeTrue("because signal is not raised");
@@ -153,7 +153,7 @@ namespace Griffin.Core.Tests.Signals
             var sut = new Signal("name");
             var actual = false;
 
-            sut.Supressed += (sender, args) => actual = true;
+            sut.Suppressed += (sender, args) => actual = true;
             sut.Reset();
 
             actual.Should().BeFalse("because signal is not raised");
@@ -205,7 +205,7 @@ namespace Griffin.Core.Tests.Signals
         }
 
         [Fact]
-        public void reset_signal_time_on_supress()
+        public void reset_signal_time_on_suppress()
         {
             var sut = new Signal("myname");
             sut.Raise("nothing");
@@ -233,7 +233,7 @@ namespace Griffin.Core.Tests.Signals
             var reseted = false;
             var signalName = Guid.NewGuid().ToString();
             Signal.SignalRaised += (sender, args) => signaled = true;
-            Signal.SignalSupressed += (sender, args) => reseted = true;
+            Signal.SignalSuppressed += (sender, args) => reseted = true;
 
             var sut = Signal.Create(signalName);
             sut.Raise("this is the reason");
@@ -250,7 +250,7 @@ namespace Griffin.Core.Tests.Signals
             var reseted = false;
             var signalName = Guid.NewGuid().ToString();
             Signal.SignalRaised += (sender, args) => signaled = true;
-            Signal.SignalSupressed += (sender, args) => reseted = true;
+            Signal.SignalSuppressed += (sender, args) => reseted = true;
 
             Signal.Raise(signalName, "myreason", new ExternalException());
             Signal.Reset(signalName);
@@ -266,7 +266,7 @@ namespace Griffin.Core.Tests.Signals
             var reseted = false;
             var signalName = Guid.NewGuid().ToString();
             Signal.SignalRaised += (sender, args) => signaled = true;
-            Signal.SignalSupressed += (sender, args) => reseted = true;
+            Signal.SignalSuppressed += (sender, args) => reseted = true;
 
             Signal.Raise(signalName, "myreason");
             Signal.Reset(signalName);

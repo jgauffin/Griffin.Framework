@@ -5,7 +5,7 @@ using Griffin.Net.Protocols.Http.Messages;
 namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
-    ///     Represents a request or resposne.
+    ///     Represents a request or response.
     /// </summary>
     public interface IHttpMessage
     {
@@ -63,7 +63,7 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         If you need to get the boundry etc, then use <c>request.Headers["Content-Type"]</c>.
+        ///         If you need to get the boundary etc, then use <c>request.Headers["Content-Type"]</c>.
         ///     </para>
         /// </remarks>
         string ContentType { get; set; }

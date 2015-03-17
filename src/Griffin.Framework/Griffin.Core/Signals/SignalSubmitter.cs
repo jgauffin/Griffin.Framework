@@ -15,7 +15,7 @@ namespace Griffin.Signals
     ///     <para>
     ///         Use <see cref="Configure" /> to allow the submitter to upload reports. Then use <see cref="UploadAllSignals" />
     ///         if you want the class to upload all signals, or manually subscribe
-    ///         on <see cref="Signal.SignalRaised" /> and <see cref="Signal.SignalSupressed" /> to upload signals by calling
+    ///         on <see cref="Signal.SignalRaised" /> and <see cref="Signal.SignalSuppressed" /> to upload signals by calling
     ///         <see cref="Send" />.
     ///     </para>
     ///     <para>
@@ -97,7 +97,7 @@ namespace Griffin.Signals
         }
 
         /// <summary>
-        ///     Will subscribe on the <see cref="Signal.SignalRaised" /> and <see cref="Signal.SignalSupressed" /> to be able to
+        ///     Will subscribe on the <see cref="Signal.SignalRaised" /> and <see cref="Signal.SignalSuppressed" /> to be able to
         ///     upload all signals.
         /// </summary>
         /// <exception cref="InvalidOperationException">You must Configure() first.</exception>
@@ -119,7 +119,7 @@ namespace Griffin.Signals
                 };
                 Send(dto);
             };
-            Signal.SignalSupressed += (sender, args) => Send((Signal) sender);
+            Signal.SignalSuppressed += (sender, args) => Send((Signal) sender);
         }
 
         private void PostSignalsThreadFunc()
@@ -149,8 +149,8 @@ namespace Griffin.Signals
 
                     try
                     {
-                        var resposne = request.GetResponse();
-                        resposne.Close();
+                        var response = request.GetResponse();
+                        response.Close();
                     }
                     catch (WebException)
                     {
