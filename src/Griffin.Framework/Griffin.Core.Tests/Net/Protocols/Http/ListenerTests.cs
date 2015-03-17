@@ -41,7 +41,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
                 msg = (HttpRequestBase) message;
                 channel.Send(msg.CreateResponse());
             };
-            var resposne = request.GetResponse();
+            var response = request.GetResponse();
 
 
         }

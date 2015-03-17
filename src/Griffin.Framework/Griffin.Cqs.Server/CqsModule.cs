@@ -69,7 +69,7 @@ namespace Griffin.Cqs.Server
         }
 
         /// <summary>
-        ///    The client expects a ClientResposne to be able to map responses to requests.
+        ///    The client expects a ClientResponse to be able to map responses to requests.
         /// </summary>
         /// <param name="context">Context information</param>
 #pragma warning disable 1998
