@@ -80,7 +80,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         protected virtual void Value_Before()
         {
             if (Current == '"')
-                _parserMethod = Value_Qouted;
+                _parserMethod = Value_Quoted;
             else
                 _parserMethod = Value;
 
@@ -102,9 +102,9 @@ namespace Griffin.Net.Protocols.Http.Messages
         }
 
         /// <summary>
-        /// Read cookie value qouted
+        /// Read cookie value quoted
         /// </summary>
-        private void Value_Qouted()
+        private void Value_Quoted()
         {
             MoveNext(); // skip '"'
 

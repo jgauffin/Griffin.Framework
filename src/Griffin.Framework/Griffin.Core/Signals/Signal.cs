@@ -163,7 +163,7 @@ namespace Griffin.Signals
         }
 
         /// <summary>
-        ///     Enable notfications for this signal (if you have previously called <c>Disable()</c>).
+        ///     Enable notifications for this signal (if you have previously called <c>Disable()</c>).
         /// </summary>
         public void Enable()
         {

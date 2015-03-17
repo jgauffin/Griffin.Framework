@@ -218,15 +218,15 @@ namespace Griffin.Net.Protocols.Stomp.Frames
         {
             if (ch == '"')
             {
-                // exited the quouted string
-                _parserMethod = Value_ParseUntilQouteOrNewLine;
+                // exited the quoted string
+                _parserMethod = Value_ParseUntilQuoteOrNewLine;
                 return;
             }
 
             _headerValue.Append(ch);
         }
 
-        private void Value_ParseUntilQouteOrNewLine(char ch)
+        private void Value_ParseUntilQuoteOrNewLine(char ch)
         {
             if (ch == '"')
             {
@@ -250,7 +250,7 @@ namespace Griffin.Net.Protocols.Stomp.Frames
             if (IsHorizontalWhitespace(ch) || ch == ':')
                 return;
 
-            _parserMethod = Value_ParseUntilQouteOrNewLine;
+            _parserMethod = Value_ParseUntilQuoteOrNewLine;
             _lookAhead = ch;
         }
     }
