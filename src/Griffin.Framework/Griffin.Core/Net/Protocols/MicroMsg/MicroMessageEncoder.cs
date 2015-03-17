@@ -47,7 +47,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         ///     Initializes a new instance of the <see cref="MicroMessageEncoder" /> class.
         /// </summary>
         /// <param name="serializer">
-        ///     Serialiser used to serialize the messages that should be sent. You might want to pick a
+        ///     Serializer used to serialize the messages that should be sent. You might want to pick a
         ///     serializer which is reasonable fast.
         /// </param>
         public MicroMessageEncoder(IMessageSerializer serializer)
@@ -62,7 +62,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         ///     Initializes a new instance of the <see cref="MicroMessageEncoder" /> class.
         /// </summary>
         /// <param name="serializer">
-        ///     Serialiser used to serialize the messages that should be sent. You might want to pick a
+        ///     Serializer used to serialize the messages that should be sent. You might want to pick a
         ///     serializer which is reasonable fast.
         /// </param>
         /// <param name="bufferSlice">Used when sending information.</param>

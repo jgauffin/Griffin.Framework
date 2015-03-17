@@ -19,7 +19,7 @@ namespace Griffin.Logging.Loggers
         #endregion
 
         /// <summary>
-        /// Detailed framework messages used to find wierd errors.
+        /// Detailed framework messages used to find weird errors.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="formatters">Formatters used in the <c>message</c>.</param>
@@ -29,7 +29,7 @@ namespace Griffin.Logging.Loggers
         }
 
         /// <summary>
-        /// Detailed framework messages used to find wierd errors.
+        /// Detailed framework messages used to find weird errors.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="exception">Thrown exception</param>
@@ -39,7 +39,7 @@ namespace Griffin.Logging.Loggers
         }
 
         /// <summary>
-        /// Diagonstic messages. Not as detailed as the trace messages but still only useful during debugging.
+        /// Diagnostic messages. Not as detailed as the trace messages but still only useful during debugging.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="formatters">Formatters used in the <c>message</c>.</param>
@@ -49,7 +49,7 @@ namespace Griffin.Logging.Loggers
         }
 
         /// <summary>
-        /// Diagonstic messages. Not as detailed as the trace messages but still only useful during debugging.
+        /// Diagnostic messages. Not as detailed as the trace messages but still only useful during debugging.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="exception">Exception which has been thrown</param>

@@ -14,7 +14,6 @@ namespace Griffin.Reflection
         /// </summary>
         /// <typeparam name="TSource">Entity type.</typeparam>
         /// <typeparam name="TProperty">Expression pointing at the property.</typeparam>
-        /// <param name="source">Instance to get property from.</param>
         /// <param name="propertyLambda">The property lambda.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentException">

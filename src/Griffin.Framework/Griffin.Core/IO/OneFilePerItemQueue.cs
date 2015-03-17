@@ -16,7 +16,7 @@ namespace Griffin.IO
     ///     <para>
     ///         Creates a new directory under the <see cref="DataDirectory" /> which is named as <see cref="QueueName" />. That
     ///         directory will
-    ///         be sued to store all files using a number counter and <c>.data</c> as file extension.
+    ///         be used to store all files using a number counter and <c>.data</c> as file extension.
     ///     </para>
     ///     <para>
     ///         This library will create the data directory and the queue directory automatically if they do not exist. By

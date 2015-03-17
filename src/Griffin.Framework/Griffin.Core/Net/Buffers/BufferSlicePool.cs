@@ -38,13 +38,13 @@ namespace Griffin.Net.Buffers
         /// Get a new slice
         /// </summary>
         /// <returns>Slice</returns>
-        /// <exception cref="PoolEmptyException">Out of buffers. You are either not releasing used buffers or have allocated less number of buffers than allowed number of connected clients.</exception>
+        /// <exception cref="PoolEmptyException">Out of buffers. You are either not releasing used buffers or have allocated fewer buffers than allowed number of connected clients.</exception>
         public IBufferSlice Pop()
 
         {
             IBufferSlice pop;
             if (!_slices.TryPop(out pop))
-                throw new PoolEmptyException("Out of buffers. You are either not releasing used buffers or have allocated less number of buffers than allowed number of connected clients.");
+                throw new PoolEmptyException("Out of buffers. You are either not releasing used buffers or have allocated fewer buffers than allowed number of connected clients.");
 
             return pop;
         }

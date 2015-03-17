@@ -36,7 +36,7 @@ namespace Griffin.Core.Json
         public Encoding Encoding { get; set; }
 
         /// <summary>
-        /// Servialize
+        /// Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>
@@ -47,7 +47,7 @@ namespace Griffin.Core.Json
         }
 
         /// <summary>
-        /// Servialize
+        /// Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>

@@ -118,7 +118,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Invoked if the decoder failes to handle an incoming message
+        /// Invoked if the decoder fails to handle an incoming message
         /// </summary>
         /// <remarks>
         /// <para>
@@ -252,7 +252,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Cleanup everything so that the channel can be resused.
+        ///     Cleanup everything so that the channel can be reused.
         /// </summary>
         public void Cleanup()
         {

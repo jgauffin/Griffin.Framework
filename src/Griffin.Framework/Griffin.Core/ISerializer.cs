@@ -10,7 +10,7 @@ namespace Griffin
     public interface ISerializer
     {
         /// <summary>
-        ///     Servialize
+        ///     Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>
@@ -18,7 +18,7 @@ namespace Griffin
         void Serialize(object source, Stream destination);
 
         /// <summary>
-        ///     Servialize
+        ///     Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>
