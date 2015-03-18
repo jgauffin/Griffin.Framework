@@ -36,7 +36,7 @@ namespace Griffin.Net.Channels
         public object UserToken { get { return _args.UserToken; } set { _args.UserToken = value; } }
 
         /// <summary>
-        /// Amount of bytes which was transferred in the last I/O operation
+        /// Number of bytes which were transferred in the last I/O operation
         /// </summary>
         public int BytesTransferred
         {
@@ -46,7 +46,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Amount of bytes in our buffer.
+        /// Number of bytes in our buffer.
         /// </summary>
         public int Count
         {
@@ -55,7 +55,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Amount of bytes which we can use in the buffer.
+        /// Number of bytes which we can use in the buffer.
         /// </summary>
         public int Capacity { get; private set; }
 
@@ -83,7 +83,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Set the bytes which currently should be transferred in the next I/O operation (or the bytes which was just received)
+        /// Set the bytes which currently should be transferred in the next I/O operation (or the bytes which were just received)
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="count"></param>
@@ -97,7 +97,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
         /// <param name="offset">Index of first byte to send</param>
-        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="count">Number of bytes to send</param>
         /// <param name="capacity">Total number of bytes allocated for this slices</param>
         public void SetBuffer(byte[] buffer, int offset, int count, int capacity)
         {
@@ -111,7 +111,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
         /// <param name="offset">Index of first byte to send</param>
-        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="count">Number of bytes to send</param>
         /// <remarks>
         /// Capacity will be set to same as <c>count</c>.
         /// </remarks>

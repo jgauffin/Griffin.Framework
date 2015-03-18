@@ -13,18 +13,18 @@
         object UserToken { get; set; }
 
         /// <summary>
-        ///     Number of bytes which was received or transmitted in the last Socket operation
+        ///     Number of bytes which were received or transmitted in the last Socket operation
         /// </summary>
         int BytesTransferred { get; }
 
         /// <summary>
-        ///     Amount of bytes to receive or send in the next Socket operation.
+        ///     Number of bytes to receive or send in the next Socket operation.
         /// </summary>
         /// <seealso cref="Offset" />
         int Count { get; }
 
         /// <summary>
-        ///     Amount of bytes allocated for this buffer
+        ///     Number of bytes allocated for this buffer
         /// </summary>
         int Capacity { get; }
 
@@ -50,7 +50,7 @@
         ///     Reuse the previously specified buffer, but change the offset/count of the bytes to send.
         /// </summary>
         /// <param name="offset">Index of first byte to send</param>
-        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="count">Number of bytes to send</param>
         void SetBuffer(int offset, int count);
 
         /// <summary>
@@ -58,7 +58,7 @@
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
         /// <param name="offset">Index of first byte to send</param>
-        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="count">Number of bytes to send</param>
         /// <param name="capacity">Total number of bytes allocated for this slices</param>
         void SetBuffer(byte[] buffer, int offset, int count, int capacity);
 
@@ -67,7 +67,7 @@
         /// </summary>
         /// <param name="buffer">Buffer to use</param>
         /// <param name="offset">Index of first byte to send</param>
-        /// <param name="count">Amount of bytes to send</param>
+        /// <param name="count">Number of bytes to send</param>
         /// <remarks>Capacity will be set to same as <c>count</c>.</remarks>
         void SetBuffer(byte[] buffer, int offset, int count);
     }

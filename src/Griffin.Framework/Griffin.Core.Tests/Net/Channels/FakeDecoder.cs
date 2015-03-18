@@ -23,7 +23,7 @@ namespace Griffin.Core.Tests.Net.Channels
         }
 
         /// <summary>
-        /// A message have been received.
+        /// A message has been received.
         /// </summary>
         /// <remarks>
         /// Do note that streams are being reused by the decoder, so don't try to close it.

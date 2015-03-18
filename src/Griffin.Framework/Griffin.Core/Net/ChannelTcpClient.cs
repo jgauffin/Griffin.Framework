@@ -338,7 +338,7 @@ namespace Griffin.Net
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        ///         Can be used if you for instance use a custom authentication mechanism which needs to process incoming
         ///         bytes instead of deserialized messages.
         ///     </para>
         /// </remarks>
