@@ -33,7 +33,7 @@ namespace DemoTest
                 () => new MyProtocolEncoder()
             );
             var server = new ChannelTcpListener(config);
-            server.MessageReceived += OnMessage;
+            server.MessageReceived += OnServerMessageReceived;
             server.Start(IPAddress.Any, 0);
 
 
@@ -53,9 +53,11 @@ namespace DemoTest
             Console.WriteLine("Client received: " + response);
         }
 
-        private static void OnMessage(ITcpChannel channel, object message)
+        private static void OnServerMessageReceived(ITcpChannel channel, object message)
         {
             var ping = (Ping) message;
+            if (ping == null)
+                throw new Exception("Server received unexpected object type.");
 
             Console.WriteLine("Server received: " + message);
             channel.Send(new Pong

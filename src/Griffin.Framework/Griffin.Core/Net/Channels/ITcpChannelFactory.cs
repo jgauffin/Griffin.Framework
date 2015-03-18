@@ -23,7 +23,7 @@ namespace Griffin.Net.Channels
         ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder);
 
         /// <summary>
-        /// create a new queue which are used to store outbound messages in the created channel.
+        /// Create a new queue which is used to store outbound messages in the created channel.
         /// </summary>
         /// <returns>Factory method</returns>
         Func<IMessageQueue> OutboundMessageQueueFactory { get; set; }

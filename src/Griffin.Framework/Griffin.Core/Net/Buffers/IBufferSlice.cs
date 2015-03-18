@@ -18,7 +18,7 @@
         int Offset { get; }
 
         /// <summary>
-        /// Amount of bytes allocated for this slice
+        /// Number of bytes allocated for this slice
         /// </summary>
         int Capacity { get;  }
 

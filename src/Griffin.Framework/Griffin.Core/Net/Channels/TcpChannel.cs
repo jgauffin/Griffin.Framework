@@ -88,7 +88,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one have been sent)
+        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one has been sent)
         /// </summary>
         /// <remarks>
         /// <para>
@@ -124,7 +124,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Channel have sent a message
+        ///     Channel has sent a message
         /// </summary>
         public MessageHandler MessageSent
         {
@@ -147,7 +147,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         The handler MUST close the connection once a reply have been sent.
+        ///         The handler MUST close the connection once a reply has been sent.
         ///     </para>
         /// </remarks>
         public ChannelFailureHandler ChannelFailure { get; set; }
@@ -229,7 +229,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Can be used to store information in the channel so that you can access it at later requests.
+        ///     Can be used to store information in the channel so that you can access it for later requests.
         /// </summary>
         /// <remarks>
         ///     <para>All data is lost when the channel is closed.</para>
@@ -240,7 +240,7 @@ namespace Griffin.Net.Channels
         /// Pre processes incoming bytes before they are passed to the message builder.
         /// </summary>
         /// <remarks>
-        /// Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        /// Can be used if you for instance use a custom authentication mechanism which needs to process incoming
         /// bytes.
         /// </remarks>
         public BufferPreProcessorHandler BufferPreProcessor
