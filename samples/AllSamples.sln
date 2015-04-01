@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sqlite", "Data\Sqlite\Sqlite.csproj", "{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{34BEA537-AA24-45F9-A527-479140EB2463}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Framework", "_Framework", "{457816B5-ED64-410D-A95D-82CF184F6F74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core", "..\src\Griffin.Framework\Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite", "..\src\Griffin.Framework\Griffin.Data.Sqlite\Griffin.Data.Sqlite.csproj", "{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTest", "Networking\CustomProtocol\DemoTest\DemoTest\DemoTest.csproj", "{F9F71486-6E3D-44E1-81E1-4A596CD1B683}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{800A8E76-FEE7-403C-B877-F11E4843773B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net", "Net", "{76991D47-7AE8-45C4-8783-A02F95F03909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServicesDemo", "Application Services\All\ServicesDemo.csproj", "{3480206C-203E-4371-AE99-DEE71C1B2699}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApplicationsServices", "ApplicationsServices", "{CCECFFD7-D235-4F2E-AC8F-95710533688F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F71486-6E3D-44E1-81E1-4A596CD1B683}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F71486-6E3D-44E1-81E1-4A596CD1B683}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F71486-6E3D-44E1-81E1-4A596CD1B683}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F71486-6E3D-44E1-81E1-4A596CD1B683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3480206C-203E-4371-AE99-DEE71C1B2699}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3480206C-203E-4371-AE99-DEE71C1B2699}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3480206C-203E-4371-AE99-DEE71C1B2699}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3480206C-203E-4371-AE99-DEE71C1B2699}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CCA88B83-C5D0-480A-AFB3-4C2F9171F6E5} = {800A8E76-FEE7-403C-B877-F11E4843773B}
+		{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F} = {457816B5-ED64-410D-A95D-82CF184F6F74}
+		{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01} = {457816B5-ED64-410D-A95D-82CF184F6F74}
+		{F9F71486-6E3D-44E1-81E1-4A596CD1B683} = {76991D47-7AE8-45C4-8783-A02F95F03909}
+		{3480206C-203E-4371-AE99-DEE71C1B2699} = {CCECFFD7-D235-4F2E-AC8F-95710533688F}
+	EndGlobalSection
+EndGlobal

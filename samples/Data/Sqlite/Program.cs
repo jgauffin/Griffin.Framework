@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Data.SQLite;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Griffin.Core.Data;
-using Griffin.Core.Data.Mapper;
-using Griffin.Core.Data.Mapper.CommandBuilders;
+using Griffin.Data;
+using Griffin.Data.Mapper;
+using Griffin.Data.Mapper.CommandBuilders;
 using Griffin.Data.Sqlite;
 
 namespace Sqlite
 {
     class Program
     {
+        /// <summary>
+        /// Mains.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
         static void Main(string[] args)
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
@@ -31,10 +31,16 @@ namespace Sqlite
                 }
             }
 
-            var users = connection.ToList<User>(new {FirstName = "Gau%"});
+            var users = connection.ToList<User>("firstName = @FirstName", new {FirstName = "Gau%"});
 
-            var first = connection.First<User>(new {Id = 1});
-
+            try
+            {
+                var first = connection.First<User>(new {Id = 1});
+            }
+            catch (EntityNotFoundException x)
+            {
+                Console.WriteLine("Expected to find user, since First was used instead of FirstOrDefault. User friendly error message: " + x.Message);
+            }
 
 
             // clear old data
@@ -61,6 +67,9 @@ namespace Sqlite
                 uow.SaveChanges();
             }
 
+
+            Console.WriteLine("Press ENTER to quit.");
+            Console.ReadLine();
 
         }
     }
