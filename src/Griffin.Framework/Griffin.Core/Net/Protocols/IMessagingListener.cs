@@ -20,17 +20,17 @@ namespace Griffin.Net.Protocols
         MessageHandler MessageReceived { get; set; }
 
         /// <summary>
-        ///     Delegate invoked when a message have been sent to the remote end point
+        ///     Delegate invoked when a message has been sent to the remote end point
         /// </summary>
         MessageHandler MessageSent { get; set; }
 
         /// <summary>
-        ///     A client have connected (nothing have been sent or received yet)
+        ///     A client has connected (nothing has been sent or received yet)
         /// </summary>
         event EventHandler<ClientConnectedEventArgs> ClientConnected;
 
         /// <summary>
-        ///     A client have disconnected
+        ///     A client has disconnected
         /// </summary>
         event EventHandler<ClientDisconnectedEventArgs> ClientDisconnected;
 

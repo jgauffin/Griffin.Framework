@@ -32,7 +32,7 @@ namespace Griffin.Cqs.Simple
         /// <typeparam name="TReply">reply that the request will return.</typeparam>
         /// <param name="request">Request to execute</param>
         /// <returns>
-        ///     Task which completes once the request has been executed (and a reply have been fetched).
+        ///     Task which completes once the request has been executed (and a reply has been fetched).
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">query</exception>
         public async Task<TReply> ExecuteAsync<TReply>(Request<TReply> request)

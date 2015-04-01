@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters;
 using Griffin;
+using Griffin.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Newtonsoft.Json;
@@ -37,7 +38,7 @@ namespace DemoTest
             writer.Flush();
 
             // insert length header.
-            // BitConverter2 exists in a library and do use an existing buffer instead of allocating a new one.
+            // BitConverter2 exists in a library and uses an existing buffer instead of allocating a new one.
             BitConverter2.GetBytes((int)_memoryStream.Length - 4, _memoryStream.GetBuffer(), 0);
 
             // and save how much we should send
@@ -48,7 +49,7 @@ namespace DemoTest
 
         public void Send(ISocketBuffer buffer)
         {
-            // continue where the last send operation stopped.
+            // Continue from where the last send operation stopped.
             buffer.SetBuffer(_memoryStream.GetBuffer(), _offset, _bytesLeft);
         }
 
