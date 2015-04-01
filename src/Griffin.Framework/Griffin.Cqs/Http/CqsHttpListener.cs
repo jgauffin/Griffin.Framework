@@ -18,7 +18,7 @@ using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
 namespace Griffin.Cqs.Http
 {
     /// <summary>
-    ///     Recieves CQS objects over HTTP, processes them and return replies.
+    ///     Receives CQS objects over HTTP, processes them and return replies.
     /// </summary>
     public class CqsHttpListener
     {
@@ -355,15 +355,23 @@ namespace Griffin.Cqs.Http
 
             var reply = request.CreateResponse();
             reply.ContentType = "application/json";
-            reply.AddHeader("X-Cqs-Object-Type", cqsReplyObject.Body.GetType().GetSimpleAssemblyQualifiedName());
-            reply.AddHeader("X-Cqs-Name", cqsReplyObject.Body.GetType().Name);
-            if (cqsReplyObject.Body is Exception)
-                reply.StatusCode = 500;
 
-            json = SimpleJson.SerializeObject(cqsReplyObject.Body);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            reply.Body = new MemoryStream();
-            reply.Body.Write(buffer, 0, buffer.Length);
+            // for instance commands do not have a return value.
+            if (cqsReplyObject.Body != null)
+            {
+                reply.AddHeader("X-Cqs-Object-Type", cqsReplyObject.Body.GetType().GetSimpleAssemblyQualifiedName());
+                reply.AddHeader("X-Cqs-Name", cqsReplyObject.Body.GetType().Name);
+                if (cqsReplyObject.Body is Exception)
+                    reply.StatusCode = 500;
+
+                json = SimpleJson.SerializeObject(cqsReplyObject.Body);
+                var buffer = Encoding.UTF8.GetBytes(json);
+                reply.Body = new MemoryStream();
+                reply.Body.Write(buffer, 0, buffer.Length);
+            }
+            else
+                reply.StatusCode = (int) HttpStatusCode.NoContent;
+
             channel.Send(reply);
         }
     }

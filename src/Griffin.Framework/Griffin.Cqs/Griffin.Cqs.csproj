@@ -80,6 +80,14 @@
     <Compile Include="OnlyOneHandlerAllowedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CqsMessageProcessor.cs" />
+    <Compile Include="Routing\AssemblyRule.cs" />
+    <Compile Include="Routing\IRoutedBus.cs" />
+    <Compile Include="Routing\IRoutingRule.cs" />
+    <Compile Include="Routing\RoutedCommandBus.cs" />
+    <Compile Include="Routing\RoutedEventBus.cs" />
+    <Compile Include="Routing\RoutedQueryBus.cs" />
+    <Compile Include="Routing\RoutedRequestReplyBus.cs" />
+    <Compile Include="Routing\RoutedCqsService.cs" />
     <Compile Include="Simple\SimpleRequestReplyBus.cs" />
     <Compile Include="Simple\SimpleQueryBus.cs" />
     <Compile Include="Simple\SimpleEventBus.cs" />
