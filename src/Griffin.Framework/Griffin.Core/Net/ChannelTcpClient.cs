@@ -356,8 +356,9 @@ namespace Griffin.Net
                 _connectException = new SocketException((int) e.SocketError);
                 _socket = null;
             }
+            else
+                _channel.Assign(_socket);
 
-            _channel.Assign(_socket);
             _connectSemaphore.Release();
         }
 

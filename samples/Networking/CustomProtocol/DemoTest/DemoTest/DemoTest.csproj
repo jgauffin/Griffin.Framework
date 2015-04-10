@@ -34,12 +34,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Griffin.Core, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Griffin.Framework.1.0.3\lib\net45\Griffin.Core.dll</HintPath>
+    <Reference Include="Griffin.Core">
+      <HintPath>..\packages\Griffin.Framework.1.0.23\lib\net45\Griffin.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyProtocolClient.cs" />
     <Compile Include="MyProtocolDecoder.cs" />
     <Compile Include="MyProtocolEncoder.cs" />
     <Compile Include="Ping.cs" />

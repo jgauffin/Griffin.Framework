@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net;
-using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Http;
@@ -16,14 +15,6 @@ using Newtonsoft.Json.Converters;
 
 namespace DemoTest
 {
-    public class MyProtocolClient : ChannelTcpClient<object>
-    {
-        public MyProtocolClient() : base(new MyProtocolEncoder(), new MyProtocolDecoder(), new BufferSlice(new byte[65535], 0, 65535))
-        {
-        }
-
-    }
-
     class Program
     {
         static void Main(string[] args)
