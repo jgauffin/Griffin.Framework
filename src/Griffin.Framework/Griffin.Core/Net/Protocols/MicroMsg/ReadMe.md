@@ -44,27 +44,27 @@ Getting a server working requires just a few lines of code:
 ```csharp
 public class Program
 {
-	public static void Main(string[] argv)
-	{
-		var settings = new ChannelTcpListenerConfiguration(
-			() => new MicroMessageDecoder(new JsonMessageSerializer()),
-			() => new MicroMessageEncoder(new JsonMessageSerializer())
-			);
+    public static void Main(string[] argv)
+    {
+        var settings = new ChannelTcpListenerConfiguration(
+            () => new MicroMessageDecoder(new JsonMessageSerializer()),
+            () => new MicroMessageEncoder(new JsonMessageSerializer())
+            );
  
-		var server = new MicroMessageTcpListener(settings);
-		server.MessageReceived = OnServerMessage;
+        var server = new MicroMessageTcpListener(settings);
+        server.MessageReceived = OnServerMessage;
  
-		server.Start(IPAddress.Any, 1234);	
+        server.Start(IPAddress.Any, 1234);	
 
-		//dont kill the server directly
-		Console.ReadLine();
-	}
+        //dont kill the server directly
+        Console.ReadLine();
+    }
 
-	private static void OnServerMessage(ITcpChannel channel, object message)
-	{
-		var auth = (Authenticate) message;
-		channel.Send(new AuthenticateReply() {Success = true});
-	}
+    private static void OnServerMessage(ITcpChannel channel, object message)
+    {
+        var auth = (Authenticate) message;
+        channel.Send(new AuthenticateReply() {Success = true});
+    }
 }
 ```
 
@@ -75,44 +75,44 @@ If you want to use SSL, simply change to use the secure channel factory by setti
 ```csharp
 public class Program
 {
-	public static void Main(string[] argv)
-	{
-		// everything in a method to support async.
-		RunClient().Wait();
+    public static void Main(string[] argv)
+    {
+        // everything in a method to support async.
+        RunClient().Wait();
 
-		//dont kill the server directly
-		Console.ReadLine();
-	}
+        //dont kill the server directly
+        Console.ReadLine();
+    }
 
-	private static async Task RunClient()
-	{
-		var client = new ChannelTcpClient<object>(
-			new MicroMessageEncoder(new JsonMessageSerializer()),
-			new MicroMessageDecoder(new JsonMessageSerializer())
-			);
+    private static async Task RunClient()
+    {
+        var client = new ChannelTcpClient<object>(
+            new MicroMessageEncoder(new JsonMessageSerializer()),
+            new MicroMessageDecoder(new JsonMessageSerializer())
+            );
  
-		await client.ConnectAsync(IPAddress.Parse("192.168.1.3"), 1234);
+        await client.ConnectAsync(IPAddress.Parse("192.168.1.3"), 1234);
  
-		for (int i = 0; i < 20000; i++)
-		{
-			//authenticate is just a sample object (replace it with any of your own classes).
-			await client.SendAsync(new Authenticate { UserName = "jonas", Password = "king123" });
+        for (int i = 0; i < 20000; i++)
+        {
+            //authenticate is just a sample object (replace it with any of your own classes).
+            await client.SendAsync(new Authenticate { UserName = "jonas", Password = "king123" });
 
-			//we've sending AuthenticateReply as a reply in the server.
-			var reply = (AuthenticateReply)await client.ReceiveAsync();
+            //we've sending AuthenticateReply as a reply in the server.
+            var reply = (AuthenticateReply)await client.ReceiveAsync();
  
-			if (reply.Success)
-			{
-				Console.WriteLine("Client: Yay, we are logged in.");
-			}
-			else
-			{
-				Console.WriteLine("Client: " + reply.Decision);
-			}
-		}
+            if (reply.Success)
+            {
+                Console.WriteLine("Client: Yay, we are logged in.");
+            }
+            else
+            {
+                Console.WriteLine("Client: " + reply.Decision);
+            }
+        }
  
-		await client.CloseAsync();
-	}
+        await client.CloseAsync();
+    }
 
 }
 ```

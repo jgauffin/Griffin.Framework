@@ -192,6 +192,9 @@ namespace Griffin.ApplicationServices
                             try
                             {
                                 job = (IBackgroundJob)scope.Resolve(jobType);
+                                if (job == null)
+                                    throw new InvalidOperationException(string.Format("Failed to resolve job type '{0}'.", jobType.FullName));
+
                                 ScopeCreated(this, new ScopeCreatedEventArgs(scope));
                                 job.Execute();
                                 ScopeClosing(this, new ScopeClosingEventArgs(scope, true));

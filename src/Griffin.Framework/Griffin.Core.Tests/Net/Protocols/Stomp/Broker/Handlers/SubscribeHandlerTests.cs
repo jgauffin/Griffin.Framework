@@ -4,6 +4,7 @@ using Griffin.Net.Protocols.Stomp.Broker;
 using Griffin.Net.Protocols.Stomp.Broker.MessageHandlers;
 using Griffin.Net.Protocols.Stomp.Broker.Services;
 using Griffin.Net.Protocols.Stomp.Frames;
+using NCrunch.Framework;
 using NSubstitute;
 using Xunit;
 
@@ -40,7 +41,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Stomp.Broker.Handlers
         }
 
        
-        [Fact]
+        [Fact, ExclusivelyUses("LogManager")]
         public void successful_subcribe()
         {
             var transactionManager = Substitute.For<ITransactionManager>(); 

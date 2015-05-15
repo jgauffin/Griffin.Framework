@@ -14,7 +14,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
     public  class MicroMessageEncoderTests
     {
         [Fact]
-        public void dont_close_our_internal_stream()
+        public void dont_close_our_internal_stream_as_we_reuse_it()
         {
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[65535], 0, 65535);
@@ -31,7 +31,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         }
 
         [Fact]
-        public void close_external_Stream()
+        public void close_external_Stream_as_we_take_over_ownership_from_the_dev()
         {
             var serializer = new StringSerializer();
             var slice = new BufferSlice(new byte[65535], 0, 65535);

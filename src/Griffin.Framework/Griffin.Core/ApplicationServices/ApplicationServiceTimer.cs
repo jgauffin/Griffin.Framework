@@ -43,7 +43,7 @@ namespace Griffin.ApplicationServices
         public TimeSpan Interval { get; set; }
 
         /// <summary>
-        ///     Returnerar <c>true</c> om tjänsten är uppe och snurrar.
+        ///     Returns <c>true</c> if the timer is running.
         /// </summary>
         public bool IsRunning { get; private set; }
 

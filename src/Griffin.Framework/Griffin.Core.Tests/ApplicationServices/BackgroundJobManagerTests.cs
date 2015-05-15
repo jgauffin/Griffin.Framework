@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using FluentAssertions;
 using Griffin.ApplicationServices;
@@ -69,6 +72,49 @@ namespace Griffin.Core.Tests.ApplicationServices
             Thread.Sleep(100);
 
             job.Received().Execute();
+        }
+
+        [Fact]
+        public void report_job_failure_using_the_event_and_include_job_object_if_resolved()
+        {
+            var sl = Substitute.For<IContainer>();
+            var scope = Substitute.For<IContainerScope>();
+            var job = Substitute.For<IBackgroundJob>();
+            BackgroundJobFailedEventArgs actual = null;
+            job.When(x => x.Execute()).Do(x => { throw new InvalidDataException(); });
+            sl.CreateScope().Returns(scope);
+            scope.Resolve(job.GetType()).Returns(job);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
+
+            var sut = new BackgroundJobManager(sl);
+            sut.StartInterval = TimeSpan.FromSeconds(0);
+            sut.Start();
+            sut.JobFailed += (sender, args) => actual = args;
+            Thread.Sleep(100);
+
+            actual.Exception.Should().BeOfType<InvalidDataException>();
+            actual.Job.Should().Be(job);
+        }
+
+        [Fact]
+        public void report_job_failure_using_the_event_and_include_NoJob_if_type_cant_be_resolved()
+        {
+            var sl = Substitute.For<IContainer>();
+            var scope = Substitute.For<IContainerScope>();
+            var job = Substitute.For<IBackgroundJob>();
+            BackgroundJobFailedEventArgs actual = null;
+            job.When(x => x.Execute()).Do(x => { throw new InvalidDataException(); });
+            sl.CreateScope().Returns(scope);
+            scope.ResolveAll<IBackgroundJob>().Returns(new[] { job });
+
+            var sut = new BackgroundJobManager(sl);
+            sut.StartInterval = TimeSpan.FromSeconds(0);
+            sut.Start();
+            sut.JobFailed += (sender, args) => actual = args;
+            Thread.Sleep(100);
+
+            actual.Exception.Should().BeOfType<InvalidOperationException>();
+            actual.Job.Should().BeOfType<BackgroundJobManager.NoJob>();
         }
 
         [Fact]

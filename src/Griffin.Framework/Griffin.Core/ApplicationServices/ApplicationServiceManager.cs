@@ -131,11 +131,11 @@ namespace Griffin.ApplicationServices
         }
 
         /// <summary>
-        ///     Hur ofta som vi ska kontrollera om tjänsterna är uppe och rullar
+        ///     How frequently we should check if there are any services that should be started/stopped.
         /// </summary>
         /// <remarks>
         /// </remarks>
-        /// <value>Default är var 30:e sekund.</value>
+        /// <value>Default is every 30 seconds.</value>
         public TimeSpan CheckInterval
         {
             get { return _checkInterval; }
