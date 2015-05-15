@@ -8,7 +8,12 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// </summary>
     public class WebSocketClientConnectedEventArgs : EventArgs
     {
-
+        /// <summary>
+        /// Create a new isntance of <see cref="WebSocketClientConnectedEventArgs"/>
+        /// </summary>
+        /// <param name="channel">Channel used for transfers</param>
+        /// <param name="request">Request (should contain the upgrade request)</param>
+        /// <param name="response">Response (should include the upgrade confirmation)</param>
         public WebSocketClientConnectedEventArgs(ITcpChannel channel, IHttpRequest request, IHttpResponse response)
         {
             Channel = channel;

@@ -56,7 +56,7 @@ public class Program
  
         server.Start(IPAddress.Any, 1234);	
 
-        //dont kill the server directly
+        //don't kill the server directly
         Console.ReadLine();
     }
 
@@ -80,7 +80,7 @@ public class Program
         // everything in a method to support async.
         RunClient().Wait();
 
-        //dont kill the server directly
+        //don't kill the server directly
         Console.ReadLine();
     }
 

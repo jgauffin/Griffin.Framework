@@ -139,7 +139,7 @@ namespace Griffin.Core.Tests.Net.Channels
                 var stream = (SslStream)ar.AsyncState;
                 stream.EndAuthenticateAsServer(ar);
             }
-            catch (Exception e) { }
+            catch{ }
         }
 
         [Fact]
@@ -150,11 +150,11 @@ namespace Griffin.Core.Tests.Net.Channels
             var decoder1 = new StringDecoder();
             var expected = "Hello".PadRight(5000);
             var outBuffer = new byte[expected.Length + 4];
-            BitConverter2.GetBytes(expected.Length, outBuffer, 0);
-            Encoding.UTF8.GetBytes(expected, 0, expected.Length, outBuffer, 4);
             object actual = null;
             var evt = new ManualResetEvent(false);
             var stream = new SslStream(new NetworkStream(_helper.Server));
+            BitConverter2.GetBytes(expected.Length, outBuffer, 0);
+            Encoding.UTF8.GetBytes(expected, 0, expected.Length, outBuffer, 4);
             stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
 
             var sut1 = CreateClientChannel(slice1, encoder1, decoder1);

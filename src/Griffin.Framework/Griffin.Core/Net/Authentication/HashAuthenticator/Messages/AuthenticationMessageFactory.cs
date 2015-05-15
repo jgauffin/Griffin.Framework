@@ -1,4 +1,5 @@
 using System;
+using Griffin.Net.Authentication.HashAuthenticator.Messages;
 using Griffin.Security;
 
 namespace Griffin.Net.Authentication.Messages

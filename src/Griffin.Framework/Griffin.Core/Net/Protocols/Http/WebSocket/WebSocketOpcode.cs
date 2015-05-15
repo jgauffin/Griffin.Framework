@@ -2,10 +2,13 @@
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
     /// <summary>
-    /// Type of a websocket frame
-    /// <seealso cref="http://tools.ietf.org/html/rfc6455#section-5.2"/>
-    /// <seealso cref="http://tools.ietf.org/html/rfc6455#section-11.8"/>
+    /// Type of a websocket frame.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The specification for this op code can be found in http://tools.ietf.org/html/rfc6455#section-5.2 and http://tools.ietf.org/html/rfc6455#section-11.8.
+    /// </para>
+    /// </remarks>
     public enum WebSocketOpcode : byte
     {
         /// <summary>

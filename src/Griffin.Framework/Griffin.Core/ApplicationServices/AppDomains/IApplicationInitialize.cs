@@ -41,9 +41,15 @@ namespace Griffin.ApplicationServices.AppDomains
         void OnUpdateAvailable(IUpdateInformation information);
 
         /// <summary>
-        ///     Want to restart application
+        ///     An updated have been detected and an restart is pending.
         /// </summary>
         /// <returns><c>true</c> if application can be restarted; otherwise <c>false</c>.</returns>
+        /// <remarks>
+        /// <para>
+        /// You can deny a restart if your application is doing something that will fail during a restart. The framework will the try again later.
+        /// If you return <c>true</c> the <c>Stop()</c> method will be called for this app domain and then <c>Start()</c> will be called in the new app domain.
+        /// </para>
+        /// </remarks>
         bool RequestRestartPermission();
     }
 }

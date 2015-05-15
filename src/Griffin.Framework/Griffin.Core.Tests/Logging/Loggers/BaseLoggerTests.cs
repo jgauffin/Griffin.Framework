@@ -8,18 +8,18 @@ namespace Griffin.Core.Tests.Logging.Loggers
 {
     public class BaseLoggerTests
     {
-        [Fact]
-        public void trace_without_exception()
-        {
+[Fact]
+public void trace_without_exception()
+{
 
-            var sut = new BaseLoggerWrapper(GetType());
-            sut.Trace("Heloo");
+    var sut = new BaseLoggerWrapper(GetType());
+    sut.Trace("Heloo");
 
-            sut.Entries.Count.Should().Be(1);
-            sut.Entries[0].Message.Should().Be("Heloo");
-            sut.Entries[0].LogLevel.Should().Be(LogLevel.Trace);
-            sut.Entries[0].Exception.Should().BeNull();
-        }
+    sut.Entries.Count.Should().Be(1);
+    sut.Entries[0].Message.Should().Be("Heloo");
+    sut.Entries[0].LogLevel.Should().Be(LogLevel.Trace);
+    sut.Entries[0].Exception.Should().BeNull();
+}
 
         [Fact]
         public void trace_formatted()
@@ -212,7 +212,7 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    System.NotImplementedException: The method or operation is not implemented.\r\n");
+            actual.Should().StartWith("    System.NotImplementedException");
         }
 
         [Fact]
@@ -223,7 +223,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty' was thrown.\r\n    [UserId='10']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty");
+            actual.Should().EndWith("[UserId='10']\r\n");
         }
 
         [Fact]
@@ -234,7 +235,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2' was thrown.\r\n    [UserId='10',FirstName='Arne']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2");
+            actual.Should().EndWith("[UserId='10',FirstName='Arne']\r\n");
         }
 
         [Fact]
@@ -245,7 +247,8 @@ namespace Griffin.Core.Tests.Logging.Loggers
             var sut = new BaseLoggerWrapper(GetType());
             var actual = sut.FormatException(exception);
 
-            actual.Should().Be("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2: Exception of type 'Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2' was thrown.\r\n    [UserId='10']\r\n");
+            actual.Should().StartWith("    Griffin.Core.Tests.Logging.Loggers.ExceptionWithProperty2");
+            actual.Should().EndWith("[UserId='10']\r\n");
         }
 
     }

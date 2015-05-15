@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
-using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -17,22 +16,27 @@ using Griffin.Security;
 namespace Griffin.Cqs.Net
 {
     /// <summary>
-    /// Client used to talk with the server defined in the <c>Griffin.Cqs.Server</c> nuget package.
+    ///     Client used to talk with the server defined in the <c>Griffin.Cqs.Server</c> nuget package.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Uses TCP and the MicroMsg protocol to transport messages to server side.
+    ///     </para>
+    /// </remarks>
     public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
     {
         private readonly Timer _cleanuptimer;
         private readonly ChannelTcpClient _client;
         private readonly ConcurrentDictionary<Guid, Waiter> _response = new ConcurrentDictionary<Guid, Waiter>();
-        private IPEndPoint _endPoint;
-        private NetworkCredential _credentials;
-        private IPasswordHasher _hasher;
         private IAuthenticationMessageFactory _authenticationMessageFactory = new AuthenticationMessageFactory();
         private bool _continueAuthenticate;
+        private NetworkCredential _credentials;
+        private IPEndPoint _endPoint;
+        private IPasswordHasher _hasher;
         private object _lastSentItem;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CqsClient"/> class.
+        ///     Initializes a new instance of the <see cref="CqsClient" /> class.
         /// </summary>
         public CqsClient()
         {
@@ -44,7 +48,7 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CqsClient"/> class.
+        ///     Initializes a new instance of the <see cref="CqsClient" /> class.
         /// </summary>
         /// <param name="serializer">Serializer to be used for the transported messages.</param>
         public CqsClient(Func<IMessageSerializer> serializer)
@@ -73,18 +77,9 @@ namespace Griffin.Cqs.Net
             set { _client.Authenticator = value; }
         }
 
-        private int AuthenticateBytes(ITcpChannel channel, ISocketBuffer buffer)
-        {
-            bool completed;
-            var bytesProcessed = Authenticator.Process(channel, buffer, out completed);
-            if (completed)
-                channel.BufferPreProcessor = null;
-            return bytesProcessed;
-        }
-
 
         /// <summary>
-        /// Execute a command and wait for result (i.e. exception for failure or just return for success)
+        ///     Execute a command and wait for result (i.e. exception for failure or just return for success)
         /// </summary>
         /// <typeparam name="T">Type of command</typeparam>
         /// <param name="command">command object</param>
@@ -107,7 +102,7 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        /// Publishes an application event (at server side)
+        ///     Publishes an application event (at server side)
         /// </summary>
         /// <typeparam name="TApplicationEvent">The type of the application event.</typeparam>
         /// <param name="e">event to publish.</param>
@@ -123,7 +118,7 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        /// Queries the asynchronous.
+        ///     Queries the asynchronous.
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="query">query to get a response for.</param>
@@ -135,11 +130,11 @@ namespace Griffin.Cqs.Net
             _response[query.QueryId] = waiter;
             await SendItem(query);
             await waiter.Task;
-            return ((dynamic)waiter.Task).Result;
+            return ((dynamic) waiter.Task).Result;
         }
 
         /// <summary>
-        /// Execute a request and wait for the reply
+        ///     Execute a request and wait for the reply
         /// </summary>
         /// <typeparam name="TReply">The type of the reply.</typeparam>
         /// <param name="request">Request to get a reply for.</param>
@@ -151,17 +146,62 @@ namespace Griffin.Cqs.Net
             _response[request.RequestId] = waiter;
             await SendItem(request);
             await waiter.Task;
-            return ((dynamic)waiter.Task).Result;
+            return ((dynamic) waiter.Task).Result;
         }
 
-        private Task SendItem(object item)
+        private abstract class Waiter
         {
-            _lastSentItem = item;
-            return _client.SendAsync(item);
+            protected Waiter(Guid id)
+            {
+                Id = id;
+                WaitedSince = DateTime.UtcNow;
+            }
+
+            public Guid Id { get; set; }
+
+            private DateTime WaitedSince { get; set; }
+            public abstract Task Task { get; }
+
+            public bool Expired
+            {
+                get { return DateTime.UtcNow.Subtract(WaitedSince).TotalSeconds > 10; }
+            }
+
+            public abstract void Trigger(object result);
+        }
+
+        private class Waiter<T> : Waiter
+        {
+            private readonly TaskCompletionSource<T> _completionSource = new TaskCompletionSource<T>();
+
+            public Waiter(Guid id)
+                : base(id)
+            {
+            }
+
+            public override Task Task
+            {
+                get { return _completionSource.Task; }
+            }
+
+            public override void Trigger(object result)
+            {
+                if (result is Exception)
+                {
+                    if (result is AggregateException)
+                        _completionSource.SetException(new ServerSideException("Server failed to execute.",
+                            ((AggregateException) result).InnerException));
+                    else
+                        _completionSource.SetException((Exception) result);
+                }
+
+                else
+                    _completionSource.SetResult((T) result);
+            }
         }
 
         /// <summary>
-        /// Start client (will autoconnect if getting disconnected)
+        ///     Start client (will autoconnect if getting disconnected)
         /// </summary>
         /// <param name="address">The address for the CQS server.</param>
         /// <param name="port">The port that the CQS server is listening on.</param>
@@ -170,6 +210,15 @@ namespace Griffin.Cqs.Net
         {
             _endPoint = new IPEndPoint(address, port);
             await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
+        }
+
+        private int AuthenticateBytes(ITcpChannel channel, ISocketBuffer buffer)
+        {
+            bool completed;
+            var bytesProcessed = Authenticator.Process(channel, buffer, out completed);
+            if (completed)
+                channel.BufferPreProcessor = null;
+            return bytesProcessed;
         }
 
         private async Task EnsureConnected()
@@ -226,7 +275,6 @@ namespace Griffin.Cqs.Net
                                 if (_lastSentItem != null)
                                     channel.Send(_lastSentItem);
                             }
-                                
                         }
                     }
                 }
@@ -262,59 +310,13 @@ namespace Griffin.Cqs.Net
             }
 
 
-
             return ClientFilterResult.Revoke;
         }
 
-        private abstract class Waiter
+        private Task SendItem(object item)
         {
-            protected Waiter(Guid id)
-            {
-                Id = id;
-                WaitedSince = DateTime.UtcNow;
-            }
-
-            public Guid Id { get; set; }
-
-            private DateTime WaitedSince { get; set; }
-            public abstract Task Task { get; }
-
-            public bool Expired
-            {
-                get { return DateTime.UtcNow.Subtract(WaitedSince).TotalSeconds > 10; }
-            }
-
-            public abstract void Trigger(object result);
-        }
-
-        private class Waiter<T> : Waiter
-        {
-            private readonly TaskCompletionSource<T> _completionSource = new TaskCompletionSource<T>();
-
-            public Waiter(Guid id)
-                : base(id)
-            {
-            }
-
-            public override Task Task
-            {
-                get { return _completionSource.Task; }
-            }
-
-            public override void Trigger(object result)
-            {
-                if (result is Exception)
-                {
-                    if (result is AggregateException)
-                        _completionSource.SetException(new ServerSideException("Server failed to execute.",
-                            ((AggregateException)result).InnerException));
-                    else
-                        _completionSource.SetException((Exception)result);
-                }
-
-                else
-                    _completionSource.SetResult((T)result);
-            }
+            _lastSentItem = item;
+            return _client.SendAsync(item);
         }
     }
 }

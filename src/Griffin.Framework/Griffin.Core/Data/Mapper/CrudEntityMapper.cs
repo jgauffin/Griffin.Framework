@@ -14,9 +14,9 @@ namespace Griffin.Data.Mapper
     /// <typeparam name="TEntity">Type of entity (i.e. class that somewhat corresponds to a table)</typeparam>
     /// <remarks>
     ///     <para>
-    ///         This mapper is konventional based. If there is a column named <c>"Id"</c> this mapper will assume that that is
+    ///         This mapper is conventional based. If there is a column named <c>"Id"</c> this mapper will assume that that is
     ///         the primary key. If you do not have
-    ///         an <c>"Id"</c> id column you need to inherit this class and overide the <c>Configure</c> method:
+    ///         an <c>"Id"</c> id column you need to inherit this class and override the <c>Configure</c> method:
     ///     </para>
     ///     <code>
     /// <![CDATA[

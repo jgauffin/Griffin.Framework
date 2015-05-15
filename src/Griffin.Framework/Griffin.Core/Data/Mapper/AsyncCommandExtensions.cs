@@ -92,7 +92,7 @@ namespace Griffin.Data.Mapper
             var result = await cmd.FirstOrDefaultAsync(mapper);
             if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
             {
-                throw new EntityNotFoundException("Failed to find entity of type '" + typeof (TEntity).FullName + "'.",
+                throw new EntityNotFoundException("Failed to find entity of type '" + typeof(TEntity).FullName + "'.",
                     cmd);
             }
 
@@ -168,15 +168,25 @@ namespace Griffin.Data.Mapper
             if (mapper == null) throw new ArgumentNullException("mapper");
 
             var command = GetDbCommandFromInterface(cmd);
-            using (var reader = await command.ExecuteReaderAsync())
-            {
-                if (!await reader.ReadAsync())
-                    return default(TEntity);
 
-                var entity = (TEntity) mapper.Create(reader);
-                mapper.Map(reader, entity);
-                return entity;
+            try
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (!await reader.ReadAsync())
+                        return default(TEntity);
+
+                    var entity = (TEntity)mapper.Create(reader);
+                    mapper.Map(reader, entity);
+                    return entity;
+                }
             }
+            catch (Exception e)
+            {
+                throw command.CreateDataException(e);
+            }
+
+
         }
 
         private static DbCommand GetDbCommandFromInterface(IDbCommand cmd)
@@ -228,7 +238,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         If the result returned from the query is all records that you want it's probably more efficient to use
-        ///         <see cref="ToListAsync{TEntity}(System.Data.Common.DbCommand)" />.
+        ///         <see cref="ToListAsync{TEntity}(IDbCommand)" />.
         ///     </para>
         ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
@@ -268,9 +278,16 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
 
             var command = GetDbCommandFromInterface(cmd);
-            var reader = await command.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            try
+            {
+                var reader = await command.ExecuteReaderAsync();
+                var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw command.CreateDataException(e);
+            }
         }
 
 
@@ -307,10 +324,17 @@ namespace Griffin.Data.Mapper
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
 
-            var command = GetDbCommandFromInterface(cmd); 
-            var reader = await command.ExecuteReaderAsync();
-            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            var command = GetDbCommandFromInterface(cmd);
+            try
+            {
+                var reader = await command.ExecuteReaderAsync();
+                var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw command.CreateDataException(e);
+            }
         }
 
 
@@ -356,16 +380,23 @@ namespace Griffin.Data.Mapper
 
             var items = new List<TEntity>();
             var command = GetDbCommandFromInterface(cmd);
-            using (var reader = await command.ExecuteReaderAsync())
+            try
             {
-                while (await reader.ReadAsync())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    var entity = mapper.Create(reader);
-                    mapper.Map(reader, entity);
-                    items.Add((TEntity) entity);
+                    while (await reader.ReadAsync())
+                    {
+                        var entity = mapper.Create(reader);
+                        mapper.Map(reader, entity);
+                        items.Add((TEntity)entity);
+                    }
                 }
+                return items;
             }
-            return items;
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
     }
 }

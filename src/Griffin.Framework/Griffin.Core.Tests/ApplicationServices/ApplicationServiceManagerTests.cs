@@ -8,20 +8,20 @@ using Xunit;
 
 namespace Griffin.Core.Tests.ApplicationServices
 {
-    
+
     public class ApplicationServiceManagerTests
     {
         [Fact]
-        public void collect_all_exceptions_during_Start_before_throwing()
+        public void all_exceptions_during_Start_should_be_collected_before_throwing_failure()
         {
             var service = Substitute.For<IApplicationService>();
-            service.When(x => x.Start()).Do(x => { throw new NotSupportedException(); });
             var service2 = Substitute.For<IApplicationService>();
-            service2.When(x => x.Start()).Do(x => { throw new NotImplementedException(); });
             var okService = Substitute.For<IApplicationService>();
             var locator = Substitute.For<IContainer>();
-            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService, service2 });
             var settingsRepos = Substitute.For<ISettingsRepository>();
+            service.When(x => x.Start()).Do(x => { throw new NotSupportedException(); });
+            service2.When(x => x.Start()).Do(x => { throw new NotImplementedException(); });
+            locator.ResolveAll<IApplicationService>().Returns(new[] { service, okService, service2 });
             settingsRepos.IsEnabled(Arg.Any<Type>()).Returns(true);
 
             var sut = new ApplicationServiceManager(locator);
@@ -192,7 +192,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void collect_errors_during_shutdown_and_allow_OK_services_to_shutdown_successfully()
         {
-            var service = Substitute.For<IApplicationService,IGuardedService>();
+            var service = Substitute.For<IApplicationService, IGuardedService>();
             ((IGuardedService)service).IsRunning.Returns(true);
             service.When(x => x.Stop()).Do(x => { throw new NotSupportedException(); });
             var okService = Substitute.For<IApplicationService>();

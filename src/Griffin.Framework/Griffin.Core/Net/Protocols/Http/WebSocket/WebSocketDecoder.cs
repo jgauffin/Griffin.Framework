@@ -6,6 +6,9 @@ using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
+    /// <summary>
+    /// Decodes websocket messages (once the HTTP handshake have been completed)
+    /// </summary>
     public class WebSocketDecoder : IMessageDecoder
     {
         private readonly HttpMessageDecoder _httpMessageDecoder;
@@ -28,6 +31,10 @@ namespace Griffin.Net.Protocols.Http.WebSocket
             _frames = new List<WebSocketFrame>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebSocketDecoder"/> class.
+        /// </summary>
+        /// <param name="messageSerializer">Custom message serializer (typically inherits from <see cref="WebSocketDecoder"/>.)</param>
         public WebSocketDecoder(IMessageSerializer messageSerializer)
         {
             _httpMessageDecoder = new HttpMessageDecoder(messageSerializer);
@@ -39,7 +46,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 
 
         /// <summary>
-        ///     A message have been received.
+        ///     A message has been received.
         /// </summary>
         /// <remarks>
         ///     Do note that streams are being reused by the decoder, so don't try to close it.

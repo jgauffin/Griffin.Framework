@@ -3,8 +3,12 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 {
     /// <summary>
     /// Is data masked or not
-    /// <seealso cref="http://tools.ietf.org/html/rfc6455#section-5.2"/>
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The specification for this mask can be found in http://tools.ietf.org/html/rfc6455#section-5.2.
+    /// </para>
+    /// </remarks>
     public enum WebSocketMask : byte
     {
         /// <summary>

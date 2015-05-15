@@ -30,7 +30,7 @@ namespace Griffin.Net.Protocols.Http
         public HttpListener()
         {
             var config = new ChannelTcpListenerConfiguration(
-                () => new HttpMessageDecoder(BodyDecoder),
+                () => BodyDecoder == null ? new HttpMessageDecoder() : new HttpMessageDecoder(BodyDecoder),
                 () => new HttpMessageEncoder());
 
             Configure(config);
@@ -47,7 +47,7 @@ namespace Griffin.Net.Protocols.Http
         public IMessageSerializer BodyDecoder { get; set; }
 
         /// <summary>
-        /// A client have connected (nothing have been sent or received yet)
+        /// A client has connected (nothing has been sent or received yet)
         /// </summary>
         /// <param name="channel">Channel which we created for the remote socket.</param>
         /// <returns></returns>
@@ -77,6 +77,8 @@ namespace Griffin.Net.Protocols.Http
             var pos = error.Message.IndexOfAny(new[] {'\r', '\n'});
             var descr = pos == -1 ? error.Message : error.Message.Substring(0, pos);
             var response = new HttpResponseBase(HttpStatusCode.BadRequest, descr, "HTTP/1.1");
+            var counter = (int)channel.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 1);
+            response.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
             channel.Send(response);
             channel.Close();
         }

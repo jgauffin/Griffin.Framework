@@ -4,6 +4,9 @@ using System.IO;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
+    /// <summary>
+    /// Encodes web socket messages over  HTTP
+    /// </summary>
     public class WebSocketEncoder : IMessageEncoder
     {
         private readonly HttpMessageEncoder _httpMessageEncoder;
@@ -13,7 +16,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         private int _offset;
         private int _totalAmountToSend;
         private IHttpMessage _handshake;
-        private bool _isWebSocket;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketEncoder"/> class.
@@ -21,7 +23,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         public WebSocketEncoder()
         {
             _httpMessageEncoder = new HttpMessageEncoder();
-            _isWebSocket = false;
         }
 
         /// <summary>
@@ -50,7 +51,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                     if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
                     {
                         _handshake = httpMessage;
-                        _isWebSocket = true;
                     }
                 }
                 catch (Exception e)
@@ -173,6 +173,9 @@ namespace Griffin.Net.Protocols.Http.WebSocket
             return _totalAmountToSend <= 0;
         }
 
+        /// <summary>
+        /// Reset encoder state for a new HTTP request.
+        /// </summary>
         public void Clear()
         {
             _httpMessageEncoder.Clear();

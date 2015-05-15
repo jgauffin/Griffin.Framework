@@ -1,4 +1,5 @@
-﻿using Griffin.Net.Channels;
+﻿using System;
+using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
@@ -7,10 +8,15 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// </summary>
     public class WebSocketClientConnectEventArgs : ClientConnectedEventArgs
     {
-
+        /// <summary>
+        /// Create a new instance of <see cref="WebSocketClientConnectEventArgs"/>
+        /// </summary>
+        /// <param name="channel">Channel that connected</param>
+        /// <param name="request">Request that we received</param>
         public WebSocketClientConnectEventArgs(ITcpChannel channel, IHttpRequest request)
             : base(channel)
         {
+            if (request == null) throw new ArgumentNullException("request");
             Request = request;
         }
 

@@ -211,8 +211,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
-                mapper.CommandBuilder.TruncateCommand(cmd);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.TruncateCommand(cmd);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -233,15 +240,30 @@ namespace Griffin.Data.Mapper
         /// connection.Insert(user);
         /// </code>
         /// </example>
-        public static void Insert<TEntity>(this IDbConnection connection, TEntity entity)
+        public static object Insert<TEntity>(this IDbConnection connection, TEntity entity)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
-                mapper.CommandBuilder.InsertCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.InsertCommand(cmd, entity);
+                    var keys = mapper.GetKeys(entity);
+                    if (keys.Length == 1)
+                    {
+                        var id = cmd.ExecuteScalar();
+                        if (id != null && id != DBNull.Value)
+                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                        return id;
+                    }
+                    return cmd.ExecuteScalar();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -266,8 +288,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
-                mapper.CommandBuilder.UpdateCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.UpdateCommand(cmd, entity);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -294,8 +323,15 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
-                mapper.CommandBuilder.DeleteCommand(cmd, entity);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    mapper.CommandBuilder.DeleteCommand(cmd, entity);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -331,9 +367,16 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
-                cmd.CommandText = "DELETE FROM " + mapper.TableName + " WHERE ";
-                cmd.ApplyConstraints(mapper, constraints);
-                cmd.ExecuteNonQuery();
+                try
+                {
+                    cmd.CommandText = "DELETE FROM " + mapper.TableName + " WHERE ";
+                    cmd.ApplyConstraints(mapper, constraints);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -361,15 +404,22 @@ namespace Griffin.Data.Mapper
 
             using (var cmd = connection.CreateCommand())
             {
-                cmd.CommandText = sql;
-                if (parameters != null)
+                try
                 {
-                    foreach (var kvp in parameters.ToDictionary())
+                    cmd.CommandText = sql;
+                    if (parameters != null)
                     {
-                        cmd.AddParameter(kvp.Key, kvp.Value ?? DBNull.Value);
+                        foreach (var kvp in parameters.ToDictionary())
+                        {
+                            cmd.AddParameter(kvp.Key, kvp.Value ?? DBNull.Value);
+                        }
                     }
+                    cmd.ExecuteNonQuery();
                 }
-                cmd.ExecuteNonQuery();
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
             }
         }
 
@@ -461,9 +511,16 @@ namespace Griffin.Data.Mapper
             var mapping = EntityMappingProvider.GetMapper<TEntity>();
 
             var cmd = connection.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-            var reader = cmd.ExecuteReader();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            try
+            {
+                cmd.ApplyQuerySql(mapping, query, parameters);
+                var reader = cmd.ExecuteReader();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
         /// <summary>
@@ -511,9 +568,16 @@ namespace Griffin.Data.Mapper
             if (connection == null) throw new ArgumentNullException("connection");
 
             var cmd = connection.CreateDbCommand();
-            cmd.ApplyQuerySql(mapping, query, parameters);
-            var reader = cmd.ExecuteReader();
-            return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            try
+            {
+                cmd.ApplyQuerySql(mapping, query, parameters);
+                var reader = cmd.ExecuteReader();
+                return new AdoNetEntityEnumerable<TEntity>(cmd, reader, mapping, ownsConnection);
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
 
 
@@ -603,16 +667,23 @@ namespace Griffin.Data.Mapper
             cmd.ApplyQuerySql(mapping, query, parameters);
 
             var items = new List<TEntity>();
-            using (var reader = cmd.ExecuteReader())
+            try
             {
-                while (reader.Read())
+                using (var reader = cmd.ExecuteReader())
                 {
-                    var entity = mapping.Create(reader);
-                    mapping.Map(reader, entity);
-                    items.Add((TEntity)entity);
+                    while (reader.Read())
+                    {
+                        var entity = mapping.Create(reader);
+                        mapping.Map(reader, entity);
+                        items.Add((TEntity)entity);
+                    }
                 }
+                return items;
             }
-            return items;
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
         }
     }
 }

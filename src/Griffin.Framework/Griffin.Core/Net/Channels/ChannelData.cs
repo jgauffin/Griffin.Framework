@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Griffin.Net.Channels
 {
     /// <summary>
-    /// Uses a concurrent dictionary to store all itemns.
+    /// Uses a concurrent dictionary to store all items.
     /// </summary>
     public class ChannelData : IChannelData
     {
@@ -30,7 +30,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <param name="key">Key for the value to update</param>
         /// <param name="newValue">Value to set</param>
-        /// <param name="existingValue">Value that we've previously retreived</param>
+        /// <param name="existingValue">Value that we've previously retrieved</param>
         /// <returns><c>true</c> if the existing value is the same as the one in the dictionary</returns>
         public bool TryUpdate(string key, object newValue, object existingValue)
         {

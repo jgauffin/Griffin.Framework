@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Griffin.Cqs.Server")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCopyright("Copyright ©  2014 Gauffin Interactive AB")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

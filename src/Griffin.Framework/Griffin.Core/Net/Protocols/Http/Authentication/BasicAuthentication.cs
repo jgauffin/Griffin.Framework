@@ -68,7 +68,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
         /// </summary>
         /// <param name="request">Request being authenticated</param>
         /// <returns>Authenticated user if successful; otherwise null.</returns>
-        public string Authenticate(IHttpRequest request)
+        public IAuthenticationUser Authenticate(IHttpRequest request)
         {
             var authHeader = request.Headers["Authorization"];
             if (authHeader == null)
@@ -93,7 +93,12 @@ namespace Griffin.Net.Protocols.Http.Authentication
             if (user == null)
                 return null;
 
-            if (user.Password == null)
+            if (user.Password == null && user.HA1 == null)
+            {
+                if (!_userService.ComparePassword(user, password))
+                    throw new HttpException(HttpStatusCode.Unauthorized, "Incorrect username or password");
+            }
+            else if (user.Password == null)
             {
                 var ha1 = DigestAuthenticator.GetHa1(request.Uri.Host, userName, password);
                 if (ha1 != user.HA1)
@@ -105,7 +110,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
                     throw new HttpException(HttpStatusCode.Unauthorized, "Incorrect username or password");
             }
 
-            return user.Username;
+            return user;
         }
 
         #endregion

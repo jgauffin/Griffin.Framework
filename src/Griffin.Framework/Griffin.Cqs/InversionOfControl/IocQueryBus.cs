@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Authorization;
 
 namespace Griffin.Cqs.InversionOfControl
 {
@@ -47,12 +48,19 @@ namespace Griffin.Cqs.InversionOfControl
             using (var scope = _container.CreateScope())
             {
                 var handlerList = scope.ResolveAll(handler);
-                var handlers = handlerList.ToArray();
+                var handlers = handlerList.ToList();
 
-                if (handlers.Length == 0)
+                if (handlers.Count == 0)
                     throw new CqsHandlerMissingException(query.GetType());
-                if (handlers.Length != 1)
+                if (handlers.Count != 1)
                     throw new OnlyOneHandlerAllowedException(query.GetType());
+
+
+                if (GlobalConfiguration.AuthorizationFilter != null)
+                {
+                    var ctx = new AuthorizationFilterContext(query, handlers);
+                    GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
+                }
 
                 var method = handler.GetMethod("ExecuteAsync");
                 try

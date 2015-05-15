@@ -73,11 +73,11 @@ namespace Griffin.Net.Protocols.Http.Serializers
             var encoding = encodingStr != null ? Encoding.GetEncoding(encodingStr) : Encoding.UTF8;
 
             //multipart/form-data, boundary=AaB03x
-            var boundry = contentTypeHeader.Parameters.Get("boundary");
-            if (boundry == null)
+            var boundary = contentTypeHeader.Parameters.Get("boundary");
+            if (boundary == null)
                 throw new DecoderFailureException("Missing boundary in content type: " + contentType);
 
-            var multipart = new HttpMultipart(source, boundry.Value, encoding);
+            var multipart = new HttpMultipart(source, boundary.Value, encoding);
             HttpMultipart.Element element;
             while ((element = multipart.ReadNextElement()) != null)
             {

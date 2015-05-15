@@ -96,7 +96,9 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
         ///     Begin request is always called for all modules.
         /// </summary>
         /// <param name="context">Context information</param>
+#pragma warning disable 1998
         public async Task BeginRequestAsync(IClientContext context)
+#pragma warning restore 1998
         {
         }
 
@@ -110,7 +112,9 @@ namespace Griffin.Net.LiteServer.Modules.Authentication
         ///         far.
         ///     </para>
         /// </remarks>
+#pragma warning disable 1998
         public async Task EndRequest(IClientContext context)
+#pragma warning restore 1998
         {
         }
 

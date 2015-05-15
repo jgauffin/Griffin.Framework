@@ -80,7 +80,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         protected virtual void Value_Before()
         {
             if (Current == '"')
-                _parserMethod = Value_Qouted;
+                _parserMethod = Value_Quoted;
             else
                 _parserMethod = Value;
 
@@ -102,9 +102,9 @@ namespace Griffin.Net.Protocols.Http.Messages
         }
 
         /// <summary>
-        /// Read cookie value qouted
+        /// Read cookie value quoted
         /// </summary>
-        private void Value_Qouted()
+        private void Value_Quoted()
         {
             MoveNext(); // skip '"'
 
@@ -145,6 +145,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         private void OnCookie(string name, string value)
         {
             if (name == null) throw new ArgumentNullException("name");
+            if (name == "") return; // ignore empty cookie names as defined in rfc 6265 http://tools.ietf.org/html/rfc6265
 
             _cookies.Add(new HttpCookie(name, value));
         }

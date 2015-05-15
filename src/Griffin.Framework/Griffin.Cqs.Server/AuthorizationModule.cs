@@ -13,15 +13,21 @@ namespace Griffin.Cqs.Server
     /// </summary>
     public class AuthorizationModule : IServerModule
     {
+#pragma warning disable 1998
         public async Task BeginRequestAsync(IClientContext context)
+#pragma warning restore 1998
         {
         }
 
+#pragma warning disable 1998
         public async Task EndRequest(IClientContext context)
+#pragma warning restore 1998
         {
         }
 
+#pragma warning disable 1998
         public async Task<ModuleResult> ProcessAsync(IClientContext context)
+#pragma warning restore 1998
         {
             var attributes = context.RequestMessage.GetType().GetCustomAttributes<AuthorizeAttribute>();
             foreach (var attribute in attributes)

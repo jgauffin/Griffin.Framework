@@ -107,6 +107,7 @@
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderFactory.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\ICommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\NamespaceDoc.cs" />
+    <Compile Include="Data\Mapper\CommandBuilders\PostgreSqlCommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\SqlServerCommandBuilder.cs" />
     <Compile Include="Data\Mapper\CommandExtensions.cs" />
     <Compile Include="Data\Mapper\ConnectionExtensions.cs" />
@@ -114,11 +115,12 @@
     <Compile Include="Data\Mapper\CrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMapper.cs" />
     <Compile Include="Data\Mapper\EntityMappingProvider.cs" />
+    <Compile Include="Data\Mapper\FluentPropertyMapping.cs" />
     <Compile Include="Data\Mapper\ICrudEntityMapper.cs" />
     <Compile Include="Data\Mapper\IMappingProvider.cs" />
     <Compile Include="Data\Mapper\IPropertyMapping.cs" />
     <Compile Include="Data\Mapper\IEntityMapper.cs" />
-    <Compile Include="Data\Mapper\IUnitOfWorkExtensions.cs" />
+    <Compile Include="Data\Mapper\UnitOfWorkExtensions.cs" />
     <Compile Include="Data\Mapper\MappingException.cs" />
     <Compile Include="Data\Mapper\MappingForAttribute.cs" />
     <Compile Include="Data\Mapper\MappingNotFoundException.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="Data\UnitOfWorkExtensions.cs" />
     <Compile Include="Data\UnitOfWorkFactory.cs" />
     <Compile Include="External\Inflector.cs" />
+    <Compile Include="External\Json.cs" />
     <Compile Include="GuidFactory.cs" />
     <Compile Include="InstanceFactory.cs" />
     <Compile Include="IO\DirectoryUtils.cs" />
@@ -354,11 +357,19 @@
     <Compile Include="Net\Channels\TcpChannelFactory.cs" />
     <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
     <Compile Include="ObjectExtensions.cs" />
-    <Compile Include="ObjectToDictionaryExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueFullException.cs" />
+    <Compile Include="Reflection\ExpressionExtensions.cs" />
     <Compile Include="Security\IPasswordHasher.cs" />
     <Compile Include="Security\PasswordHasherRfc2898.cs" />
+    <Compile Include="Signals\NamespaceDoc.cs" />
+    <Compile Include="Signals\Signal.cs" />
+    <Compile Include="Signals\SignalDTO.cs" />
+    <Compile Include="Signals\SignalManager.cs" />
+    <Compile Include="Signals\SignalRaisedEventArgs.cs" />
+    <Compile Include="Signals\SignalSubmitter.cs" />
+    <Compile Include="Signals\SignalSuppressedEventArgs.cs" />
+    <Compile Include="Signals\SignalKind.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="WaitHandleExtensions.cs" />
   </ItemGroup>

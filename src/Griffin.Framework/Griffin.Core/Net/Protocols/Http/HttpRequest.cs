@@ -4,7 +4,7 @@ using Griffin.Net.Protocols.Http.Messages;
 namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
-    /// A HTTP request where the included body have been parsed
+    /// A HTTP request where the message content have been parsed into <c>Form</c> and <c>Files</c>.
     /// </summary>
     public class HttpRequest : HttpRequestBase, IHttpMessageWithForm
     {
@@ -32,11 +32,6 @@ namespace Griffin.Net.Protocols.Http
         public IHttpFileCollection Files { get; set; }
 
         /// <summary>
-        /// Included cookies.
-        /// </summary>
-        public IHttpCookieCollection<IHttpCookie> Cookies { get; set; }
-
-        /// <summary>
         /// Create a response for this request.
         /// </summary>
         /// <returns>Response</returns>
@@ -52,7 +47,7 @@ namespace Griffin.Net.Protocols.Http
         /// </code>
         /// </para>
         /// </remarks>
-        public override IHttpResponse CreateResponse()
+        public override HttpResponseBase CreateResponse()
         {
             var response = new HttpResponse(200, "OK", HttpVersion);
             var pipeline = Headers[PipelineIndexKey];

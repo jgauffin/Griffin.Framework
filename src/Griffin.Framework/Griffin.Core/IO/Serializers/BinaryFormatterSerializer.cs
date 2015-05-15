@@ -15,7 +15,7 @@ namespace Griffin.IO.Serializers
     public class BinaryFormatterSerializer : ISerializer
     {
         /// <summary>
-        /// Servialize
+        /// Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>
@@ -26,7 +26,7 @@ namespace Griffin.IO.Serializers
         }
 
         /// <summary>
-        /// Servialize
+        /// Serialize
         /// </summary>
         /// <param name="source">object to serialize</param>
         /// <param name="destination">Stream to write to</param>

@@ -41,7 +41,7 @@ namespace Griffin.Net.Channels
         /// <param name="encoder">Used to encode messages before they are put in the MicroMessage body of outbound messages.</param>
         /// <param name="decoder">
         ///     Used to decode the body of incoming MicroMessages. The <c>MessageReceived</c> delegate will be
-        ///     overriden by this class.
+        ///     overridden by this class.
         /// </param>
         public TcpChannel(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
@@ -88,12 +88,12 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one have been sent)
+        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one has been sent)
         /// </summary>
         /// <remarks>
         /// <para>
         /// This property exists so that you can switch implementation.  This is used by the HttpListener so that we can add support
-        /// for message pipelininig
+        /// for message pipelining
         /// </para>
         /// </remarks>
         public IMessageQueue OutboundMessageQueue
@@ -124,7 +124,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Channel have sent a message
+        ///     Channel has sent a message
         /// </summary>
         public MessageHandler MessageSent
         {
@@ -147,7 +147,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         The handler MUST close the connection once a reply have been sent.
+        ///         The handler MUST close the connection once a reply has been sent.
         ///     </para>
         /// </remarks>
         public ChannelFailureHandler ChannelFailure { get; set; }
@@ -229,7 +229,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Can be used to store information in the channel so that you can access it at later requests.
+        ///     Can be used to store information in the channel so that you can access it for later requests.
         /// </summary>
         /// <remarks>
         ///     <para>All data is lost when the channel is closed.</para>
@@ -240,7 +240,7 @@ namespace Griffin.Net.Channels
         /// Pre processes incoming bytes before they are passed to the message builder.
         /// </summary>
         /// <remarks>
-        /// Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        /// Can be used if you for instance use a custom authentication mechanism which needs to process incoming
         /// bytes.
         /// </remarks>
         public BufferPreProcessorHandler BufferPreProcessor
@@ -265,7 +265,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Cleanup everything so that the channel can be resused.
+        ///     Cleanup everything so that the channel can be reused.
         /// </summary>
         public void Cleanup()
         {
@@ -313,6 +313,7 @@ namespace Griffin.Net.Channels
 
 
         /// <summary>
+        /// Detected a disconnect
         /// </summary>
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         private void HandleDisconnect(SocketError socketError)
@@ -328,6 +329,27 @@ namespace Griffin.Net.Channels
                 ChannelFailure(this, exception);
             }
         }
+
+
+        /// <summary>
+        /// Detected a disconnect
+        /// </summary>
+        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
+        /// <param name="exception">Why we got disconnected</param>
+        private void HandleDisconnect(SocketError socketError, Exception exception)
+        {
+            try
+            {
+                _socket.Close();
+                _connected = false;
+                _disconnectAction(this, exception);
+            }
+            catch (Exception ex)
+            {
+                ChannelFailure(this, ex);
+            }
+        }
+
 
         private void OnMessageReceived(object obj)
         {
@@ -421,7 +443,7 @@ namespace Griffin.Net.Channels
             }
             catch (Exception e)
             {
-                HandleDisconnect(SocketError.ConnectionReset);
+                HandleDisconnect(SocketError.ConnectionReset, e);
             }
         }
 
@@ -436,7 +458,7 @@ namespace Griffin.Net.Channels
                 }
                 catch (Exception e)
                 {
-                    HandleDisconnect(SocketError.ConnectionReset);
+                    HandleDisconnect(SocketError.ConnectionReset, e);
                 }
                 _currentOutboundMessage = null;
                 _closeEvent.Release();
@@ -453,7 +475,7 @@ namespace Griffin.Net.Channels
             }
             catch (Exception e)
             {
-                HandleDisconnect(SocketError.ConnectionReset);
+                HandleDisconnect(SocketError.ConnectionReset, e);
             }
         }
     }

@@ -5,8 +5,12 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 {
     /// <summary>
     /// WebSocket frame
-    /// <seealso cref="http://tools.ietf.org/html/rfc6455#section-5.2"/>
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The specification for this frame can be found at http://tools.ietf.org/html/rfc6455#section-5.2.
+    /// </para>
+    /// </remarks>
     internal class WebSocketFrame
     {
         /// <summary>

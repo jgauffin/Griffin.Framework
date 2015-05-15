@@ -8,7 +8,7 @@ namespace Griffin.Logging.Loggers
     /// <summary>
     /// Base class for loggers.
     /// </summary>
-    /// <remarks>All you have to do is to override <see cref="Write"/>.</remarks>
+    /// <remarks>All you have to do is to override the <see cref="Write(LogEntry)"/> method.</remarks>
     public abstract class BaseLogger : ILogger
     {
         private readonly Type _loggedType;
@@ -51,7 +51,7 @@ namespace Griffin.Logging.Loggers
         #region ILogger Members
 
         /// <summary>
-        /// Detailed framework messages used to find wierd errors.
+        /// Detailed framework messages used to find weird errors.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="formatters">Formatters used in the <c>message</c>.</param>
@@ -61,7 +61,7 @@ namespace Griffin.Logging.Loggers
         }
 
         /// <summary>
-        /// Detailed framework messages used to find wierd errors.
+        /// Detailed framework messages used to find weird errors.
         /// </summary>
         /// <param name="message">Message to log</param>
         /// <param name="exception">Thrown exception</param>

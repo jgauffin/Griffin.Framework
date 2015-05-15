@@ -37,5 +37,21 @@ namespace Griffin.Data
             return p;
         }
 
+        /// <summary>
+        /// Creates a <c>DataException</c> using the command text and sql parameters.
+        /// </summary>
+        /// <param name="cmd">Command to build an exception from.</param>
+        /// <param name="inner">Inner exception.</param>
+        /// <returns>Created exception</returns>
+        public static DataException CreateDataException(this IDbCommand cmd, Exception inner)
+        {
+            var str = "Failed to execute sql.\r\nQuery:" + cmd.CommandText;
+            foreach (IDbDataParameter parameter in cmd.Parameters)
+            {
+                str += "\r\n\t" + parameter.ParameterName + ": " + (parameter.Value ?? "NULL");
+            }
+            return new DataException(str, inner);
+        }
+
     }
 }

@@ -18,7 +18,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <param name="command">Command that will be executed after this method call.</param>
         /// <param name="entity">Entity specified; If possible, set the entity primary key value when done.</param>
         /// <remarks>
-        /// <para>The command should not be executed in the imlementation of this interface. </para>
+        /// <para>The command should not be executed in the implementation of this interface. </para>
         /// <para>You may however execute commads </para>
         /// </remarks>
         void InsertCommand(IDbCommand command, object entity);
@@ -45,5 +45,13 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <para>Some dialects have a special command which can be used to DELETE all rows from a table, everyone else should just use a DELETE statement without a WHERE clause.</para>
         /// </remarks>
         void TruncateCommand(IDbCommand command);
+
+        /// <summary>
+        /// Modify SQL statement so that the result is paged.
+        /// </summary>
+        /// <param name="command">Command to modify</param>
+        /// <param name="pageNumber">One based index</param>
+        /// <param name="pageSize">Items per page.</param>
+        void Paging(IDbCommand command, int pageNumber, int pageSize);
     }
 }

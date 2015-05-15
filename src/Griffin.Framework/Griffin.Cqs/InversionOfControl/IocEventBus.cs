@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Container;
+using Griffin.Cqs.Authorization;
 
 namespace Griffin.Cqs.InversionOfControl
 {
@@ -45,7 +46,16 @@ namespace Griffin.Cqs.InversionOfControl
         {
             using (var scope = _container.CreateScope())
             {
-                var implementations = scope.ResolveAll<IApplicationEventSubscriber<TApplicationEvent>>();
+                var implementations = scope
+                    .ResolveAll<IApplicationEventSubscriber<TApplicationEvent>>()
+                    .ToList();
+
+                if (GlobalConfiguration.AuthorizationFilter != null)
+                {
+                    var ctx = new AuthorizationFilterContext(e, implementations);
+                    GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
+                }
+
                 var tasks = implementations.Select(x => x.HandleAsync(e));
                 Task task = null;
                 try

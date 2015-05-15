@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net;
-using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Http;
@@ -16,14 +15,6 @@ using Newtonsoft.Json.Converters;
 
 namespace DemoTest
 {
-    public class MyProtocolClient : ChannelTcpClient<object>
-    {
-        public MyProtocolClient() : base(new MyProtocolEncoder(), new MyProtocolDecoder(), new BufferSlice(new byte[65535], 0, 65535))
-        {
-        }
-
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -33,7 +24,7 @@ namespace DemoTest
                 () => new MyProtocolEncoder()
             );
             var server = new ChannelTcpListener(config);
-            server.MessageReceived += OnMessage;
+            server.MessageReceived += OnServerMessageReceived;
             server.Start(IPAddress.Any, 0);
 
 
@@ -53,9 +44,11 @@ namespace DemoTest
             Console.WriteLine("Client received: " + response);
         }
 
-        private static void OnMessage(ITcpChannel channel, object message)
+        private static void OnServerMessageReceived(ITcpChannel channel, object message)
         {
             var ping = (Ping) message;
+            if (ping == null)
+                throw new Exception("Server received unexpected object type.");
 
             Console.WriteLine("Server received: " + message);
             channel.Send(new Pong

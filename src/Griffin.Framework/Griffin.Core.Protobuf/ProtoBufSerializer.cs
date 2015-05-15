@@ -12,7 +12,7 @@ namespace Griffin.Core.Protobuf
     public class ProtoBufSerializer : IMessageSerializer
     {
         private static readonly ConcurrentDictionary<string, Type> _types = new ConcurrentDictionary<string, Type>();
-        private static readonly string[] ContentTypes = {"application/protbuf"};
+        private static readonly string[] ContentTypes = {"application/protobuf"};
 
         /// <summary>
         ///     Serialize an object to the stream.

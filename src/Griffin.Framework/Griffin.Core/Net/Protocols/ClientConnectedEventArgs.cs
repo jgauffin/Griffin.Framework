@@ -18,6 +18,7 @@ namespace Griffin.Net.Protocols
             if (channel == null) throw new ArgumentNullException("channel");
             Channel = channel;
             MayConnect = true;
+            SendResponse = true;
         }
 
         /// <summary>
@@ -42,6 +43,14 @@ namespace Griffin.Net.Protocols
         {
             MayConnect = false;
         }
+
+        /// <summary>
+        /// The library should send a response.
+        /// </summary>
+        /// <value>
+        /// Default is <c>true</c>.
+        /// </value>
+        public bool SendResponse { get; set; }
 
         /// <summary>
         ///     Close the listener, but send a response (you are yourself responsible of encoding it to a message)

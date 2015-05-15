@@ -28,7 +28,7 @@ namespace Griffin.Net.LiteServer
         private readonly List<IServerModule> _requestModules = new List<IServerModule>();
 
         /// <summary>
-        ///     Add a module which is used to authenticate (identitfy) the user.
+        ///     Add a module which is used to authenticate (identify) the user.
         /// </summary>
         /// <param name="module">Module to add</param>
         /// <remarks>
@@ -88,18 +88,14 @@ namespace Griffin.Net.LiteServer
         }
 
         /// <summary>
-        ///     Add a module which is designed to handle certain kind of requests.
+        ///     Add a module which do some post processing after the actual request is being handled (user have been authenticated
+        ///     and authorized when this module is being invoked)
         /// </summary>
         /// <param name="module">Module</param>
-        /// <remarks>
-        ///     <para>
-        ///         Used to process messages to generate responses.
-        ///     </para>
-        /// </remarks>
         public void AddPostHandler(IServerModule module)
         {
             if (module == null) throw new ArgumentNullException("module");
-            _requestModules.Add(module);
+            _postRequestModules.Add(module);
         }
 
         /// <summary>

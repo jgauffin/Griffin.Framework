@@ -17,12 +17,18 @@ namespace Griffin.Net.Protocols.Http.Authentication
     /// </remarks>
     public class CookieAuthentication : IAuthenticator
     {
+        private readonly IAccountService _accountService;
+
         /// <summary>
+        ///     Create a new instance of <see cref="CookieAuthentication" />.
         /// </summary>
         /// <param name="hashKey">Used to hash the ip address, recommended size is 64 bytes.</param>
-        public CookieAuthentication(string hashKey)
+        /// <param name="accountService">Used to load users</param>
+        public CookieAuthentication(string hashKey, IAccountService accountService)
         {
+            _accountService = accountService;
             CookieName = "GriffinAuth";
+            AuthenticationScheme = "COOKIE";
             HashKey = hashKey;
         }
 
@@ -33,7 +39,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
 
 
         /// <summary>
-        /// TODO: why do we use an encoding and not Base64?
+        ///     TODO: why do we use an encoding and not Base64?
         /// </summary>
         public Encoding Encoding { get; set; }
 
@@ -64,7 +70,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
         /// <param name="request">Request being authenticated</param>
         /// <returns>UserName if successful; otherwise null.</returns>
         /// <exception cref="HttpException">403 Forbidden if the nonce is incorrect.</exception>
-        public string Authenticate(IHttpRequest request)
+        public IAuthenticationUser Authenticate(IHttpRequest request)
         {
             var req = request as HttpRequest;
             if (req == null)
@@ -82,16 +88,19 @@ namespace Griffin.Net.Protocols.Http.Authentication
             if (ourValue != cookie.Value.Substring(0, pos))
                 return null;
 
-            return cookie.Value.Substring(pos + 1);
+            var userName = cookie.Value.Substring(pos + 1);
+            return _accountService.Lookup(userName, req.Uri);
         }
 
         /// <summary>
-        /// Create a new cookie
+        ///     Create a new cookie
         /// </summary>
         /// <param name="remoteEndPoint">End point that want's an authentication cookie</param>
         /// <param name="userName">User name of the authenticated user</param>
         /// <param name="isPersistent">Store cookie for 60 days</param>
-        /// <returns><c>HttpResponseCookie</c></returns>
+        /// <returns>
+        ///     <c>HttpResponseCookie</c>
+        /// </returns>
         public HttpResponseCookie CreateCookie(EndPoint remoteEndPoint, string userName, bool isPersistent)
         {
             return new HttpResponseCookie(CookieName, Encode(remoteEndPoint) + ";" + userName)
@@ -104,7 +113,7 @@ namespace Griffin.Net.Protocols.Http.Authentication
         }
 
         /// <summary>
-        /// Hash end point
+        ///     Hash end point
         /// </summary>
         /// <param name="remoteEndPoint">Endpoint to hash</param>
         /// <returns></returns>

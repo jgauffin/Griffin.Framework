@@ -1,12 +1,46 @@
-﻿using Griffin.Net.Channels;
-using System;
+﻿using System;
 using System.Net;
+using System.Net.Configuration;
+using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
+    /// <summary>
+    ///     A HttpListener that automatically transitions all incoming requests to WebSocket protocol.
+    /// </summary>
     public class WebSocketListener : HttpListener
     {
         private MessageHandler _webSocketMessageReceived;
+
+        /// <summary>
+        ///     Create a new instance of <see cref="WebSocketListener" />.
+        /// </summary>
+        /// <param name="configuration">Custom server configuration</param>
+        public WebSocketListener(ChannelTcpListenerConfiguration configuration)
+            : base(configuration)
+        {
+        }
+
+        /// <summary>
+        ///     Create a new instance of  <see cref="WebSocketListener" />.
+        /// </summary>
+        public WebSocketListener()
+        {
+            var config = new ChannelTcpListenerConfiguration(
+                () => new WebSocketDecoder(),
+                () => new WebSocketEncoder());
+
+            Configure(config);
+        }
+
+        /// <summary>
+        ///     WebSocket message received handler
+        /// </summary>
+        public MessageHandler WebSocketMessageReceived
+        {
+            get { return _webSocketMessageReceived; }
+            set { _webSocketMessageReceived = value ?? delegate { }; }
+        }
 
         /// <summary>
         ///     A websocket client have connected (websocket handshake request is complete)
@@ -23,37 +57,19 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// </summary>
         public event EventHandler<ClientDisconnectedEventArgs> WebSocketClientDisconnected = delegate { };
 
-        public WebSocketListener(ChannelTcpListenerConfiguration configuration)
-            : base(configuration)
-        {
-        }
-
-        public WebSocketListener()
-        {
-            var config = new ChannelTcpListenerConfiguration(
-                () => new WebSocketDecoder(),
-                () => new WebSocketEncoder());
-
-            Configure(config);
-        }
-
         /// <summary>
-        /// WebSocket message received handler
+        /// Handles the upgrade
         /// </summary>
-        public MessageHandler WebSocketMessageReceived
-        {
-            get { return _webSocketMessageReceived; }
-            set { _webSocketMessageReceived = value ?? delegate { }; }
-        }
-
-        protected override void OnMessage(Channels.ITcpChannel source, object msg)
+        /// <param name="source">Channel that we've received a request from</param>
+        /// <param name="msg">Message received.</param>
+        protected override void OnMessage(ITcpChannel source, object msg)
         {
             var httpMessage = msg as IHttpMessage;
             if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
             {
                 if (httpMessage is IHttpRequest) // server mode
                 {
-                    var args = new WebSocketClientConnectEventArgs(source, (IHttpRequest)httpMessage);
+                    var args = new WebSocketClientConnectEventArgs(source, (IHttpRequest) httpMessage);
                     WebSocketClientConnect(this, args);
 
                     if (args.MayConnect)
@@ -65,9 +81,10 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 
                         source.Send(response);
 
-                        WebSocketClientConnected(this, new WebSocketClientConnectedEventArgs(source, (IHttpRequest)httpMessage, response));
+                        WebSocketClientConnected(this,
+                            new WebSocketClientConnectedEventArgs(source, (IHttpRequest) httpMessage, response));
                     }
-                    else
+                    else if (args.SendResponse)
                     {
                         var response = new HttpResponseBase(HttpStatusCode.NotImplemented, "Not Implemented", "HTTP/1.1");
                         if (args.Response != null)
@@ -77,11 +94,14 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                     }
                     return;
                 }
-                else if (httpMessage is IHttpResponse) // client mode
+
+                if (httpMessage is IHttpResponse) // client mode
                 {
-                    WebSocketClientConnected(this, new WebSocketClientConnectedEventArgs(source, null, (IHttpResponse)httpMessage));
+                    WebSocketClientConnected(this,
+                        new WebSocketClientConnectedEventArgs(source, null, (IHttpResponse) httpMessage));
                 }
             }
+
             var webSocketMessage = msg as IWebSocketMessage;
             if (webSocketMessage != null)
             {
@@ -95,7 +115,8 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                         source.Send(new WebSocketMessage(WebSocketOpcode.Close));
                         source.Close();
 
-                        WebSocketClientDisconnected(this, new ClientDisconnectedEventArgs(source, new Exception("WebSocket closed")));
+                        WebSocketClientDisconnected(this,
+                            new ClientDisconnectedEventArgs(source, new Exception("WebSocket closed")));
                         return;
                 }
 
@@ -105,6 +126,5 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 
             base.OnMessage(source, msg);
         }
-
     }
 }

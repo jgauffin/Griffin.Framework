@@ -71,7 +71,7 @@ namespace Griffin.Core.Json
             var writer = new StreamWriter(destination, Encoding);
             serializer.Serialize(writer, source);
             writer.Flush();
-            contentType = "application/json;" + source.GetType().GetSimplifiedAssemblyQualifiedName();
+            contentType = "application/json;" + source.GetType().GetSimpleAssemblyQualifiedName();
         }
 
         /// <summary>
