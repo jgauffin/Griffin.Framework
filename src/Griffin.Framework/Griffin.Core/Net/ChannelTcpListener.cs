@@ -210,10 +210,9 @@ namespace Griffin.Net
 
         private void OnAcceptSocket(IAsyncResult ar)
         {
-            var socket = _listener.EndAcceptSocket(ar);
-
             try
             {
+                var socket = _listener.EndAcceptSocket(ar);
                 ITcpChannel channel;
                 if (!_channels.TryPop(out channel))
                 {
