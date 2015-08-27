@@ -10,8 +10,8 @@ namespace Griffin.Net.Channels
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         Channels should be designed so that they can be reused after a client have disconnected. Hence you have sure
-    ///         that the state is cleared when the <c>Cleanup()</c> method is invoked. Buffers etc should still be used,
+    ///         Channels should be designed so that they can be reused after a client has disconnected. Hence you can be sure
+    ///         that the state is cleared when the <c>Cleanup()</c> method is invoked. Buffers etc may still be being used,
     ///         but any internal send queue etc should be emptied.
     ///     </para>
     /// </remarks>
@@ -28,16 +28,16 @@ namespace Griffin.Net.Channels
         MessageHandler MessageReceived { get; set; }
 
         /// <summary>
-        ///     Channel have sent a message
+        ///     Channel has sent a message
         /// </summary>
         MessageHandler MessageSent { get; set; }
 
         /// <summary>
-        ///     Invoked if the decoder failes to handle an incoming message
+        ///     Invoked if the decoder fails to handle an incoming message
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         The handler MUST close the connection once a reply have been sent.
+        ///         The handler MUST close the connection once a reply has been sent.
         ///     </para>
         /// </remarks>
         ChannelFailureHandler ChannelFailure { get; set; }
@@ -61,7 +61,7 @@ namespace Griffin.Net.Channels
         string ChannelId { get; }
 
         /// <summary>
-        ///     Can be used to store information in the channel so that you can access it at later requests.
+        ///     Can be used to store information in the channel so that you can access it for later requests.
         /// </summary>
         /// <remarks>
         ///     <para>All data is lost when the channel is closed.</para>
@@ -73,7 +73,7 @@ namespace Griffin.Net.Channels
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        ///         Can be used if you for instance use a custom authentication mechanism which needs to process incoming
         ///         bytes instead of deserialized messages.
         ///     </para>
         /// </remarks>

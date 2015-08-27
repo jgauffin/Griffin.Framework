@@ -1240,6 +1240,8 @@ namespace Griffin.Core.External.SimpleJson
 
         internal static readonly Type[] EmptyTypes = new Type[0];
         internal static readonly Type[] ArrayConstructorParameterTypes = new Type[] { typeof(int) };
+        public static bool UsePrivateConstructors = true;
+        public static bool UsePrivateMembers = true;
 
         private static readonly string[] Iso8601Format = new string[]
                                                              {
@@ -1270,13 +1272,10 @@ namespace Griffin.Core.External.SimpleJson
             IDictionary<string, ReflectionUtils.GetDelegate> result = new Dictionary<string, ReflectionUtils.GetDelegate>();
             foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
             {
-                if (propertyInfo.CanRead)
-                {
-                    MethodInfo getMethod = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
-                    if (getMethod.IsStatic || !getMethod.IsPublic)
-                        continue;
-                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = ReflectionUtils.GetGetMethod(propertyInfo);
-                }
+                MethodInfo getMethod = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
+                if (getMethod == null || getMethod.IsStatic)
+                    continue;
+                result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = ReflectionUtils.GetGetMethod(propertyInfo);
             }
             foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
             {
@@ -1292,13 +1291,10 @@ namespace Griffin.Core.External.SimpleJson
             IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
             foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
             {
-                if (propertyInfo.CanWrite)
-                {
-                    MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
-                    if (setMethod.IsStatic || !setMethod.IsPublic)
-                        continue;
-                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
-                }
+                MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
+                if (setMethod == null || setMethod.IsStatic)
+                    continue;
+                result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
             }
             foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
             {
@@ -1323,6 +1319,20 @@ namespace Griffin.Core.External.SimpleJson
             if (type == typeof(Guid) && string.IsNullOrEmpty(str))
                 return default(Guid);
 
+            if (type.IsEnum)
+            {
+                if (value.GetType().IsPrimitive)
+                {
+                    var value2 = Convert.ChangeType(value, Enum.GetUnderlyingType(type));
+                    if (!Enum.IsDefined(type, value2))
+                        throw new FormatException(value + " is not a member of enum '" + type.FullName + "'.");
+                    return Enum.ToObject(type, value);
+                }
+
+                if (!Enum.IsDefined(type,value))
+                    throw new FormatException(value + " is not a member of enum '" + type.FullName + "'.");
+                return Enum.Parse(type, value.ToString());
+            }
             if (value == null)
                 return null;
 
@@ -1456,7 +1466,7 @@ namespace Griffin.Core.External.SimpleJson
 
         protected virtual object SerializeEnum(Enum p)
         {
-            return Convert.ToDouble(p, CultureInfo.InvariantCulture);
+            return p.ToString();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
@@ -1607,7 +1617,7 @@ namespace Griffin.Core.External.SimpleJson
                     || genericDefinition == typeof(ICollection<>)
                     || genericDefinition == typeof(IEnumerable<>)
 #if SIMPLE_JSON_READONLY_COLLECTIONS
-                    || genericDefinition == typeof(IReadOnlyCollection<>)
+ || genericDefinition == typeof(IReadOnlyCollection<>)
                     || genericDefinition == typeof(IReadOnlyList<>)
 #endif
 );
@@ -1654,7 +1664,7 @@ namespace Griffin.Core.External.SimpleJson
 #if SIMPLE_JSON_TYPEINFO
                 return type.GetTypeInfo().DeclaredConstructors;
 #else
-                return type.GetConstructors();
+                return type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 #endif
             }
 

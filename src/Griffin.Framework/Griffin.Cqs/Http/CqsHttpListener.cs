@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
-using DotNetCqs;
 using Griffin.Core.External.SimpleJson;
 using Griffin.Cqs.Authorization;
 using Griffin.Cqs.Net;
@@ -18,13 +16,11 @@ using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
 namespace Griffin.Cqs.Http
 {
     /// <summary>
-    ///     Recieves CQS objects over HTTP, processes them and return replies.
+    ///     Receives CQS objects over HTTP, processes them and return replies.
     /// </summary>
     public class CqsHttpListener
     {
-        private readonly Dictionary<string, Type> _cqsTypes =
-            new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
-
+        private readonly CqsObjectMapper _cqsObjectMapper = new CqsObjectMapper();
         private readonly HttpListener _listener = new HttpListener();
         private readonly CqsMessageProcessor _messageProcessor;
         private Action<string> _logger;
@@ -38,6 +34,28 @@ namespace Griffin.Cqs.Http
         {
             if (messageProcessor == null) throw new ArgumentNullException("messageProcessor");
             _messageProcessor = messageProcessor;
+        }
+
+        /// <summary>
+        ///     Assign to authenticate inbound requests.
+        /// </summary>
+        public IAuthenticator Authenticator { get; set; }
+
+        /// <summary>
+        ///     Will use the internal JSON serializer if this property is not specified.
+        /// </summary>
+        public ICqsDeserializer CqsSerializer
+        {
+            get { return _cqsObjectMapper.Deserializer; }
+            set { _cqsObjectMapper.Deserializer = value; }
+        }
+
+        /// <summary>
+        ///     Port that the listener is accepting new connections on.
+        /// </summary>
+        public int LocalPort
+        {
+            get { return _listener.LocalPort; }
         }
 
         /// <summary>
@@ -56,15 +74,15 @@ namespace Griffin.Cqs.Http
         }
 
         /// <summary>
-        ///     Assign to authenticate inbound requests.
+        ///     Assign if you want to use something else than <c>GenericPrincipal</c>.
         /// </summary>
-        public IAuthenticator Authenticator { get; set; }
+        public IPrincipalFactory PrincipalFactory { get; set; }
 
         /// <summary>
         ///     Use to filter inbound requests (or to perform authentication).
         /// </summary>
         /// <returns>
-        ///     Response if you stopped the processing; otherwise <c>null</c> to allow this class to contine process the
+        ///     Response if you stopped the processing; otherwise <c>null</c> to allow this class to continue process the
         ///     inbound message.
         /// </returns>
         public Func<ITcpChannel, HttpRequestBase, HttpResponseBase> RequestFilter
@@ -77,19 +95,6 @@ namespace Griffin.Cqs.Http
                 else
                     _requestFilter = value;
             }
-        }
-
-        /// <summary>
-        ///     Assign if you want to use something else than <c>GenericPrincipal</c>.
-        /// </summary>
-        public IPrincipalFactory PrincipalFactory { get; set; }
-
-        /// <summary>
-        ///     Port that the listener is accepting new connections on.
-        /// </summary>
-        public int LocalPort
-        {
-            get { return _listener.LocalPort; }
         }
 
         /// <summary>
@@ -112,16 +117,7 @@ namespace Griffin.Cqs.Http
         public void Map(Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
-
-            if (!IsCqsType(type))
-                throw new ArgumentException("'" + type.FullName + "' is not a CQS object.");
-
-            if (_cqsTypes.ContainsKey(type.Name))
-                throw new InvalidOperationException(
-                    string.Format("Duplicate mappings for name '{0}'. '{1}' and '{2}'.", type.Name, type.FullName,
-                        _cqsTypes[type.Name].FullName));
-
-            _cqsTypes.Add(type.Name, type);
+            _cqsObjectMapper.Map(type);
         }
 
         /// <summary>
@@ -137,18 +133,8 @@ namespace Griffin.Cqs.Http
         /// </exception>
         public void ScanAssembly(Assembly assembly)
         {
-            foreach (var type in assembly.GetTypes())
-            {
-                if (!IsCqsType(type))
-                    continue;
-
-                if (_cqsTypes.ContainsKey(type.Name))
-                    throw new InvalidOperationException(
-                        string.Format("Duplicate mappings for name '{0}'. '{1}' and '{2}'.", type.Name, type.FullName,
-                            _cqsTypes[type.Name].FullName));
-
-                _cqsTypes.Add(type.Name, type);
-            }
+            if (assembly == null) throw new ArgumentNullException("assembly");
+            _cqsObjectMapper.ScanAssembly(assembly);
         }
 
         /// <summary>
@@ -213,35 +199,6 @@ namespace Griffin.Cqs.Http
             return msg.Substring(0, pos);
         }
 
-        /// <summary>
-        ///     Determines whether the type implements the command handler interface
-        /// </summary>
-        /// <param name="cqsType">The type.</param>
-        /// <returns><c>true</c> if the objects is a command handler; otherwise <c>false</c></returns>
-        private static bool IsCqsType(Type cqsType)
-        {
-            if (cqsType.IsAbstract || cqsType.IsInterface)
-                return false;
-
-            if (cqsType.IsSubclassOf(typeof (Command))
-                || cqsType.IsSubclassOf(typeof (ApplicationEvent)))
-                return true;
-
-            if (cqsType.BaseType == typeof (object) || cqsType.BaseType == null)
-                return false;
-
-            if (!cqsType.BaseType.IsGenericType)
-                return false;
-
-            var typeDef = cqsType.BaseType.GetGenericTypeDefinition();
-            if (typeDef == typeof (Query<>)
-                || typeDef == typeof (Request<>))
-                return true;
-
-
-            return false;
-        }
-
         private void OnMessage(ITcpChannel channel, object message)
         {
             var request = (HttpRequestBase) message;
@@ -265,11 +222,18 @@ namespace Griffin.Cqs.Http
                     return;
             }
 
-            Type type;
+            var json = "{}";
+            if (request.Body != null)
+            {
+                var reader = new StreamReader(request.Body);
+                json = reader.ReadToEnd();
+            }
+
+            object cqsObject;
             if (!string.IsNullOrEmpty(dotNetType))
             {
-                type = Type.GetType(dotNetType);
-                if (type == null)
+                cqsObject = _cqsObjectMapper.Deserialize(dotNetType, json);
+                if (cqsObject == null)
                 {
                     var response = request.CreateResponse();
                     response.StatusCode = 400;
@@ -281,7 +245,8 @@ namespace Griffin.Cqs.Http
             }
             else if (!string.IsNullOrEmpty(cqsName))
             {
-                if (!_cqsTypes.TryGetValue(cqsName, out type))
+                cqsObject = _cqsObjectMapper.Deserialize(cqsName, json);
+                if (cqsObject == null)
                 {
                     var response = request.CreateResponse();
                     response.StatusCode = 400;
@@ -305,22 +270,11 @@ namespace Griffin.Cqs.Http
             }
 
 
-            string json = "{}";
-
-            //empty json
-            if (request.Body != null)
-            {
-                var reader = new StreamReader(request.Body);
-                json = reader.ReadToEnd();
-            }
-
-            var cqs = SimpleJson.DeserializeObject(json, type);
             ClientResponse cqsReplyObject = null;
-
             Exception ex = null;
             try
             {
-                cqsReplyObject = _messageProcessor.ProcessAsync(cqs).Result;
+                cqsReplyObject = _messageProcessor.ProcessAsync(cqsObject).Result;
             }
             catch (AggregateException e1)
             {
@@ -330,12 +284,12 @@ namespace Griffin.Cqs.Http
             if (ex is HttpException)
             {
                 var response = request.CreateResponse();
-                response.StatusCode = ((HttpException)ex).HttpCode;
+                response.StatusCode = ((HttpException) ex).HttpCode;
                 response.ReasonPhrase = FirstLine(ex.Message);
                 channel.Send(response);
                 return;
             }
-            else if (ex is AuthorizationException)
+            if (ex is AuthorizationException)
             {
                 var authEx = (AuthorizationException) ex;
                 var response = request.CreateResponse();
@@ -344,7 +298,7 @@ namespace Griffin.Cqs.Http
                 channel.Send(response);
                 return;
             }
-            else if (ex != null)
+            if (ex != null)
             {
                 var response = request.CreateResponse();
                 response.StatusCode = 500;
@@ -354,16 +308,29 @@ namespace Griffin.Cqs.Http
             }
 
             var reply = request.CreateResponse();
-            reply.ContentType = "application/json";
-            reply.AddHeader("X-Cqs-Object-Type", cqsReplyObject.Body.GetType().GetSimpleAssemblyQualifiedName());
-            reply.AddHeader("X-Cqs-Name", cqsReplyObject.Body.GetType().Name);
-            if (cqsReplyObject.Body is Exception)
-                reply.StatusCode = 500;
+            reply.ContentType = "application/json;encoding=utf8";
 
-            json = SimpleJson.SerializeObject(cqsReplyObject.Body);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            reply.Body = new MemoryStream();
-            reply.Body.Write(buffer, 0, buffer.Length);
+            // for instance commands do not have a return value.
+            if (cqsReplyObject.Body != null)
+            {
+                reply.AddHeader("X-Cqs-Object-Type", cqsReplyObject.Body.GetType().GetSimpleAssemblyQualifiedName());
+                reply.AddHeader("X-Cqs-Name", cqsReplyObject.Body.GetType().Name);
+                if (cqsReplyObject.Body is Exception)
+                    reply.StatusCode = 500;
+
+                var contentType = "application/json;encoding=utf8";
+                json = CqsSerializer == null
+                    ? SimpleJson.SerializeObject(cqsReplyObject.Body)
+                    : CqsSerializer.Serialize(cqsReplyObject.Body, out contentType);
+                reply.ContentType = contentType;
+
+                var buffer = Encoding.UTF8.GetBytes(json);
+                reply.Body = new MemoryStream();
+                reply.Body.Write(buffer, 0, buffer.Length);
+            }
+            else
+                reply.StatusCode = (int) HttpStatusCode.NoContent;
+
             channel.Send(reply);
         }
     }

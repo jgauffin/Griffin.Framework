@@ -99,7 +99,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Channel have sent a message
+        ///     Channel has sent a message
         /// </summary>
         public MessageHandler MessageSent
         {
@@ -118,11 +118,11 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Invoked if the decoder failes to handle an incoming message
+        /// Invoked if the decoder fails to handle an incoming message
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The handler MUST close the connection once a reply have been sent.
+        /// The handler MUST close the connection once a reply has been sent.
         /// </para>
         /// </remarks>
         public ChannelFailureHandler ChannelFailure { get; set; }
@@ -194,7 +194,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Can be used to store information in the channel so that you can access it at later requests.
+        /// Can be used to store information in the channel so that you can access it for later requests.
         /// </summary>
         /// <remarks>
         /// <para>All data is lost when the channel is closed.</para>
@@ -206,7 +206,7 @@ namespace Griffin.Net.Channels
         /// Pre processes incoming bytes before they are passed to the message builder.
         /// </summary>
         /// <remarks>
-        /// Can be used if you for instance uses a custom authentication mechanism which requires to process incoming
+        /// Can be used if you for instance use a custom authentication mechanism which needs to process incoming
         /// bytes.
         /// </remarks>
         public BufferPreProcessorHandler BufferPreProcessor
@@ -252,7 +252,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        ///     Cleanup everything so that the channel can be resused.
+        ///     Cleanup everything so that the channel can be reused.
         /// </summary>
         public void Cleanup()
         {

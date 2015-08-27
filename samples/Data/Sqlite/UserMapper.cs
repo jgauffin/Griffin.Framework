@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Griffin.Core.Data.Mapper;
+using Griffin.Data.Mapper;
 
 namespace Sqlite
 {
-    public class UserMapper : EntityMapper<User>
+    public class UserMapper : CrudEntityMapper<User>
     {
         private static readonly DateTime UnixDate = new DateTime(1970, 1, 1);
 

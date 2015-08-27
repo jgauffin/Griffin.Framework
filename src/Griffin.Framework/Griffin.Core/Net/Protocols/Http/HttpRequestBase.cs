@@ -1,16 +1,32 @@
 ﻿using System;
 using System.Net;
+using Griffin.Net.Protocols.Http.Messages;
+using Griffin.Net.Protocols.Http.Serializers;
+using Griffin.Net.Protocols.Serializers;
+using System.IO;
 
 namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
-    /// HTTP request, but without any operations done of the body.
+    /// HTTP request, but without any operations done of the content.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// the purpose with the split between this <c>Base</c> and the <c>HttpRequest</c> is that application servers,
+    /// proxies etc are not interested in the content. This wasting memory on parsing the content will hurt performance
+    /// a lot in a .NET environment.
+    /// </para>
+    /// <para>
+    /// However, every time you've configured <see cref="HttpMessageDecoder"/> to use a <see cref="IMessageSerializer"/> like
+    /// <see cref="MultipartSerializer"/> you can safely expect the request to be of type <c>HttpRequest</c>.
+    /// </para>
+    /// </remarks>
     public class HttpRequestBase : HttpMessage, IHttpRequest
     {
         private string _pathAndQuery;
         private string _httpMethod;
         private Uri _uri;
+        private IParameterCollection _queryString = null;
 
         /// <summary>
         /// 
@@ -59,6 +75,39 @@ namespace Griffin.Net.Protocols.Http
                     throw new ArgumentNullException("value");
                 _uri = value;
                 _pathAndQuery = value.PathAndQuery;
+                _queryString = null; // force regeneration on next QueryString property access
+            }
+        }
+
+        /// <summary>
+        ///     Collection of parameters extracted from the requested URI.
+        /// </summary>
+        public IParameterCollection QueryString
+        {
+            get
+            {
+                if (_queryString == null)
+                {
+                    _queryString = new ParameterCollection();
+                    var query = Uri.Query;
+                    if (query.Length > 1) // question mark is always part of the query string
+                    {
+                        var decoder = new UrlDecoder();
+                        using (var reader = new StringReader(Uri.Query))
+                        {
+                            reader.Read(); // question mark
+                            decoder.Parse(reader, _queryString);
+                        }
+                    }
+                }
+                
+                return _queryString;
+            }
+            internal set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                _queryString = value;
             }
         }
 
@@ -133,6 +182,11 @@ namespace Griffin.Net.Protocols.Http
         {
             get { return HttpMethod + " " + _pathAndQuery + " " + HttpVersion; }
         }
+
+        /// <summary>
+        /// Included cookies.
+        /// </summary>
+        public IHttpCookieCollection<IHttpCookie> Cookies { get; set; }
 
         /// <summary>
         /// Returns a string that represents the current object.

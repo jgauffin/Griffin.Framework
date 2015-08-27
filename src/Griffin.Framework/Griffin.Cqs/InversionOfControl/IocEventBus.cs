@@ -62,11 +62,17 @@ namespace Griffin.Cqs.InversionOfControl
                 {
                     task = Task.WhenAll(tasks);
                     await task;
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, true));
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, true)
+                    {
+                        Handlers = implementations
+                    });
                 }
                 catch
                 {
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, false));
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, false)
+                    {
+                        Handlers = implementations
+                    });
                     throw task.Exception;
                 }
             }

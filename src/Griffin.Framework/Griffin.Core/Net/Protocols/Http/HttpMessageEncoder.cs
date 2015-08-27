@@ -17,6 +17,7 @@ namespace Griffin.Net.Protocols.Http
         private readonly MemoryStream _stream;
         private int _totalAmountToSend;
         private readonly StreamWriter _writer;
+        private object _resetLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpMessageEncoder"/> class.
@@ -140,11 +141,18 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public void Clear()
         {
-            if (_message != null && _message.Body != null)
-                _message.Body.Dispose();
+            if (_message != null)
+            {
+                lock (_resetLock)
+                {
+                    if (_message != null && _message.Body != null)
+                        _message.Body.Dispose();
+
+                    _message = null;
+                }
+            }
 
             _bytesToSend = 0;
-            _message = null;
             _isHeaderSent = false;
             _stream.SetLength(0);
         }

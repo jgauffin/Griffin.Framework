@@ -92,7 +92,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        ///     Delegate invoked when a message have been sent to the remote end point
+        ///     Delegate invoked when a message has been sent to the remote end point
         /// </summary>
         public MessageHandler MessageSent
         {
@@ -101,18 +101,22 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        ///     A client have connected (nothing have been sent or received yet)
+        ///     A client has connected (nothing has been sent or received yet)
         /// </summary>
         public event EventHandler<ClientConnectedEventArgs> ClientConnected = delegate { };
 
         /// <summary>
-        ///     A client have disconnected
+        ///     A client has disconnected
         /// </summary>
         public event EventHandler<ClientDisconnectedEventArgs> ClientDisconnected = delegate { };
 
         /// <summary>
-        ///     Start this listener
+        ///     Start this listener.
         /// </summary>
+        /// <remarks>
+        /// This also pre-configures 20 channels that can be used and reused during the lifetime of 
+        /// this listener.
+        /// </remarks>
         /// <param name="address">Address to accept connections on</param>
         /// <param name="port">Port to use. Set to <c>0</c> to let the OS decide which port to use. </param>
         /// <seealso cref="LocalPort" />
@@ -135,7 +139,7 @@ namespace Griffin.Net
                 _channels.Push(channel);
             }
 
-            _listener.BeginAcceptSocket(OnSocket, null);
+            _listener.BeginAcceptSocket(OnAcceptSocket, null);
         }
 
         /// <summary>
@@ -147,7 +151,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        ///     An internal error occured
+        ///     An internal error occurred
         /// </summary>
         public event EventHandler<ErrorEventArgs> ListenerError = delegate { };
 
@@ -163,7 +167,7 @@ namespace Griffin.Net
 
 
         /// <summary>
-        ///     A client have connected (nothing have been sent or received yet)
+        ///     A client has connected (nothing has been sent or received yet)
         /// </summary>
         /// <param name="channel">Channel which we created for the remote socket.</param>
         /// <returns></returns>
@@ -175,7 +179,7 @@ namespace Griffin.Net
         }
 
         /// <summary>
-        ///     A client have disconnected
+        ///     A client has disconnected
         /// </summary>
         /// <param name="channel">Channel representing the client that disconnected</param>
         /// <param name="exception">
@@ -204,12 +208,11 @@ namespace Griffin.Net
             _channels.Push(source);
         }
 
-        private void OnSocket(IAsyncResult ar)
+        private void OnAcceptSocket(IAsyncResult ar)
         {
-            var socket = _listener.EndAcceptSocket(ar);
-
             try
             {
+                var socket = _listener.EndAcceptSocket(ar);
                 ITcpChannel channel;
                 if (!_channels.TryPop(out channel))
                 {
@@ -237,7 +240,7 @@ namespace Griffin.Net
             }
 
 
-            _listener.BeginAcceptSocket(OnSocket, null);
+            _listener.BeginAcceptSocket(OnAcceptSocket, null);
         }
     }
 }

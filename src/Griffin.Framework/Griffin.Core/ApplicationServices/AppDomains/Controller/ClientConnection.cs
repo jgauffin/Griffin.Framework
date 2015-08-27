@@ -167,12 +167,12 @@ namespace Griffin.ApplicationServices.AppDomains.Controller
         public event EventHandler<ClientReceivedCommandEventArgs> ReceivedCommand = delegate { };
 
         /// <summary>
-        ///     Detected a disconnected
+        ///     Detected a disconnect.
         /// </summary>
         public event EventHandler Disconnected = delegate { };
 
         /// <summary>
-        ///     Something unexpected failed.
+        ///     An unexpected exception.
         /// </summary>
         public event EventHandler<UnhandledExceptionEventArgs> UnhandledException = delegate { };
 
