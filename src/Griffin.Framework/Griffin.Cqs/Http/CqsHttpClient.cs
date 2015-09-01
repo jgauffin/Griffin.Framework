@@ -178,6 +178,8 @@ namespace Griffin.Cqs.Http
         {
             var json = cqsObject.ToString();
             HttpWebResponse response = null;
+            Exception innerException;
+            string errorDescription = "";
             try
             {
                 var request = WebRequest.CreateHttp(uri);
@@ -204,26 +206,33 @@ namespace Griffin.Cqs.Http
             }
             catch (Exception exception)
             {
+                innerException = exception;
                 var webEx = exception as WebException;
                 if (webEx != null)
                 {
                     response = (HttpWebResponse) webEx.Response;
                     if (response != null)
                     {
+                        if (response.ContentLength > 0)
+                        {
+                            var stream = response.GetResponseStream();
+                            var reader = new StreamReader(stream, Encoding.UTF8);
+                            errorDescription = reader.ReadToEnd();
+                        }
                         if (response.StatusCode == HttpStatusCode.NotFound)
                             return null;
                     }
                 }
 
                 if (response == null)
-                    throw new WebException(uri + " failed to process " + cqsObject.GetType().Name + " " + json,
+                    throw new WebException(uri + " failed to process " + cqsObject.GetType().Name + " " + json + "\r\n" + errorDescription,
                         exception);
             }
 
             var ex = (Exception) await DeserializeBody(response);
             if (ex == null)
             {
-                throw new Exception("Failed to handle " + json);
+                throw new Exception("Failed to handle " + json + "\r\n" + errorDescription, innerException);
             }
 
             throw ex;

@@ -127,8 +127,19 @@ namespace Griffin.Data.Mapper
             if (value == DBNull.Value)
                 return;
 
-            var adapted = _columnToPropertyAdapter(value);
-            _setter((TEntity) destination, adapted);
+
+            try
+            {
+                 var adapted = _columnToPropertyAdapter(value);
+                _setter((TEntity) destination, adapted);
+            }
+            catch (Exception exception)
+            {
+                throw new MappingException(typeof (TEntity),
+                    string.Format("Failed to cast column value to property value for '{0}', column value type: {1}.",
+                        PropertyName, value.GetType().FullName), exception);
+            }
+           
         }
 
         object IPropertyMapping.GetValue(object entity)
@@ -174,7 +185,7 @@ namespace Griffin.Data.Mapper
         public void NotForCrud()
         {
             if (IsPrimaryKey)
-                throw new InvalidOperationException("Must always read keys. Property: " + PropertyName);
+                throw new InvalidOperationException("Must always be able to read keys. Property: " + PropertyName);
 
             _getter = null;
         }

@@ -179,10 +179,11 @@ namespace Griffin.Cqs.Http
             }
             catch (HttpException ex)
             {
+                if (Logger != null)
+                    Logger("Authentication failed.\r\nException:\r\n" + ex.ToString());
                 var response = request.CreateResponse();
                 response.StatusCode = ex.HttpCode;
                 response.ReasonPhrase = FirstLine(ex.Message);
-                ;
                 channel.Send(response);
                 return false;
             }
@@ -278,11 +279,12 @@ namespace Griffin.Cqs.Http
             }
             catch (AggregateException e1)
             {
-                ex = e1.InnerException;
+                 ex = e1.InnerException;
             }
 
             if (ex is HttpException)
             {
+                Logger("Failed to process " + json + ", Exception:\r\n" + ex);
                 var response = request.CreateResponse();
                 response.StatusCode = ((HttpException) ex).HttpCode;
                 response.ReasonPhrase = FirstLine(ex.Message);
@@ -291,7 +293,8 @@ namespace Griffin.Cqs.Http
             }
             if (ex is AuthorizationException)
             {
-                var authEx = (AuthorizationException) ex;
+                Logger("Failed to process " + json + ", Exception:\r\n" + ex);
+                var authEx = (AuthorizationException)ex;
                 var response = request.CreateResponse();
                 response.StatusCode = 401;
                 response.ReasonPhrase = FirstLine(ex.Message);
@@ -300,6 +303,7 @@ namespace Griffin.Cqs.Http
             }
             if (ex != null)
             {
+                Logger("Failed to process " + json + ", Exception:\r\n" + ex);
                 var response = request.CreateResponse();
                 response.StatusCode = 500;
                 response.ReasonPhrase = FirstLine(ex.Message);
