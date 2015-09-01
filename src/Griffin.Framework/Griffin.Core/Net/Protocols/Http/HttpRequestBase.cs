@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
+using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Http.Serializers;
 using Griffin.Net.Protocols.Serializers;
+using System.IO;
 
 namespace Griffin.Net.Protocols.Http
 {
@@ -24,6 +26,7 @@ namespace Griffin.Net.Protocols.Http
         private string _pathAndQuery;
         private string _httpMethod;
         private Uri _uri;
+        private IParameterCollection _queryString = null;
 
         /// <summary>
         /// 
@@ -72,6 +75,39 @@ namespace Griffin.Net.Protocols.Http
                     throw new ArgumentNullException("value");
                 _uri = value;
                 _pathAndQuery = value.PathAndQuery;
+                _queryString = null; // force regeneration on next QueryString property access
+            }
+        }
+
+        /// <summary>
+        ///     Collection of parameters extracted from the requested URI.
+        /// </summary>
+        public IParameterCollection QueryString
+        {
+            get
+            {
+                if (_queryString == null)
+                {
+                    _queryString = new ParameterCollection();
+                    var query = Uri.Query;
+                    if (query.Length > 1) // question mark is always part of the query string
+                    {
+                        var decoder = new UrlDecoder();
+                        using (var reader = new StringReader(Uri.Query))
+                        {
+                            reader.Read(); // question mark
+                            decoder.Parse(reader, _queryString);
+                        }
+                    }
+                }
+                
+                return _queryString;
+            }
+            internal set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                _queryString = value;
             }
         }
 
