@@ -29,12 +29,8 @@ namespace Griffin.Data.Mapper.CommandBuilders
         {
             base.InsertCommand(command, entity);
 
-            var keys = Mapper.GetKeys(entity);
-            if (keys.Count() != 1)
-                return;
-
-            var key = Mapper.Properties.First(x => x.Key == keys.First().Key);
-            if (!key.Value.IsAutoIncrement)
+            var gotAutoIncrement = Mapper.Properties.Any(x => x.Value.IsAutoIncrement && x.Value.IsPrimaryKey);
+            if (!gotAutoIncrement)
                 return;
 
             command.CommandText += ";select SCOPE_IDENTITY()";

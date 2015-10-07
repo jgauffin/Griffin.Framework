@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -20,7 +21,6 @@ namespace Griffin.Cqs.InversionOfControl
     public class IocEventBus : IEventBus
     {
         private readonly IContainer _container;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="IocEventBus"/> class.
         /// </summary>
@@ -32,6 +32,7 @@ namespace Griffin.Cqs.InversionOfControl
             _container = container;
         }
 
+        
 
         /// <summary>
         ///     Publish a new application event.
@@ -56,23 +57,42 @@ namespace Griffin.Cqs.InversionOfControl
                     GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
                 }
 
-                var tasks = implementations.Select(x => x.HandleAsync(e));
+                var eventInfo = new List<EventHandlerInfo>();
+                var tasks = implementations.Select(x => PublishEvent(x,e, eventInfo));
                 Task task = null;
                 try
                 {
                     task = Task.WhenAll(tasks);
                     await task;
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, true));
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, true, eventInfo));
                 }
                 catch
                 {
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, false));
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, false, eventInfo));
+
+                    //just throwing since it's an aggregate exception.
                     throw task.Exception;
                 }
             }
         }
 
-      
+        /// <summary>
+        /// Purpose of this method is to be able to meassure invocation times.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="subscriber"></param>
+        /// <param name="e"></param>
+        /// <param name="eventInfo"></param>
+        /// <returns></returns>
+        private async Task PublishEvent<T>(IApplicationEventSubscriber<T> subscriber, T e, ICollection<EventHandlerInfo> eventInfo) where T : ApplicationEvent
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            await subscriber.HandleAsync(e);
+            eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+        }
+
+
         /// <summary>
         ///     A specific handler failed to consume the application event.
         /// </summary>

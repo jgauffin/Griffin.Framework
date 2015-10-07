@@ -62,7 +62,7 @@ namespace Griffin.Data.Mapper
         /// Get the primary key 
         /// </summary>
         /// <param name="entity">Entity to fetch key values from</param>
-        /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key</returns>
+        /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key. The key value pair contains the key name and the DTO value for that key.</returns>
         /// <example>
         /// <para>If you have a single primary key (like an auto incremented column)</para>
         /// <code>

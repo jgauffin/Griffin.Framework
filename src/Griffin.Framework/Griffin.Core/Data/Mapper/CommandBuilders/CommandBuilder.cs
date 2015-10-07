@@ -5,10 +5,10 @@ using System.Data;
 namespace Griffin.Data.Mapper.CommandBuilders
 {
     /// <summary>
-    /// Base class for command builders
+    ///     Base class for command builders
     /// </summary>
     /// <remarks>
-    /// Creates SQL commands per the SQL92 standard. Inherit this class to customize different commands.
+    ///     Creates SQL commands per the SQL92 standard. Inherit this class to customize different commands.
     /// </remarks>
     public class CommandBuilder : ICommandBuilder
     {
@@ -18,7 +18,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         private readonly List<IPropertyMapping> _values = new List<IPropertyMapping>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommandBuilder"/> class.
+        ///     Initializes a new instance of the <see cref="CommandBuilder" /> class.
         /// </summary>
         /// <param name="mapper">The mapper.</param>
         /// <exception cref="System.ArgumentNullException">mapper</exception>
@@ -35,24 +35,19 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 else
                     _values.Add(property);
             }
+            TreatZeroAsNullForKeys = true;
         }
 
         /// <summary>
-        /// Gets table that the mapping is for
+        ///     Gets table that the mapping is for
         /// </summary>
         public string TableName
         {
             get { return _tableName; }
         }
 
-
         /// <summary>
-        /// Gets prefix to use for data parameters (typically '@' or ':')
-        /// </summary>
-        public virtual char ParameterPrefix { get { return '@'; }}
-
-        /// <summary>
-        /// Mapper that this builder is for.
+        ///     Mapper that this builder is for.
         /// </summary>
         protected ICrudEntityMapper Mapper
         {
@@ -60,14 +55,27 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        /// Generate an insert command, should end with a command that returns the insert identity.
+        ///     Use <c>DBNull</c> as value if a primary key is 0.
+        /// </summary>
+        public bool TreatZeroAsNullForKeys { get; set; }
+
+        /// <summary>
+        ///     Gets prefix to use for data parameters (typically '@' or ':')
+        /// </summary>
+        public virtual char ParameterPrefix
+        {
+            get { return '@'; }
+        }
+
+        /// <summary>
+        ///     Generate an insert command, should end with a command that returns the insert identity.
         /// </summary>
         /// <param name="command">Command to add the query to</param>
         /// <param name="entity">Entity to store</param>
         /// <exception cref="System.ArgumentNullException">
-        /// command
-        /// or
-        /// entity
+        ///     command
+        ///     or
+        ///     entity
         /// </exception>
         /// <exception cref="System.Data.DataException">No values were added to the query for  + entity</exception>
         public virtual void InsertCommand(IDbCommand command, object entity)
@@ -83,7 +91,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
                     continue;
 
                 var value = key.GetValue(entity);
-                if (value == null || value.Equals(0))
+                if (value == null || (TreatZeroAsNullForKeys && value.Equals(0)))
                     continue;
                 columns += string.Format("{0}, ", key.ColumnName);
                 values += string.Format("@{0}, ", key.PropertyName);
@@ -109,18 +117,18 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        /// Create an update query from the entity.
+        ///     Create an update query from the entity.
         /// </summary>
         /// <param name="command">Command to modify</param>
         /// <param name="entity">Entity to update</param>
         /// <exception cref="System.ArgumentNullException">
-        /// command
-        /// or
-        /// entity
+        ///     command
+        ///     or
+        ///     entity
         /// </exception>
         /// <exception cref="System.Data.DataException">
-        /// At least one property (other than primary keys) must be specified.
-        /// or
+        ///     At least one property (other than primary keys) must be specified.
+        ///     or
         /// </exception>
         public void UpdateCommand(IDbCommand command, object entity)
         {
@@ -145,7 +153,9 @@ namespace Griffin.Data.Mapper.CommandBuilders
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity, property.PropertyName));
+                    throw new DataException(
+                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
+                            property.PropertyName));
                 where += property.ColumnName + "=" + "@" + property.PropertyName + " AND ";
                 command.AddParameter(property.PropertyName, value);
             }
@@ -157,14 +167,14 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        /// Modifies the command to execute a DELETE statement
+        ///     Modifies the command to execute a DELETE statement
         /// </summary>
         /// <param name="command">Command that will be executed after this method call</param>
         /// <param name="entity">Only primary key properties are used in the WHERE clause</param>
         /// <exception cref="System.ArgumentNullException">
-        /// command
-        /// or
-        /// entity
+        ///     command
+        ///     or
+        ///     entity
         /// </exception>
         /// <exception cref="System.Data.DataException"></exception>
         public void DeleteCommand(IDbCommand command, object entity)
@@ -177,7 +187,9 @@ namespace Griffin.Data.Mapper.CommandBuilders
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity, property.PropertyName));
+                    throw new DataException(
+                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
+                            property.PropertyName));
 
                 where += string.Format("{0}=" + "@{1} AND ", property.ColumnName, property.PropertyName);
                 command.AddParameter(property.PropertyName, value);
@@ -189,12 +201,12 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        /// Truncate all rows in a table
+        ///     Truncate all rows in a table
         /// </summary>
         /// <param name="command">Command that will be executed after this method call</param>
         /// <exception cref="System.ArgumentNullException">command</exception>
         /// <remarks>
-        /// Will do a DELETE statement
+        ///     Will do a DELETE statement
         /// </remarks>
         public virtual void TruncateCommand(IDbCommand command)
         {
@@ -204,7 +216,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         }
 
         /// <summary>
-        /// Modify SQL statement so that the result is paged.
+        ///     Modify SQL statement so that the result is paged.
         /// </summary>
         /// <param name="command">Command to modify</param>
         /// <param name="pageNumber">One based index</param>

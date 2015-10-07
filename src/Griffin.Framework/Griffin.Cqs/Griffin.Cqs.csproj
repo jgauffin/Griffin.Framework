@@ -59,6 +59,7 @@
     <Compile Include="Http\CqsHttpListener.cs" />
     <Compile Include="Http\WebSocketServer.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
+    <Compile Include="InversionOfControl\EventHandlerInfo.cs" />
     <Compile Include="InversionOfControl\IocBusBuilder.cs" />
     <Compile Include="InversionOfControl\QueryExecutedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />

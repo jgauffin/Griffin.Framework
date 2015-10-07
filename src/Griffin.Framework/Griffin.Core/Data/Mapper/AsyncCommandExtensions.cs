@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper.CommandBuilders;
 
@@ -398,5 +399,22 @@ namespace Griffin.Data.Mapper
                 throw cmd.CreateDataException(e);
             }
         }
+
+        internal static async Task<object> AssignAutoIncrementIfConfigured<TEntity>(this DbCommand cmd, TEntity entity, ICrudEntityMapper<TEntity> mapper)
+        {
+            var autoKey =
+                mapper.Properties.Values.FirstOrDefault(x => x.IsAutoIncrement && x.IsPrimaryKey);
+            if (autoKey != null)
+            {
+                var id = await cmd.ExecuteScalarAsync();
+                if (id != null && id != DBNull.Value)
+                    mapper.Properties[autoKey.PropertyName].SetColumnValue(entity, id);
+                {
+                    return id;
+                }
+            }
+            return null;
+        }
+
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Griffin.Data.Mapper
@@ -205,15 +206,8 @@ namespace Griffin.Data.Mapper
                 try
                 {
                     mapper.CommandBuilder.InsertCommand(cmd, entity);
-                    var keys = mapper.GetKeys(entity);
-                    if (keys.Length == 1)
-                    {
-                        var id = await cmd.ExecuteScalarAsync();
-                        if (id != null && id != DBNull.Value)
-                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
-                        return id;
-                    }
-                    return await cmd.ExecuteScalarAsync();
+                    var value = await cmd.AssignAutoIncrementIfConfigured(entity, mapper);
+                    return value ?? await cmd.ExecuteScalarAsync();
                 }
                 catch (Exception e)
                 {
@@ -221,6 +215,7 @@ namespace Griffin.Data.Mapper
                 }
             }
         }
+
 
         /// <summary>
         /// Update an existing entity
