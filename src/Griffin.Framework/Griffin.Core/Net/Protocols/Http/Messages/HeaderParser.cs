@@ -24,6 +24,11 @@ namespace Griffin.Net.Protocols.Http.Messages
         }
 
         /// <summary>
+        /// Returns the current state that the parser is processing.
+        /// </summary>
+        public string State => _parserMethod.Method.Name;
+
+        /// <summary>
         ///     Will try to parse everything in the buffer
         /// </summary>
         /// <param name="buffer">Buffer to read from.</param>
@@ -75,6 +80,9 @@ namespace Griffin.Net.Protocols.Http.Messages
             if (ch == '\n')
             {
                 var line = _headerName.ToString().Split(new char[] { ' ' }, 3);
+                if (line.Length != 3)
+                    throw new BadRequestException("Expected first line to contain three words according to the HTTP specification, but got: '" + _headerName + "'");
+
                 RequestLineParsed(line[0], line[1], line[2]);
 
                 _headerName.Clear();

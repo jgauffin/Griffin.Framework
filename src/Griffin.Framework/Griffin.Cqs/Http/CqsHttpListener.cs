@@ -24,7 +24,7 @@ namespace Griffin.Cqs.Http
         private readonly HttpListener _listener = new HttpListener();
         private readonly CqsMessageProcessor _messageProcessor;
         private Action<string> _logger;
-        private Func<ITcpChannel, HttpRequestBase, HttpResponseBase> _requestFilter;
+        private Func<ITcpChannel, HttpRequest, HttpResponse> _requestFilter;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsHttpListener" /> class.
@@ -85,7 +85,7 @@ namespace Griffin.Cqs.Http
         ///     Response if you stopped the processing; otherwise <c>null</c> to allow this class to continue process the
         ///     inbound message.
         /// </returns>
-        public Func<ITcpChannel, HttpRequestBase, HttpResponseBase> RequestFilter
+        public Func<ITcpChannel, HttpRequest, HttpResponse> RequestFilter
         {
             get { return _requestFilter; }
             set
@@ -147,7 +147,7 @@ namespace Griffin.Cqs.Http
             _listener.MessageReceived += OnMessage;
         }
 
-        private bool AuthenticateUser(ITcpChannel channel, HttpRequestBase request)
+        private bool AuthenticateUser(ITcpChannel channel, HttpRequest request)
         {
             if (channel.Data["Principal"] != null)
             {
@@ -202,7 +202,7 @@ namespace Griffin.Cqs.Http
 
         private void OnMessage(ITcpChannel channel, object message)
         {
-            var request = (HttpRequestBase) message;
+            var request = (HttpRequest) message;
 
             if (_requestFilter != null)
             {

@@ -4,7 +4,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// <summary>
     /// HTTP request used to indicate that we want to use the WEBSOCKET protocol.
     /// </summary>
-    public class WebSocketUpgradeRequest : HttpRequestBase
+    public class WebSocketUpgradeRequest : HttpRequest
     {
         /// <summary>
         /// Create a new instance of <see cref="WebSocketUpgradeRequest"/>.

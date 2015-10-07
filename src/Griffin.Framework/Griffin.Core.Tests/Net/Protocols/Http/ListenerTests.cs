@@ -35,10 +35,10 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
             var buf = Encoding.UTF8.GetBytes(formattedMessage);
             request.GetRequestStream().Write(buf, 0, buf.Length);
 
-            HttpRequestBase msg;
+            HttpRequest msg;
             sut.MessageReceived += (channel, message) =>
             {
-                msg = (HttpRequestBase) message;
+                msg = (HttpRequest) message;
                 channel.Send(msg.CreateResponse());
             };
             var response = request.GetResponse();

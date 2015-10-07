@@ -7,6 +7,12 @@ namespace Griffin.Signals
     /// </summary>
     public class SignalRaisedEventArgs : EventArgs
     {
+        /// <summary>
+        /// Create a new instance of <see cref="SignalRaisedEventArgs"/>.
+        /// </summary>
+        /// <param name="signalName">Name of the generated signal</param>
+        /// <param name="reason">Why the signal was raised.</param>
+        /// <param name="callingMethod">Method that triggered the signal</param>
         public SignalRaisedEventArgs(string signalName, string reason, string callingMethod)
         {
             if (signalName == null) throw new ArgumentNullException("signalName");
@@ -17,6 +23,13 @@ namespace Griffin.Signals
             CallingMethod = callingMethod;
         }
 
+        /// <summary>
+        /// Create a new instance of <see cref="SignalRaisedEventArgs"/>
+        /// </summary>
+        /// <param name="signalName">Name of the generated signal</param>
+        /// <param name="reason">Why the signal was raised.</param>
+        /// <param name="callingMethod">Method that triggered the signal</param>
+        /// <param name="exception">exception that caused the signal to get raised.</param>
         public SignalRaisedEventArgs(string signalName, string reason, string callingMethod, Exception exception)
         {
             if (signalName == null) throw new ArgumentNullException("signalName");

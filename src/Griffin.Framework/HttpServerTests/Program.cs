@@ -68,7 +68,7 @@ namespace HttpServerTests
 
         private static void OnMessage(ITcpChannel channel, object message)
         {
-            var request = (HttpRequestBase)message;
+            var request = (HttpRequest)message;
             var response = request.CreateResponse();
 
 

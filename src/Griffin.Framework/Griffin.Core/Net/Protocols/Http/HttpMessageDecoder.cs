@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Http.Serializers;
@@ -86,12 +87,16 @@ namespace Griffin.Net.Protocols.Http
                 if (bytesLeftInReceiveBuffer <= 0)
                     break;
 
+
                 if (!_isHeaderParsed)
                 {
                     var offsetBefore = receiveBufferOffset;
                     receiveBufferOffset = _headerParser.Parse(buffer, receiveBufferOffset);
                     if (!_isHeaderParsed)
                         return;
+
+                    if (_message == null)
+                        throw new HttpException(HttpStatusCode.InternalServerError, "Failed to decode message properly. Decoder state: " + _headerParser.State);
 
                     bytesLeftInReceiveBuffer -= receiveBufferOffset - offsetBefore;
                     _frameContentBytesLeft = _message.ContentLength;
@@ -103,6 +108,8 @@ namespace Griffin.Net.Protocols.Http
                         continue;
                     }
 
+                    if (_message == null)
+                        throw new HttpException(HttpStatusCode.InternalServerError, "Failed to decode message properly. Decoder state: " + _headerParser.State);
                     _message.Body = new MemoryStream();
                 }
 
@@ -160,7 +167,7 @@ namespace Griffin.Net.Protocols.Http
                 if (_messageSerializer != null)
                     _message = new HttpResponse(code, part3, part1);
                 else
-                    _message = new HttpResponseBase(code, part3, part1);
+                    _message = new HttpResponse(code, part3, part1);
             }
             else
             {
@@ -172,7 +179,7 @@ namespace Griffin.Net.Protocols.Http
 
                 _message = _messageSerializer != null
                     ? new HttpRequest(part1, part2, part3)
-                    : new HttpRequestBase(part1, part2, part3);
+                    : new HttpRequest(part1, part2, part3);
             }
         }
 

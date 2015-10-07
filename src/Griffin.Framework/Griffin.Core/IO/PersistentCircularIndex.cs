@@ -111,6 +111,10 @@ namespace Griffin.IO
             }
         }
 
+        /// <summary>
+        /// Dequeue an item
+        /// </summary>
+        /// <returns></returns>
         public string Dequeue()
         {
             using (var fs = File.Open(_fileName, FileMode.Open))

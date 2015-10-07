@@ -28,7 +28,18 @@ namespace Griffin.Net.Protocols.Http
         /// <summary>
         /// Address to the remote end point
         /// </summary>
-        EndPoint RemoteEndPoint { get; set; } 
+        EndPoint RemoteEndPoint { get; set; }
+
+        /// <summary>
+        /// Submitted form items
+        /// </summary>
+        IParameterCollection Form { get; }
+
+        /// <summary>
+        /// Submitted files
+        /// </summary>
+        IHttpFileCollection Files { get; }
+
 
         /// <summary>
         /// Create a response for this request.

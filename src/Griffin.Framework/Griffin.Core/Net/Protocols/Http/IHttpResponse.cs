@@ -6,6 +6,11 @@
     public interface IHttpResponse : IHttpMessage
     {
         /// <summary>
+        ///     Cookies to send to the server side
+        /// </summary>
+        IHttpCookieCollection<IResponseCookie> Cookies { get; }
+
+        /// <summary>
         ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
         /// </summary>
         int StatusCode { get; set; }

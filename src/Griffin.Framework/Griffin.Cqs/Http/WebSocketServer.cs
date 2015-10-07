@@ -29,7 +29,7 @@ namespace Griffin.Cqs.Http
         private readonly WebSocketListener _listener = new WebSocketListener();
         private readonly CqsMessageProcessor _messageProcessor;
         private Action<string> _logger;
-        private Func<ITcpChannel, HttpRequestBase, HttpResponseBase> _requestFilter;
+        private Func<ITcpChannel, HttpRequest, HttpResponse> _requestFilter;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsHttpListener" /> class.
@@ -68,7 +68,7 @@ namespace Griffin.Cqs.Http
         ///     Response if you stopped the processing; otherwise <c>null</c> to allow this class to contine process the
         ///     inbound message.
         /// </returns>
-        public Func<ITcpChannel, HttpRequestBase, HttpResponseBase> RequestFilter
+        public Func<ITcpChannel, HttpRequest, HttpResponse> RequestFilter
         {
             get { return _requestFilter; }
             set

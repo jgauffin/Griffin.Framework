@@ -10,6 +10,11 @@ namespace Griffin.Signals
     [DataContract]
     public class SignalDTO
     {
+        /// <summary>
+        /// Create a new instance of SignalDTO.
+        /// </summary>
+        /// <param name="appName">Application that this signal is for</param>
+        /// <param name="signal">Actual signal to generate the DTO from.</param>
         public SignalDTO(string appName, Signal signal)
         {
             if (appName == null) throw new ArgumentNullException("appName");
@@ -23,6 +28,9 @@ namespace Griffin.Signals
             RaiseCountSinceLastReset = signal.RaiseCountSinceLastReset;
         }
 
+        /// <summary>
+        /// Create a new instance of <see cref="SignalDTO"/>.
+        /// </summary>
         public SignalDTO()
         {
 

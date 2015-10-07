@@ -39,7 +39,7 @@ namespace HttpCqs.Server
             Console.ReadLine();
         }
 
-        private static HttpResponseBase OnServeFiles(ITcpChannel channel, HttpRequestBase request)
+        private static HttpResponse OnServeFiles(ITcpChannel channel, HttpRequest request)
         {
             //do not do anything, lib will handle it.
             if (request.Uri.AbsolutePath.StartsWith("/cqs"))

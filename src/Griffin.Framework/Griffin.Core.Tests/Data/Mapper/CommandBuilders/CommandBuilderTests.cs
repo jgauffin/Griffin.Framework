@@ -81,7 +81,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
-                {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello"}}
+                {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello", CanRead = true}}
             });
             var command = new AdoNetFakes.FakeCommand();
             var entity = new { Id = "Hello" };
@@ -102,7 +102,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
-                {"Id", new FakePropertyMapping("Id", "id")}
+                {"Id", new FakePropertyMapping("Id", "id") {CanRead = true} }
             });
             var command = new AdoNetFakes.FakeCommand();
             var entity = new { Id = "Hello" };
@@ -124,7 +124,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
                 {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello",IsPrimaryKey = true}},
-                {"Name", new FakePropertyMapping("Name", "name"){Value = "Arne"}}
+                {"Name", new FakePropertyMapping("Name", "name"){Value = "Arne", CanRead = true}}
             });
             var command = new AdoNetFakes.FakeCommand();
             var entity = new { Id = "Hello" };
@@ -187,7 +187,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
-                {"Name", new FakePropertyMapping("Name", "real_name"){Value = "Arne"}},
+                {"Name", new FakePropertyMapping("Name", "real_name"){Value = "Arne", CanRead = true}},
                 {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello", IsPrimaryKey = true}}
             });
             var command = new AdoNetFakes.FakeCommand();
@@ -211,7 +211,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
-                {"Name", new FakePropertyMapping("Name", "real_name")},
+                {"Name", new FakePropertyMapping("Name", "real_name") {CanRead = true} },
                 {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello", IsPrimaryKey = true}}
             });
             var command = new AdoNetFakes.FakeCommand();

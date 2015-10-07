@@ -5,7 +5,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// <summary>
     /// Used to confirm that we can switch to WEBSOCKETs from regular HTTP Requests.
     /// </summary>
-    public class WebSocketUpgradeResponse : HttpResponseBase
+    public class WebSocketUpgradeResponse : HttpResponse
     {
         /// <summary>
         /// Create a new instance of <see cref="WebSocketUpgradeResponse"/>

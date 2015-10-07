@@ -13,7 +13,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void request_in_its_simplest_form()
         {
-            var frame = new HttpRequestBase("POST", "/", "HTTP/1.1");
+            var frame = new HttpRequest("POST", "/", "HTTP/1.1");
             var expected = "POST / HTTP/1.1\r\nContent-Length: 0\r\n\r\n";
             var buffer = new SocketBufferFake();
 
@@ -28,7 +28,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void request_with_body()
         {
-            var frame = new HttpRequestBase("POST", "/?abc", "HTTP/1.1");
+            var frame = new HttpRequest("POST", "/?abc", "HTTP/1.1");
             frame.AddHeader("server", "Griffin.Networking");
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
@@ -47,7 +47,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void basic_response()
         {
-            var frame = new HttpResponseBase(404, "Failed to find it dude", "HTTP/1.1");
+            var frame = new HttpResponse(404, "Failed to find it dude", "HTTP/1.1");
             var expected = "HTTP/1.1 404 Failed to find it dude\r\n";
             var buffer = new SocketBufferFake();
 
@@ -62,7 +62,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void response_with_body()
         {
-            var frame = new HttpResponseBase(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
+            var frame = new HttpResponse(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.Body = new MemoryStream(Encoding.ASCII.GetBytes("hello queue a"));
@@ -81,7 +81,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         [Fact]
         public void response_with_body_encoding()
         {
-            var frame = new HttpResponseBase(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
+            var frame = new HttpResponse(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
             frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.ContentCharset = Encoding.UTF8;

@@ -28,11 +28,8 @@ namespace Griffin.Cqs.Net
         private readonly Timer _cleanuptimer;
         private readonly ChannelTcpClient _client;
         private readonly ConcurrentDictionary<Guid, Waiter> _response = new ConcurrentDictionary<Guid, Waiter>();
-        private IAuthenticationMessageFactory _authenticationMessageFactory = new AuthenticationMessageFactory();
         private bool _continueAuthenticate;
-        private NetworkCredential _credentials;
         private IPEndPoint _endPoint;
-        private IPasswordHasher _hasher;
         private object _lastSentItem;
 
         /// <summary>
@@ -168,6 +165,8 @@ namespace Griffin.Cqs.Net
             }
 
             public abstract void Trigger(object result);
+
+            public abstract void SetCancelled();
         }
 
         private class Waiter<T> : Waiter
@@ -197,6 +196,11 @@ namespace Griffin.Cqs.Net
 
                 else
                     _completionSource.SetResult((T) result);
+            }
+
+            public override void SetCancelled()
+            {
+                _completionSource.SetCanceled();
             }
         }
 
@@ -241,7 +245,10 @@ namespace Griffin.Cqs.Net
                 {
                     Waiter removed;
                     if (waiter.Expired)
+                    {
                         _response.TryRemove(waiter.Id, out removed);
+                        waiter.SetCancelled();
+                    }
                 }
             }
             catch (Exception exception)

@@ -127,6 +127,11 @@ namespace Griffin.Cqs.Simple
             _commandHandlers[intfc.GetGenericArguments()[0]] = action;
         }
 
+        /// <summary>
+        /// Determine if the given class is a command handler.
+        /// </summary>
+        /// <param name="type">type to check</param>
+        /// <returns><c>true</c> if it's an command handler.</returns>
         public static bool IsCommandHandler(Type type)
         {
             var intfc = type.GetInterface("ICommandHandler`1");

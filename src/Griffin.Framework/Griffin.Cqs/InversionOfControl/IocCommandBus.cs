@@ -20,7 +20,6 @@ namespace Griffin.Cqs.InversionOfControl
     public class IocCommandBus : ICommandBus
     {
         private readonly IContainer _container;
-        private IAuthorizationFilter _authorizationFilter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IocCommandBus"/> class.

@@ -64,17 +64,13 @@ namespace Griffin.Cqs.InversionOfControl
                 {
                     task = Task.WhenAll(tasks);
                     await task;
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, true)
-                    {
-                        Handlers = implementations
-                    });
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, true, eventInfo));
                 }
                 catch
                 {
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, false)
-                    {
-                        Handlers = implementations
-                    });
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, false, eventInfo));
+                    var failures = eventInfo.Where(x => x.Failure != null).Select(x => x.Failure).ToList();
+                    HandlerFailed(this, new EventHandlerFailedEventArgs(e, failures, eventInfo.Count));
                     throw task.Exception;
                 }
             }
@@ -92,8 +88,19 @@ namespace Griffin.Cqs.InversionOfControl
         {
             var sw = new Stopwatch();
             sw.Start();
-            await subscriber.HandleAsync(e);
-            eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+            try
+            {
+                await subscriber.HandleAsync(e);
+                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+            }
+            catch (Exception ex)
+            {
+                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds)
+                {
+                    Failure = new HandlerFailure(subscriber, ex)
+                });
+                throw;
+            }
         }
 
 

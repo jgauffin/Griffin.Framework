@@ -7,11 +7,16 @@ namespace Griffin.Cqs.InversionOfControl
     /// </summary>
     public class EventHandlerInfo
     {
-        public EventHandlerInfo(Type subscriberType, long invocationTime)
+        /// <summary>
+        /// Create a new instance of <see cref="EventHandlerInfo"/>.
+        /// </summary>
+        /// <param name="subscriberType">Type of class that received the event.</param>
+        /// <param name="processingTime">How many milliseconds it too to invoke the handler.</param>
+        public EventHandlerInfo(Type subscriberType, long processingTime)
         {
             if (subscriberType == null) throw new ArgumentNullException("subscriberType");
             SubscriberType = subscriberType;
-            InvocationTime = invocationTime;
+            InvocationTime = processingTime;
         }
 
         /// <summary>
@@ -23,5 +28,10 @@ namespace Griffin.Cqs.InversionOfControl
         /// Amount of time (in milliseconds) used to handle the event.
         /// </summary>
         public long InvocationTime { get; set; }
+
+        /// <summary>
+        /// Used internally to mark failures while executing handlers.
+        /// </summary>
+        internal HandlerFailure Failure { get; set; }
     }
 }

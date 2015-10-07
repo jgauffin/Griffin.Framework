@@ -16,7 +16,7 @@ namespace Griffin.Signals
     ///         Use <see cref="Configure" /> to allow the submitter to upload reports. Then use <see cref="UploadAllSignals" />
     ///         if you want the class to upload all signals, or manually subscribe
     ///         on <see cref="Signal.SignalRaised" /> and <see cref="Signal.SignalSuppressed" /> to upload signals by calling
-    ///         <see cref="Send" />.
+    ///         <see cref="Send(SignalDTO)" />.
     ///     </para>
     ///     <para>
     ///         Serializes the data to JSON (by using <see cref="SignalDTO" />) and then do a HTTP post to the server that you

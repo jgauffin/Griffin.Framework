@@ -11,8 +11,6 @@ namespace Griffin.Core.Tests.Net.Channels
         public int Offset { get; set; }
         public int Count { get; set; }
 
-        private byte[] _buffer;
-
         public FakeEncoder()
         {
             Buffer = new byte[65535];

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net.Channels;
 using Griffin.Net.LiteServer.Modules;
@@ -38,10 +39,7 @@ namespace Griffin.Net.LiteServer
         /// <summary>
         ///     Port that we got assigned (or specified)
         /// </summary>
-        public int LocalPort
-        {
-            get { return _listener.LocalPort; }
-        }
+        public int LocalPort => _listener.LocalPort;
 
 
         public void Start(IPAddress address, int port)
@@ -49,7 +47,7 @@ namespace Griffin.Net.LiteServer
             _listener.Start(address, port);
         }
 
-        private async Task EndRequestAsync(ClientContext context)
+        private async Task EndRequestAsync(IClientContext context)
         {
             for (var i = 0; i < _modules.Length; i++)
             {
@@ -57,7 +55,7 @@ namespace Griffin.Net.LiteServer
             }
         }
 
-        private async Task ExecuteConnectModules(ITcpChannel channel, ClientContext context)
+        private async Task ExecuteConnectModules(ITcpChannel channel, IClientContext context)
         {
             var result = ModuleResult.Continue;
 
@@ -92,7 +90,7 @@ namespace Griffin.Net.LiteServer
             }
         }
 
-        private async Task ExecuteDisconnectModules(ITcpChannel channel, ClientContext context)
+        private async Task ExecuteDisconnectModules(IClientContext context)
         {
             for (var i = 0; i < _modules.Length; i++)
             {
@@ -106,7 +104,7 @@ namespace Griffin.Net.LiteServer
                 }
                 catch (Exception exception)
                 {
-                    //TODO: Alert user of failure
+                    ModuleFailed?.Invoke(connectMod, new ThreadExceptionEventArgs(exception));
                 }
             }
         }
@@ -178,7 +176,7 @@ namespace Griffin.Net.LiteServer
         private void OnClientDisconnect(object sender, ClientDisconnectedEventArgs e)
         {
             var context = new ClientContext(e.Channel, null);
-            ExecuteDisconnectModules(e.Channel, context).Wait();
+            ExecuteDisconnectModules(context).Wait();
         }
 
         private void OnClientMessage(ITcpChannel channel, object message)
@@ -186,5 +184,10 @@ namespace Griffin.Net.LiteServer
             var context = new ClientContext(channel, message);
             ExecuteModules(channel, context).Wait();
         }
+
+        /// <summary>
+        /// One of our background threads got an unhandled exception
+        /// </summary>
+        public event EventHandler<ThreadExceptionEventArgs> ModuleFailed;
     }
 }

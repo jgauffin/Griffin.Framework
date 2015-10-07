@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Collections.Generic;
 using DotNetCqs;
 using Griffin.Container;
 
@@ -45,11 +43,6 @@ namespace Griffin.Cqs.InversionOfControl
         public IContainerScope Scope { get; private set; }
 
         /// <summary>
-        /// Invoked event handlers.
-        /// </summary>
-        public IEnumerable<object> Handlers { get; set; }
-
-        /// <summary>
         ///     Published event
         /// </summary>
         public ApplicationEvent ApplicationEvent { get; private set; }
@@ -65,6 +58,6 @@ namespace Griffin.Cqs.InversionOfControl
         /// <remarks>
         ///     <para>Subscribers are added in the order that they complete.</para>
         /// </remarks>
-        public IReadOnlyCollection<EventHandlerInfo> Handlers { get; set; }
+        public IReadOnlyCollection<EventHandlerInfo> Handlers { get; private set; }
     }
 }

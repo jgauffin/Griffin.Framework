@@ -190,6 +190,9 @@ namespace Griffin.IO
             }
         }
 
+        /// <summary>
+        /// Create folders and index all items.
+        /// </summary>
         public void Start()
         {
             _fullPath = Path.Combine(DataDirectory, QueueName);

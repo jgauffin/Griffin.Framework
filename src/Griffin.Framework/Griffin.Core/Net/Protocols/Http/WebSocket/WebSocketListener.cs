@@ -86,7 +86,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                     }
                     else if (args.SendResponse)
                     {
-                        var response = new HttpResponseBase(HttpStatusCode.NotImplemented, "Not Implemented", "HTTP/1.1");
+                        var response = new HttpResponse(HttpStatusCode.NotImplemented, "Not Implemented", "HTTP/1.1");
                         if (args.Response != null)
                             response.Body = args.Response;
 
