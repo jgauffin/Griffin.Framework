@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
 using DotNetCqs;
 using Griffin.Container;
 
@@ -41,6 +43,11 @@ namespace Griffin.Cqs.InversionOfControl
         ///     Scope used to resolve subscribers
         /// </summary>
         public IContainerScope Scope { get; private set; }
+
+        /// <summary>
+        /// Invoked event handlers.
+        /// </summary>
+        public IEnumerable<object> Handlers { get; set; }
 
         /// <summary>
         ///     Published event

@@ -122,7 +122,7 @@ namespace Griffin.Data.Mapper
             Func<object, TPropertyType> fromColumnConverter)
         {
             if (fromColumnConverter == null) throw new ArgumentNullException("fromColumnConverter");
-            _inner.ColumnToPropertyAdapter = x => fromColumnConverter((TPropertyType) x);
+            _inner.ColumnToPropertyAdapter = x => fromColumnConverter(x);
             return this;
         }
     }

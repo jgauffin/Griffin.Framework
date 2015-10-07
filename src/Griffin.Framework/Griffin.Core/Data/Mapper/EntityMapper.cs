@@ -98,8 +98,11 @@ namespace Griffin.Data.Mapper
             }
             catch (Exception exception)
             {
+                if (exception is MappingException)
+                    throw;
+
                 throw new MappingException(typeof (TEntity),
-                    string.Format("Failed to cast column value to property value for '{0}', property '{1}'.",
+                    string.Format("Failed to cast column value to property value for '{0}.{1}'.",
                         typeof (TEntity).FullName, propertyName), exception);
             }
         }

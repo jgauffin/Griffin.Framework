@@ -69,7 +69,7 @@ namespace Griffin.Cqs.InversionOfControl
                     var method = handler.GetMethod("ExecuteAsync");
                     var task = (Task) method.Invoke(handlers[0], new object[] {request});
                     await task;
-                    var result = ((dynamic) task).Result;
+                    var result = ((dynamic) task).Result;                                
                     RequestInvoked(this, new RequestInvokedEventArgs(scope, request));
                     return result;
                 }

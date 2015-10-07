@@ -111,6 +111,8 @@
     <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
     <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
     <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
+    <Compile Include="External\PrivateClass.cs" />
+    <Compile Include="External\SimpleJsonTests.cs" />
     <Compile Include="IO\CircularIndexTests.cs" />
     <Compile Include="IO\OneFilePerItemQueueTests.cs" />
     <Compile Include="IO\PersistantQueueTests.cs" />

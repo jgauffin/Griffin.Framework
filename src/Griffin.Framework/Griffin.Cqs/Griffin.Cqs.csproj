@@ -57,6 +57,8 @@
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="Http\CqsHttpClient.cs" />
     <Compile Include="Http\CqsHttpListener.cs" />
+    <Compile Include="Http\CqsObjectMapper.cs" />
+    <Compile Include="Http\ICqsDeserializer.cs" />
     <Compile Include="Http\WebSocketServer.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventHandlerInfo.cs" />

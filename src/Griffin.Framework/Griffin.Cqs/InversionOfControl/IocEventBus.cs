@@ -64,13 +64,17 @@ namespace Griffin.Cqs.InversionOfControl
                 {
                     task = Task.WhenAll(tasks);
                     await task;
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, true, eventInfo));
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, true)
+                    {
+                        Handlers = implementations
+                    });
                 }
                 catch
                 {
-                    EventPublished(this, new EventPublishedEventArgs(scope, e, false, eventInfo));
-
-                    //just throwing since it's an aggregate exception.
+                    EventPublished(this, new EventPublishedEventArgs(scope, e, false)
+                    {
+                        Handlers = implementations
+                    });
                     throw task.Exception;
                 }
             }

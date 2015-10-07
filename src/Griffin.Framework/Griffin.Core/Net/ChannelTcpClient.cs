@@ -238,7 +238,7 @@ namespace Griffin.Net
         /// <param name="timeout">Maximum amount of time to wait on a message</param>
         /// <returns>Decoded message</returns>
         /// <exception cref="Griffin.Net.ChannelException">
-        ///     Was signalled that something have been recieved, but found nothing in
+        ///     Was signalled that something have been received, but found nothing in
         ///     the in queue
         /// </exception>
         public Task<object> ReceiveAsync(TimeSpan timeout)
@@ -255,7 +255,7 @@ namespace Griffin.Net
         ///     Decoded message if successful; <c>default(T)</c> if cancellation is requested.
         /// </returns>
         /// <exception cref="Griffin.Net.ChannelException">
-        ///     Was signalled that something have been recieved, but found nothing in
+        ///     Was signalled that something have been received, but found nothing in
         ///     the in queue
         /// </exception>
         public async Task<object> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
@@ -269,7 +269,7 @@ namespace Griffin.Net
 
             if (!gotItem)
                 throw new ChannelException(
-                    "Was signalled that something have been recieved, but found nothing in the in queue");
+                    "Was signalled that something have been received, but found nothing in the in queue");
 
             if (item is ChannelException)
                 throw (ChannelException) item;

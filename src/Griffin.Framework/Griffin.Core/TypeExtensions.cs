@@ -9,6 +9,35 @@ namespace Griffin
     public static class TypeExtensions
     {
         /// <summary>
+        ///     Get assembly qualified name, but without the version and public token.
+        /// </summary>
+        /// <param name="type">Type to get name for</param>
+        /// <returns>Simple assembly qualified name. Example: <code>"MyApp.Contracts.User, MyApp.Contracts"</code></returns>
+        public static string GetSimpleAssemblyQualifiedName(this Type type)
+        {
+            if (type == null) throw new ArgumentNullException("type");
+            if (type.Assembly.IsDynamic)
+                throw new InvalidOperationException("Can't use dynamic assemblies.");
+
+            return type.FullName + ", " + type.Assembly.GetName().Name;
+        }
+
+        /// <summary>
+        ///     Get type name as we define it in code.
+        /// </summary>
+        /// <param name="t">The type to get a name for.</param>
+        /// <returns>String representation</returns>
+        public static string GetFriendlyTypeName(this Type t)
+        {
+            if (!t.IsGenericType)
+                return t.Name;
+            var genericTypeName = t.GetGenericTypeDefinition().Name;
+            genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
+            var genericArgs = string.Join(",", t.GetGenericArguments().Select(GetFriendlyTypeName).ToArray());
+            return string.Format("{0}<{1}>", genericTypeName, genericArgs);
+        }
+
+        /// <summary>
         ///     Check if generic types matches
         /// </summary>
         /// <param name="serviceType">Service/interface</param>
@@ -67,34 +96,12 @@ namespace Griffin
         public static bool IsSimpleType(this Type type)
         {
             return type.IsPrimitive
-                   || type == typeof (Decimal)
-                   || type == typeof (String)
+                   || type == typeof (decimal)
+                   || type == typeof (string)
                    || type == typeof (DateTime)
                    || type == typeof (Guid)
                    || type == typeof (DateTimeOffset)
                    || type == typeof (TimeSpan);
         }
-
-        /// <summary>
-        ///     Get assembly qualified name, but without the version and public token.
-        /// </summary>
-        /// <param name="type">Type to get name for</param>
-        /// <returns>Simple assembly qualified name. Example: <code>"MyApp.Contracts.User, MyApp.Contracts"</code></returns>
-        public static string GetSimpleAssemblyQualifiedName(this Type type)
-        {
-            if (type == null) throw new ArgumentNullException("type");
-            if (type.Assembly.IsDynamic)
-                throw new InvalidOperationException("Can't use dynamic assemblies.");
-
-            int pos = type.AssemblyQualifiedName.IndexOf(',');
-            if (pos == -1)
-                return type.AssemblyQualifiedName;
-            pos = type.AssemblyQualifiedName.IndexOf(',', pos + 1);
-            if (pos == -1)
-                return type.AssemblyQualifiedName;
-
-            return type.AssemblyQualifiedName.Substring(0, pos);
-        }
-
     }
 }
