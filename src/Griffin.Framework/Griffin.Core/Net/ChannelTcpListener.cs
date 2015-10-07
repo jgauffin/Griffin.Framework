@@ -24,6 +24,7 @@ namespace Griffin.Net
         private TcpListener _listener;
         private MessageHandler _messageReceived;
         private MessageHandler _messageSent;
+        private volatile bool _shuttingDown;
 
         /// <summary>
         /// </summary>
@@ -127,7 +128,7 @@ namespace Griffin.Net
             if (_listener != null)
                 throw new InvalidOperationException("Already listening.");
 
-
+            _shuttingDown = false;
             _listener = new TcpListener(address, port);
             _listener.Start();
 
@@ -147,6 +148,7 @@ namespace Griffin.Net
         /// </summary>
         public virtual void Stop()
         {
+            _shuttingDown = true;
             _listener.Stop();
         }
 
@@ -210,10 +212,17 @@ namespace Griffin.Net
 
         private void OnAcceptSocket(IAsyncResult ar)
         {
-            var socket = _listener.EndAcceptSocket(ar);
+            if (_shuttingDown)
+                return;
 
             try
             {
+                // Required as _listener.Stop() disposes the underlying socket
+                // thus causing an objectDisposedException here.
+                var socket = _listener.EndAcceptSocket(ar);
+
+
+
                 ITcpChannel channel;
                 if (!_channels.TryPop(out channel))
                 {
