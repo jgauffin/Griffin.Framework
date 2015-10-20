@@ -26,7 +26,10 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// <summary>
         /// Returns the current state that the parser is processing.
         /// </summary>
-        public string State => _parserMethod.Method.Name;
+        public string State
+        {
+            get { return _parserMethod.Method.Name; }
+        }
 
         /// <summary>
         ///     Will try to parse everything in the buffer

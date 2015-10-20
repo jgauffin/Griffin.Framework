@@ -385,12 +385,19 @@ namespace Griffin.Net.Channels
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
                 ChannelFailure(this, exception);
 
-                // event handler closed the socket.
-                if (!_socket.Connected)
+                // Cleanup before both pending operations have exited.
+                try
+                {
+                    if (!_socket.Connected)
+                        return;
+                }
+                catch(NullReferenceException)
+                {
+                    //rare case of race condition during cleanup.
                     return;
+                }
             }
 
             ReadAsync();

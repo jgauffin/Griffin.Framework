@@ -39,7 +39,10 @@ namespace Griffin.Net.LiteServer
         /// <summary>
         ///     Port that we got assigned (or specified)
         /// </summary>
-        public int LocalPort => _listener.LocalPort;
+        public int LocalPort
+        {
+            get { return _listener.LocalPort; }
+        }
 
 
         public void Start(IPAddress address, int port)
@@ -104,7 +107,8 @@ namespace Griffin.Net.LiteServer
                 }
                 catch (Exception exception)
                 {
-                    ModuleFailed?.Invoke(connectMod, new ThreadExceptionEventArgs(exception));
+                    if (ModuleFailed != null)
+                        ModuleFailed(connectMod, new ThreadExceptionEventArgs(exception));
                 }
             }
         }
