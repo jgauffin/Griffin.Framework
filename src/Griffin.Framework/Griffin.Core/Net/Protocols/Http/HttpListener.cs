@@ -20,7 +20,8 @@ namespace Griffin.Net.Protocols.Http
         /// Initializes a new instance of the <see cref="HttpListener"/> class.
         /// </summary>
         /// <param name="configuration"></param>
-        public HttpListener(ChannelTcpListenerConfiguration configuration) : base(configuration)
+        public HttpListener(ChannelTcpListenerConfiguration configuration)
+            : base(configuration)
         {
         }
 
@@ -74,13 +75,23 @@ namespace Griffin.Net.Protocols.Http
 
         private void OnDecoderFailure(ITcpChannel channel, Exception error)
         {
-            var pos = error.Message.IndexOfAny(new[] {'\r', '\n'});
+            if (!channel.IsConnected)
+                return;
+
+            var pos = error.Message.IndexOfAny(new[] { '\r', '\n' });
             var descr = pos == -1 ? error.Message : error.Message.Substring(0, pos);
             var response = new HttpResponse(HttpStatusCode.BadRequest, descr, "HTTP/1.1");
             var counter = (int)channel.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 1);
             response.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
-            channel.Send(response);
-            channel.Close();
+            try
+            {
+                channel.Send(response);
+                channel.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+
         }
 
 
@@ -92,7 +103,7 @@ namespace Griffin.Net.Protocols.Http
         /// <param name="msg">Message (as decoded by the specified <see cref="IMessageDecoder" />).</param>
         protected override void OnMessage(ITcpChannel source, object msg)
         {
-            var message = (IHttpMessage) msg;
+            var message = (IHttpMessage)msg;
 
             //TODO: Try again if we fail to update
             var counter = (int)source.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 0) + 1;

@@ -1,38 +1,34 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
-using Griffin.Net.Protocols;
 
 namespace Griffin.Net.Channels
 {
     /// <summary>
-    /// Represents a socket connection between two end points.
+    ///     Represents a socket connection between two end points.
     /// </summary>
+    /// <remarks>
+    ///     <para>Important! Handle the ChannelFailed delegate to know why the channel failed.</para>
+    /// </remarks>
     public class TcpChannel : ITcpChannel
     {
-        private static readonly object CloseMessage = new object();
         private readonly SemaphoreSlim _closeEvent = new SemaphoreSlim(0, 1);
         private readonly IMessageDecoder _decoder;
         private readonly IMessageEncoder _encoder;
         private readonly SocketAsyncEventArgs _readArgs;
         private readonly SocketAsyncEventArgsWrapper _readArgsWrapper;
+        private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
         private readonly SocketAsyncEventArgs _writeArgs;
         private readonly SocketAsyncEventArgsWrapper _writeArgsWrapper;
-        private IMessageQueue _outboundMessages = new MessageQueue();
-        private object _currentOutboundMessage;
         private DisconnectHandler _disconnectAction;
+        private object _messagePendingSendOperation;
         private MessageHandler _messageReceived;
-        private EndPoint _remoteEndPoint;
         private MessageHandler _sendCompleteAction;
         private Socket _socket;
-        private bool _connected = false;
-        private BufferPreProcessorHandler _bufferPreProcessor;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="TcpChannel" /> class.
@@ -45,6 +41,7 @@ namespace Griffin.Net.Channels
         /// </param>
         public TcpChannel(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
+            IsConnected = false;
             if (readBuffer == null) throw new ArgumentNullException("readBuffer");
             if (encoder == null) throw new ArgumentNullException("encoder");
             if (decoder == null) throw new ArgumentNullException("decoder");
@@ -64,9 +61,9 @@ namespace Griffin.Net.Channels
 
             _sendCompleteAction = (channel, message) => { };
             _disconnectAction = (channel, exception) => { };
-            ChannelFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
+            ChannelFailure = (channel, error) => HandleRemoteDisconnect(SocketError.ProtocolNotSupported, error);
 
-            _remoteEndPoint = EmptyEndpoint.Instance;
+            RemoteEndpoint = EmptyEndpoint.Instance;
             ChannelId = GuidFactory.Create().ToString();
             Data = new ChannelData();
         }
@@ -84,26 +81,6 @@ namespace Griffin.Net.Channels
                     _disconnectAction = (x, e) => { };
                 else
                     _disconnectAction = value;
-            }
-        }
-
-        /// <summary>
-        /// Used to enqueue outbound messages (to support asynchronous handling, i.e. enqueue more messages before the current one has been sent)
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property exists so that you can switch implementation.  This is used by the HttpListener so that we can add support
-        /// for message pipelining
-        /// </para>
-        /// </remarks>
-        public IMessageQueue OutboundMessageQueue
-        {
-            get { return _outboundMessages; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException("value");
-                _outboundMessages = value;
             }
         }
 
@@ -155,10 +132,7 @@ namespace Griffin.Net.Channels
         /// <summary>
         ///     Gets address of the connected end point.
         /// </summary>
-        public EndPoint RemoteEndpoint
-        {
-            get { return _remoteEndPoint; }
-        }
+        public EndPoint RemoteEndpoint { get; private set; }
 
         /// <summary>
         ///     Identity of this channel
@@ -181,22 +155,32 @@ namespace Griffin.Net.Channels
         public void Assign(Socket socket)
         {
             if (socket == null) throw new ArgumentNullException("socket");
+            if (!socket.Connected)
+                throw new ArgumentException("Socket was not connected.");
             if (_messageReceived == null)
                 throw new InvalidOperationException("You must have set a MessageReceived delegate first.");
 
+            if (_socket != null)
+            {
+                try
+                {
+                    _socket.Dispose();
+                }
+                catch
+                {
+                    //just to try to do a final cleanup.
+                }
+            }
             _socket = socket;
-            _remoteEndPoint = socket.RemoteEndPoint;
-            _connected = true;
+            RemoteEndpoint = socket.RemoteEndPoint;
+            IsConnected = true;
             ReadAsync();
         }
 
         /// <summary>
-        /// Gets if channel is connected
+        ///     Gets if channel is connected
         /// </summary>
-        public bool IsConnected
-        {
-            get { return _connected; }
-        }
+        public bool IsConnected { get; private set; }
 
         /// <summary>
         ///     Send a new message
@@ -213,19 +197,16 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public void Send(object message)
         {
-            if (_socket.Connected)
-            lock (_outboundMessages)
-            {
-                if (_currentOutboundMessage != null)
-                {
-                    _outboundMessages.Enqueue(message);
-                    return;
-                }
+            if (_socket == null || !_socket.Connected)
+                throw new SocketException((int) SocketError.NotConnected);
 
-                _currentOutboundMessage = message;
-            }
-
-            SendCurrent();
+            _sendLock.Wait();
+            _messagePendingSendOperation = message;
+            _encoder.Prepare(message);
+            _encoder.Send(_writeArgsWrapper);
+            var isPending = _socket.SendAsync(_writeArgs);
+            if (!isPending)
+                OnSendCompleted(this, _writeArgs);
         }
 
         /// <summary>
@@ -237,17 +218,13 @@ namespace Griffin.Net.Channels
         public IChannelData Data { get; set; }
 
         /// <summary>
-        /// Pre processes incoming bytes before they are passed to the message builder.
+        ///     Pre processes incoming bytes before they are passed to the message builder.
         /// </summary>
         /// <remarks>
-        /// Can be used if you for instance use a custom authentication mechanism which needs to process incoming
-        /// bytes.
+        ///     Can be used if you for instance use a custom authentication mechanism which needs to process incoming
+        ///     bytes.
         /// </remarks>
-        public BufferPreProcessorHandler BufferPreProcessor
-        {
-            get { return _bufferPreProcessor; }
-            set { _bufferPreProcessor = value; }
-        }
+        public BufferPreProcessorHandler BufferPreProcessor { get; set; }
 
         /// <summary>
         ///     Signal channel to close.
@@ -259,9 +236,9 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public void Close()
         {
-            Send(CloseMessage);
+            _socket.Shutdown(SocketShutdown.Send);
             _closeEvent.Wait(5000);
-            _connected = false;
+            IsConnected = false;
         }
 
         /// <summary>
@@ -271,20 +248,15 @@ namespace Griffin.Net.Channels
         {
             _encoder.Clear();
             _decoder.Clear();
-            _currentOutboundMessage = null;
             _socket = null;
-            _remoteEndPoint = EmptyEndpoint.Instance;
-            _connected = false;
+            RemoteEndpoint = EmptyEndpoint.Instance;
+            IsConnected = false;
+            if (_sendLock.CurrentCount == 0)
+                _sendLock.Release();
             if (_closeEvent.CurrentCount == 1)
                 _closeEvent.Wait();
-
             if (Data != null)
                 Data.Clear();
-
-            object msg;
-            while (_outboundMessages.TryDequeue(out msg))
-            {
-            }
         }
 
         /// <summary>
@@ -297,51 +269,42 @@ namespace Griffin.Net.Channels
         /// </remarks>
         public Task CloseAsync()
         {
-            Send(CloseMessage);
+            _socket.Shutdown(SocketShutdown.Send);
             var t = _closeEvent.WaitAsync(5000);
 
             // release again so that we can take reuse it internally
             t.ContinueWith(x =>
             {
                 _closeEvent.Release();
-                _connected = false;
-
+                IsConnected = false;
             });
 
             return t;
         }
 
-
-        /// <summary>
-        /// Detected a disconnect
-        /// </summary>
-        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
-        private void HandleDisconnect(SocketError socketError)
+        private Exception CreateException(SocketError socketError)
         {
             try
             {
-                _socket.Close();
-                _connected = false;
-                _disconnectAction(this, new SocketException((int) socketError));
+                throw new SocketException((int) socketError);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                ChannelFailure(this, exception);
+                return ex;
             }
         }
 
-
         /// <summary>
-        /// Detected a disconnect
+        ///     Detected a disconnect
         /// </summary>
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         /// <param name="exception">Why we got disconnected</param>
-        private void HandleDisconnect(SocketError socketError, Exception exception)
+        private void HandleDisconnect2(SocketError socketError, Exception exception)
         {
             try
             {
                 _socket.Close();
-                _connected = false;
+                IsConnected = false;
                 _disconnectAction(this, exception);
             }
             catch (Exception ex)
@@ -350,6 +313,23 @@ namespace Griffin.Net.Channels
             }
         }
 
+        /// <summary>
+        ///     Detected a disconnect
+        /// </summary>
+        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
+        private void HandleRemoteDisconnect(SocketError socketError, Exception ex)
+        {
+            try
+            {
+                _socket.Close();
+                IsConnected = false;
+                _disconnectAction(this, ex ?? CreateException(socketError));
+            }
+            catch (Exception exception)
+            {
+                ChannelFailure(this, exception);
+            }
+        }
 
         private void OnMessageReceived(object obj)
         {
@@ -361,13 +341,21 @@ namespace Griffin.Net.Channels
         {
             if (e.BytesTransferred == 0 || e.SocketError != SocketError.Success)
             {
-                HandleDisconnect(e.SocketError);
+                try
+                {
+                    _socket.Close();
+                }
+                catch
+                {
+                    //close it.
+                }
+                HandleRemoteDisconnect(e.SocketError, null);
                 return;
             }
 
-            if (_bufferPreProcessor != null)
+            if (BufferPreProcessor != null)
             {
-                var read = _bufferPreProcessor(this, _readArgsWrapper);
+                var read = BufferPreProcessor(this, _readArgsWrapper);
                 if (read > 0)
                 {
                     var newCount = _readArgsWrapper.BytesTransferred - read;
@@ -393,7 +381,7 @@ namespace Griffin.Net.Channels
                     if (!_socket.Connected)
                         return;
                 }
-                catch(NullReferenceException)
+                catch (NullReferenceException)
                 {
                     //rare case of race condition during cleanup.
                     return;
@@ -402,7 +390,6 @@ namespace Griffin.Net.Channels
 
             ReadAsync();
         }
-
 
         private void OnSendCompleted(object sender, SocketAsyncEventArgs e)
         {
@@ -422,20 +409,8 @@ namespace Griffin.Net.Channels
                 return;
             }
 
-            var msg = _currentOutboundMessage;
-
-            lock (_outboundMessages)
-            {
-                if (!_outboundMessages.TryDequeue(out _currentOutboundMessage))
-                {
-                    _currentOutboundMessage = null;
-                    _sendCompleteAction(this, msg);
-                    return;
-                }
-            }
-
-            _sendCompleteAction(this, msg);
-            SendCurrent();
+            _sendLock.Release();
+            _sendCompleteAction(this, _messagePendingSendOperation);
         }
 
         private void ReadAsync()
@@ -448,41 +423,13 @@ namespace Griffin.Net.Channels
                     OnReadCompleted(_socket, _readArgs);
                 }
             }
-            catch (Exception e)
+            catch (SocketException e)
             {
-                HandleDisconnect(SocketError.ConnectionReset, e);
-            }
-        }
-
-        private void SendCurrent()
-        {
-            // Allows us to send everything before closing the connection.
-            if (_currentOutboundMessage == CloseMessage)
-            {
-                try
-                {
-                    _socket.Shutdown(SocketShutdown.Both);
-                }
-                catch (Exception e)
-                {
-                    HandleDisconnect(SocketError.ConnectionReset, e);
-                }
-                _currentOutboundMessage = null;
-                _closeEvent.Release();
-                return;
-            }
-
-            _encoder.Prepare(_currentOutboundMessage);
-            _encoder.Send(_writeArgsWrapper);
-            try
-            {
-                var isPending = _socket.SendAsync(_writeArgs);
-                if (!isPending)
-                    OnSendCompleted(this, _writeArgs);
+                HandleRemoteDisconnect(e.SocketErrorCode, e);
             }
             catch (Exception e)
             {
-                HandleDisconnect(SocketError.ConnectionReset, e);
+                ChannelFailure(this, e);
             }
         }
     }
