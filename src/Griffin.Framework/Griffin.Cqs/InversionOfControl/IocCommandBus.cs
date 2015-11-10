@@ -22,16 +22,15 @@ namespace Griffin.Cqs.InversionOfControl
         private readonly IContainer _container;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IocCommandBus"/> class.
+        ///     Initializes a new instance of the <see cref="IocCommandBus" /> class.
         /// </summary>
-        /// <param name="container">Used to lookup <see cref="ICommandHandler{TCommand}"/>.</param>
+        /// <param name="container">Used to lookup <see cref="ICommandHandler{TCommand}" />.</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
         public IocCommandBus(IContainer container)
         {
             if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
-
 
         /// <summary>
         ///     Request that a command should be executed.
@@ -53,11 +52,18 @@ namespace Griffin.Cqs.InversionOfControl
         {
             using (var scope = _container.CreateScope())
             {
+                if (ScopeCreated != null)
+                {
+                    var e = new ScopeCreatedEventArgs(scope);
+                    ScopeCreated(this, e);
+                }
+
+
                 var handlers = scope.ResolveAll<ICommandHandler<T>>().ToList();
                 if (handlers.Count == 0)
-                    throw new CqsHandlerMissingException(typeof(T));
+                    throw new CqsHandlerMissingException(typeof (T));
                 if (handlers.Count > 1)
-                    throw new OnlyOneHandlerAllowedException(typeof(T));
+                    throw new OnlyOneHandlerAllowedException(typeof (T));
 
                 if (GlobalConfiguration.AuthorizationFilter != null)
                 {
@@ -86,5 +92,10 @@ namespace Griffin.Cqs.InversionOfControl
         /// </code>
         /// </example>
         public event EventHandler<CommandInvokedEventArgs> CommandInvoked = delegate { };
+
+        /// <summary>
+        ///     A new IoC container scope have been created (a new scope is created every time a command is about to executed).
+        /// </summary>
+        public event EventHandler<ScopeCreatedEventArgs> ScopeCreated;
     }
 }

@@ -24,8 +24,6 @@ namespace Griffin.Net.Channels
         public ITcpChannel Create(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder)
         {
             var channel = new TcpChannel(readBuffer, encoder, decoder);
-            if (OutboundMessageQueueFactory != null)
-                channel.OutboundMessageQueue = OutboundMessageQueueFactory();
             return channel;
         }
 
@@ -33,6 +31,7 @@ namespace Griffin.Net.Channels
         ///     Create a new queue which is used to store outbound messages in the created channel.
         /// </summary>
         /// <returns>Factory method</returns>
+        [Obsolete("No more queuing to reduce complexity. Do it in the layer above the channel")]
         public Func<IMessageQueue> OutboundMessageQueueFactory { get; set; }
     }
 }

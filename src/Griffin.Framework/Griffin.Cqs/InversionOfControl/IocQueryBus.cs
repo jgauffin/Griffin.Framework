@@ -47,6 +47,12 @@ namespace Griffin.Cqs.InversionOfControl
 
             using (var scope = _container.CreateScope())
             {
+                if (ScopeCreated != null)
+                {
+                    var createdEventArgs = new ScopeCreatedEventArgs(scope);
+                    ScopeCreated(this, createdEventArgs);
+                }
+
                 var handlerList = scope.ResolveAll(handler);
                 var handlers = handlerList.ToList();
 
@@ -70,14 +76,26 @@ namespace Griffin.Cqs.InversionOfControl
                     var result1= ((dynamic) task).Result;
                     if (QueryExecuted != null)
                         QueryExecuted(this, new QueryExecutedEventArgs(scope, query, handlers[0]));
+
+                  
                     return result1;
                 }
                 catch (TargetInvocationException exception)
                 {
+                  
                     ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
                     throw new Exception("this will never happen as the line above throws an exception. It's just here to remove a warning");
                 }
+
+
+              
             }
         }
+
+
+        /// <summary>
+        ///     A new IoC container scope have been created (a new scope is created every time a command is about to executed).
+        /// </summary>
+        public event EventHandler<ScopeCreatedEventArgs> ScopeCreated;
     }
 }

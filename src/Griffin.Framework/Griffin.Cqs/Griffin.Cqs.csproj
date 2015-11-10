@@ -68,6 +68,7 @@
     <Compile Include="InversionOfControl\IocCommandBus.cs" />
     <Compile Include="InversionOfControl\IocEventBus.cs" />
     <Compile Include="InversionOfControl\IocRequestReplyBus.cs" />
+    <Compile Include="InversionOfControl\ScopeCreatedEventArgs.cs" />
     <Compile Include="Reliable\QueuedCommandBus.cs" />
     <Compile Include="Reliable\QueuedEventBus.cs" />
     <Compile Include="InversionOfControl\IocQueryBus.cs" />

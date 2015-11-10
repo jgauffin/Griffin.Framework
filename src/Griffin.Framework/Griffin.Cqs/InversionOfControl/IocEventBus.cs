@@ -21,8 +21,9 @@ namespace Griffin.Cqs.InversionOfControl
     public class IocEventBus : IEventBus
     {
         private readonly IContainer _container;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="IocEventBus"/> class.
+        ///     Initializes a new instance of the <see cref="IocEventBus" /> class.
         /// </summary>
         /// <param name="container">Used to resolve <c><![CDATA[IApplicationEventSubscriber<TApplicationEvent>]]></c>.</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
@@ -31,8 +32,6 @@ namespace Griffin.Cqs.InversionOfControl
             if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
-
-        
 
         /// <summary>
         ///     Publish a new application event.
@@ -47,6 +46,13 @@ namespace Griffin.Cqs.InversionOfControl
         {
             using (var scope = _container.CreateScope())
             {
+                ScopeCreatedEventArgs createdEventArgs = null;
+                if (ScopeCreated != null)
+                {
+                    createdEventArgs = new ScopeCreatedEventArgs(scope);
+                    ScopeCreated(this, createdEventArgs);
+                }
+
                 var implementations = scope
                     .ResolveAll<IApplicationEventSubscriber<TApplicationEvent>>()
                     .ToList();
@@ -58,7 +64,7 @@ namespace Griffin.Cqs.InversionOfControl
                 }
 
                 var eventInfo = new List<EventHandlerInfo>();
-                var tasks = implementations.Select(x => PublishEvent(x,e, eventInfo));
+                var tasks = implementations.Select(x => PublishEvent(x, e, eventInfo));
                 Task task = null;
                 try
                 {
@@ -71,48 +77,11 @@ namespace Griffin.Cqs.InversionOfControl
                     EventPublished(this, new EventPublishedEventArgs(scope, e, false, eventInfo));
                     var failures = eventInfo.Where(x => x.Failure != null).Select(x => x.Failure).ToList();
                     HandlerFailed(this, new EventHandlerFailedEventArgs(e, failures, eventInfo.Count));
+
                     throw task.Exception;
                 }
             }
         }
-
-        /// <summary>
-        /// Purpose of this method is to be able to meassure invocation times.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="subscriber"></param>
-        /// <param name="e"></param>
-        /// <param name="eventInfo"></param>
-        /// <returns></returns>
-        private async Task PublishEvent<T>(IApplicationEventSubscriber<T> subscriber, T e, ICollection<EventHandlerInfo> eventInfo) where T : ApplicationEvent
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            try
-            {
-                await subscriber.HandleAsync(e);
-                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
-            }
-            catch (Exception ex)
-            {
-                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds)
-                {
-                    Failure = new HandlerFailure(subscriber, ex)
-                });
-                throw;
-            }
-        }
-
-
-        /// <summary>
-        ///     A specific handler failed to consume the application event.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         We will not try to invoke the event again as one or more handlers may have consumed the event successfully.
-        ///     </para>
-        /// </remarks>
-        public event EventHandler<EventHandlerFailedEventArgs> HandlerFailed = delegate { };
 
         /// <summary>
         ///     Event have been executed and the scope will be disposed after this event has been triggered.
@@ -130,5 +99,48 @@ namespace Griffin.Cqs.InversionOfControl
         /// </code>
         /// </example>
         public event EventHandler<EventPublishedEventArgs> EventPublished = delegate { };
+
+        /// <summary>
+        ///     A specific handler failed to consume the application event.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         We will not try to invoke the event again as one or more handlers may have consumed the event successfully.
+        ///     </para>
+        /// </remarks>
+        public event EventHandler<EventHandlerFailedEventArgs> HandlerFailed = delegate { };
+
+        /// <summary>
+        ///     A new IoC container scope have been created (a new scope is created every time a command is about to executed).
+        /// </summary>
+        public event EventHandler<ScopeCreatedEventArgs> ScopeCreated;
+
+        /// <summary>
+        ///     Purpose of this method is to be able to meassure invocation times.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="subscriber"></param>
+        /// <param name="e"></param>
+        /// <param name="eventInfo"></param>
+        /// <returns></returns>
+        private async Task PublishEvent<T>(IApplicationEventSubscriber<T> subscriber, T e,
+            ICollection<EventHandlerInfo> eventInfo) where T : ApplicationEvent
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            try
+            {
+                await subscriber.HandleAsync(e);
+                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+            }
+            catch (Exception ex)
+            {
+                eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds)
+                {
+                    Failure = new HandlerFailure(subscriber, ex)
+                });
+                throw;
+            }
+        }
     }
 }

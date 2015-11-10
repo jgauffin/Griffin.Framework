@@ -24,7 +24,7 @@ namespace Griffin.Cqs.InversionOfControl
         private readonly IContainer _container;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IocRequestReplyBus"/> class.
+        ///     Initializes a new instance of the <see cref="IocRequestReplyBus" /> class.
         /// </summary>
         /// <param name="container">Used to resolve <c><![CDATA[IRequestHandler<,>]]></c>.</param>
         /// <exception cref="System.ArgumentNullException">container</exception>
@@ -49,6 +49,12 @@ namespace Griffin.Cqs.InversionOfControl
 
             using (var scope = _container.CreateScope())
             {
+                if (ScopeCreated != null)
+                {
+                    var e = new ScopeCreatedEventArgs(scope);
+                    ScopeCreated(this, e);
+                }
+
                 var allHandlersAsObjects = scope.ResolveAll(handler);
                 var handlers = allHandlersAsObjects.ToList();
 
@@ -69,7 +75,7 @@ namespace Griffin.Cqs.InversionOfControl
                     var method = handler.GetMethod("ExecuteAsync");
                     var task = (Task) method.Invoke(handlers[0], new object[] {request});
                     await task;
-                    var result = ((dynamic) task).Result;                                
+                    var result = ((dynamic) task).Result;
                     RequestInvoked(this, new RequestInvokedEventArgs(scope, request));
                     return result;
                 }
@@ -98,5 +104,10 @@ namespace Griffin.Cqs.InversionOfControl
         /// </code>
         /// </example>
         public event EventHandler<RequestInvokedEventArgs> RequestInvoked = delegate { };
+
+        /// <summary>
+        ///     A new IoC container scope have been created (a new scope is created every time a command is about to executed).
+        /// </summary>
+        public event EventHandler<ScopeCreatedEventArgs> ScopeCreated;
     }
 }

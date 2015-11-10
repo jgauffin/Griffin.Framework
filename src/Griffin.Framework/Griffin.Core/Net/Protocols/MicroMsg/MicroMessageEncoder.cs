@@ -170,7 +170,10 @@ namespace Griffin.Net.Protocols.MicroMsg
 
             if (!ReferenceEquals(_bodyStream, _internalStream))
             {
-                _bodyStream.Close();
+                //bodyStream is null for channels that connected
+                //but never sent a message.
+                if (_bodyStream != null)
+                    _bodyStream.Close();
                 _bodyStream = null;
             }
             else
