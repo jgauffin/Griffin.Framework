@@ -10,6 +10,22 @@ using System.Threading.Tasks;
 
 namespace HttpRouting
 {
+    /**
+     * Small parts documentation
+     * 
+     * The Route attribute is used to define the HttpUrl Route
+     * for the function of the controller.
+     * 
+     * The RouteMask attribute is only some prefix for your
+     * Route's in route attributes simple {RouteMask}{Route}.
+     * 
+     * Route parameters can be everywhere in your route string
+     * but only as uri segments so /{param:type}/ is valid but
+     * /Home{param:type}/ is not valid. 
+     * 
+     * BEWARE: this is a working and stable version of the 
+     *         router but its fair away from perfect.
+     */
     class Program
     {
         static void Main(string[] args)
