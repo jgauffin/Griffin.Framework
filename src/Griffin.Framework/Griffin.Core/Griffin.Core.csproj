@@ -293,6 +293,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueFullException.cs" />
     <Compile Include="Reflection\ExpressionExtensions.cs" />
+    <Compile Include="Routing\Attributes\AllowAnonymousAttribute.cs" />
+    <Compile Include="Routing\Attributes\AuthenticateAttribute.cs" />
+    <Compile Include="Routing\Attributes\AuthorizeAttribute.cs" />
+    <Compile Include="Routing\Attributes\RouteAttribute.cs" />
+    <Compile Include="Routing\Attributes\RoutePrefixAttribute.cs" />
+    <Compile Include="Routing\Controller.cs" />
+    <Compile Include="Routing\IControllerFactory.cs" />
+    <Compile Include="Routing\MiddlewareEntryPoint.cs" />
+    <Compile Include="Routing\RoutedWebServer.cs" />
+    <Compile Include="Routing\Router.cs" />
     <Compile Include="Security\IPasswordHasher.cs" />
     <Compile Include="Security\PasswordHasherRfc2898.cs" />
     <Compile Include="Signals\NamespaceDoc.cs" />
