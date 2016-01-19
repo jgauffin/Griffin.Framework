@@ -31,6 +31,23 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         }
 
         [Fact]
+        public void can_clear_even_without_shit_being_used()
+        {
+            var serializer = new StringSerializer();
+            var slice = new BufferSlice(new byte[65535], 0, 65535);
+            var msg = "Hello world";
+            var buffer = new SocketBufferFake();
+
+            var sut = new MicroMessageEncoder(serializer, slice);
+            sut.Clear();
+            sut.Prepare(msg);
+            sut.Send(buffer);
+
+            var field = sut.GetType().GetField("_bodyStream", BindingFlags.Instance | BindingFlags.NonPublic);
+            ((Stream)field.GetValue(sut)).CanWrite.Should().BeTrue();
+        }
+
+        [Fact]
         public void close_external_Stream_as_we_take_over_ownership_from_the_dev()
         {
             var serializer = new StringSerializer();

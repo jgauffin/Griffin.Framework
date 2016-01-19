@@ -72,7 +72,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             _bytesLeftInSocketBuffer = 0;
             _contentLength = 0;
             _contentName = "";
-            _contentStream.Close();
+            _contentStream.SetLength(0);
             _headerOffset = 0;
             _socketBufferOffset = 0;
             _stateMethod = ReadHeaderLength;
@@ -139,8 +139,8 @@ namespace Griffin.Net.Protocols.MicroMsg
             _stateMethod = ProcessContent;
             _bytesLeftForCurrentState = _contentLength;
             _headerOffset = 0;
-            _contentStream.SetLength(0);
             _contentStream.Position = 0;
+            _contentStream.SetLength(0);
             return true;
         }
 

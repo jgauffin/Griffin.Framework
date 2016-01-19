@@ -103,6 +103,60 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         }
 
         [Fact]
+        public void decoder_can_be_reused()
+        {
+            var args = new SocketBufferFake();
+            var body = "Hello world";
+            var type = body.GetType().AssemblyQualifiedName;
+            var serializer = new StringSerializer();
+            object actual = null;
+            BitConverter2.GetBytes(MicroMessageEncoder.FixedHeaderLength + type.Length, args.Buffer, 0);
+            args.Buffer[2] = MicroMessageDecoder.Version;
+            BitConverter2.GetBytes(body.Length, args.Buffer, 3);
+            args.Buffer[7] = (byte)(sbyte)type.Length;
+            Encoding.ASCII.GetBytes(type, 0, type.Length, args.Buffer, HeaderLengthSize + MicroMessageEncoder.FixedHeaderLength);
+            Encoding.ASCII.GetBytes(body, 0, body.Length, args.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength);
+
+            var sut = new MicroMessageDecoder(serializer);
+            sut.MessageReceived = o => actual = o;
+            args.BytesTransferred = body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize;
+            sut.ProcessReadBytes(args);
+            actual = null;
+            sut.Clear();
+            args.BytesTransferred = body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize;
+            sut.ProcessReadBytes(args);
+
+            actual.Should().NotBeNull();
+            actual.Should().Be("Hello world");
+        }
+
+        [Fact]
+        public void can_clear_even_if_no_messages_habe_been_received()
+        {
+            var args = new SocketBufferFake();
+            var body = "Hello world";
+            var type = body.GetType().AssemblyQualifiedName;
+            var serializer = new StringSerializer();
+            object actual = null;
+            BitConverter2.GetBytes(MicroMessageEncoder.FixedHeaderLength + type.Length, args.Buffer, 0);
+            args.Buffer[2] = MicroMessageDecoder.Version;
+            BitConverter2.GetBytes(body.Length, args.Buffer, 3);
+            args.Buffer[7] = (byte)(sbyte)type.Length;
+            Encoding.ASCII.GetBytes(type, 0, type.Length, args.Buffer, HeaderLengthSize + MicroMessageEncoder.FixedHeaderLength);
+            Encoding.ASCII.GetBytes(body, 0, body.Length, args.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength);
+
+            var sut = new MicroMessageDecoder(serializer);
+            sut.MessageReceived = o => actual = o;
+            sut.Clear();
+            args.BytesTransferred = body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize;
+            sut.ProcessReadBytes(args);
+
+            actual.Should().NotBeNull();
+            actual.Should().Be("Hello world");
+        }
+
+
+        [Fact]
         public void half_body()
         {
             var args = new SocketBufferFake();
