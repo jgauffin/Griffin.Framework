@@ -16,12 +16,13 @@ namespace Griffin.Net.Channels
         /// Initializes a new instance of the <see cref="ServerSideSslStreamBuilder"/> class.
         /// </summary>
         /// <param name="certificate">The certificate.</param>
+        /// <param name="allowedProtocols">Which protocols to support for HTTPS. By default only Tls 1.2 is allowed (most secure)</param>
         /// <exception cref="System.ArgumentNullException">certificate</exception>
-        public ServerSideSslStreamBuilder(X509Certificate certificate)
+        public ServerSideSslStreamBuilder(X509Certificate certificate, SslProtocols allowedProtocols = SslProtocols.Tls12)
         {
             if (certificate == null) throw new ArgumentNullException("certificate");
             Certificate = certificate;
-            Protocols = SslProtocols.Default;
+            Protocols = allowedProtocols;
         }
 
         /// <summary>
