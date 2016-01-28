@@ -45,12 +45,18 @@ namespace Griffin.Data
         /// <returns>Created exception</returns>
         public static DataException CreateDataException(this IDbCommand cmd, Exception inner)
         {
-            var str = "Failed to execute sql.\r\nQuery:" + cmd.CommandText;
-            foreach (IDbDataParameter parameter in cmd.Parameters)
+            var pos = inner.Message.IndexOfAny(new[] { '\r', '\n' });
+            var innerMsg = pos == -1 ? inner.Message : inner.Message.Substring(0, pos);
+            if (inner is DataException || inner.GetType().Namespace == "System.Data")
             {
-                str += "\r\n\t" + parameter.ParameterName + ": " + (parameter.Value ?? "NULL");
+                var str = innerMsg + "\r\nQuery:" + cmd.CommandText;
+                foreach (IDbDataParameter parameter in cmd.Parameters)
+                {
+                    str += "\r\n\t" + parameter.ParameterName + ": " + (parameter.Value ?? "NULL");
+                }
+                return new DataException(str, inner);
             }
-            return new DataException(str, inner);
+            throw new DataException(innerMsg + " [see inner exception for details]", inner);
         }
 
     }

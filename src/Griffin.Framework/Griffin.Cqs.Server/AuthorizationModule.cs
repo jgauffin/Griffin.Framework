@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Cqs.Authorization;
 using Griffin.Net.LiteServer.Modules;
+#pragma warning disable 1998
 
 namespace Griffin.Cqs.Server
 {
@@ -13,21 +14,15 @@ namespace Griffin.Cqs.Server
     /// </summary>
     public class AuthorizationModule : IServerModule
     {
-#pragma warning disable 1998
         public async Task BeginRequestAsync(IClientContext context)
-#pragma warning restore 1998
         {
         }
 
-#pragma warning disable 1998
         public async Task EndRequest(IClientContext context)
-#pragma warning restore 1998
         {
         }
 
-#pragma warning disable 1998
         public async Task<ModuleResult> ProcessAsync(IClientContext context)
-#pragma warning restore 1998
         {
             var attributes = context.RequestMessage.GetType().GetCustomAttributes<AuthorizeAttribute>();
             foreach (var attribute in attributes)
@@ -55,10 +50,7 @@ namespace Griffin.Cqs.Server
                         continue;
 
                     context.ResponseMessage =
-                                new AuthenticationException(
-                                    string.Format(
-                                        "You are not allowed to invoke '{0}', as you are not part of role '{1}'.",
-                                        context.RequestMessage.GetType().Name, role));
+                                new AuthorizationException(context.RequestMessage.GetType(), role);
                     return ModuleResult.SendResponse;
                 }
             }
@@ -66,3 +58,5 @@ namespace Griffin.Cqs.Server
         }
     }
 }
+
+#pragma warning restore 1998

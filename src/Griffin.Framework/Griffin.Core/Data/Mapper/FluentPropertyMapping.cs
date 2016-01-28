@@ -89,6 +89,28 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Used to define the value that should be interpreted as null in the translation between a property and a column value.
+        /// </summary>
+        /// <param name="nullValue">For value types. Set the column to null if this value is specified in the property</param>
+        /// <returns>this</returns>
+        public FluentPropertyMapping<TEntity, TPropertyType> Nullable(TPropertyType nullValue)
+        {
+            _inner.IsNullable = true;
+            _inner.NullValue = nullValue;
+            return this;
+        }
+        /// <summary>
+        /// Used to define the value that should be interpreted as null in the translation between a property and a column value.
+        /// </summary>
+        /// <returns>this</returns>
+        public FluentPropertyMapping<TEntity, TPropertyType> Nullable()
+        {
+            _inner.IsNullable = true;
+            return this;
+        }
+
+
+        /// <summary>
         /// Use if the column type differs from the property type.
         /// </summary>
         /// <param name="fromPropertyConverter">From property converter.</param>

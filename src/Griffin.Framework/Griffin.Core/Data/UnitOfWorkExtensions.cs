@@ -48,7 +48,7 @@ namespace Griffin.Data
         /// <code>
         /// public void Execute(IDbConnection connection)
         /// {
-        ///     connection.ExecuteNonQuery("UPDATE Users SET Discount = Discount + 10 WHERE OrganizationId = @orgId", new { orgId = 10});
+        ///     uow.ExecuteNonQuery("UPDATE Users SET Discount = Discount + 10 WHERE OrganizationId = @orgId", new { orgId = 10});
         /// </code>
         /// </example>
         public static void ExecuteNonQuery(this IAdoNetUnitOfWork unitOfWork, string sql, object parameters = null)
@@ -66,6 +66,41 @@ namespace Griffin.Data
                     }
                 }
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Execute a scalar query.
+        /// </summary>
+        /// <param name="unitOfWork">Unit of work to execute query in</param>
+        /// <param name="sql">sql query</param>
+        /// <param name="parameters">parameters used in the query</param>
+        /// <remarks>
+        /// <para>Do note that the query must be using table column names and not class properties. No mapping is being made.</para>
+        /// <para><c>null</c> is automatically replaced by <c>DBNull.Value</c> for the parameters</para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// public void Execute(IDbConnection connection)
+        /// {
+        ///     uow.ExecuteScalar("UPDATE Users SET Discount = Discount + 10 WHERE OrganizationId = @orgId", new { orgId = 10});
+        /// </code>
+        /// </example>
+        public static object ExecuteScalar(this IAdoNetUnitOfWork unitOfWork, string sql, object parameters = null)
+        {
+            if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
+
+            using (var cmd = unitOfWork.CreateCommand())
+            {
+                cmd.CommandText = sql;
+                if (parameters != null)
+                {
+                    foreach (var kvp in parameters.ToDictionary())
+                    {
+                        cmd.AddParameter(kvp.Key, kvp.Value ?? DBNull.Value);
+                    }
+                }
+                return cmd.ExecuteScalar();
             }
         }
 

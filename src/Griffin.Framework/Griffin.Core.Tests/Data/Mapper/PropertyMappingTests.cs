@@ -48,6 +48,33 @@ namespace Griffin.Core.Tests.Data.Mapper
         }
 
         [Fact]
+        public void should_replace_dbnull_with_the_defined_replacement_value_when_mapping_column_value()
+        {
+            var record = Substitute.For<IDataRecord>();
+            var actual = new Ok();
+            record["Age"].Returns(DBNull.Value);
+
+            var sut = new PropertyMapping<Ok>("Age", (o, o1) => o.Age= (int)o1, ok => ok.Age);
+            sut.NullValue = 1;
+            sut.Map(record, actual);
+
+            actual.Age.Should().Be(1);
+        }
+
+        [Fact]
+        public void should_be_able_to_convert_null_value_to_dbnull()
+        {
+            var record = Substitute.For<IDataRecord>();
+            var entity = new Ok() {Age = 1};
+
+            var sut = (IPropertyMapping)new PropertyMapping<Ok>("Age", (o, o1) => o.Age = (int)o1, ok => ok.Age);
+            sut.NullValue = 1;
+            var actual = sut.GetValue(entity);
+
+            actual.Should().Be(DBNull.Value);
+        }
+
+        [Fact]
         public void use_column_name_and_not_property_name_in_the_record()
         {
             var record = Substitute.For<IDataRecord>();

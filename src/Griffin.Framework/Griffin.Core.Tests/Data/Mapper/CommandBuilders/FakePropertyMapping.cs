@@ -44,6 +44,9 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         /// </summary>
         public string ColumnName { get; set; }
 
+        public bool IsNullable { get; set; }
+        public object NullValue { get; set; }
+
         /// <summary>
         ///     Convert the value in the specified record and assign it to the property in the specified instance
         /// </summary>
