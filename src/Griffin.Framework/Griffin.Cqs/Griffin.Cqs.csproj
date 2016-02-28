@@ -62,13 +62,17 @@
     <Compile Include="Http\WebSocketServer.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventHandlerInfo.cs" />
+    <Compile Include="InversionOfControl\EventHandlerRegistry.cs" />
+    <Compile Include="InversionOfControl\IEventHandlerRegistry.cs" />
     <Compile Include="InversionOfControl\IocBusBuilder.cs" />
     <Compile Include="InversionOfControl\QueryExecutedEventArgs.cs" />
     <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />
     <Compile Include="InversionOfControl\IocCommandBus.cs" />
     <Compile Include="InversionOfControl\IocEventBus.cs" />
     <Compile Include="InversionOfControl\IocRequestReplyBus.cs" />
+    <Compile Include="InversionOfControl\ScopeClosingEventArgs.cs" />
     <Compile Include="InversionOfControl\ScopeCreatedEventArgs.cs" />
+    <Compile Include="InversionOfControl\SeparateScopesIocEventBus.cs" />
     <Compile Include="Reliable\QueuedCommandBus.cs" />
     <Compile Include="Reliable\QueuedEventBus.cs" />
     <Compile Include="InversionOfControl\IocQueryBus.cs" />

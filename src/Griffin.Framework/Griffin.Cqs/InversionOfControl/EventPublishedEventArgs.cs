@@ -28,7 +28,6 @@ namespace Griffin.Cqs.InversionOfControl
         public EventPublishedEventArgs(IContainerScope scope, ApplicationEvent applicationEvent, bool successful,
             IReadOnlyCollection<EventHandlerInfo> eventInfo)
         {
-            if (scope == null) throw new ArgumentNullException("scope");
             if (applicationEvent == null) throw new ArgumentNullException("applicationEvent");
 
             Scope = scope;
@@ -38,8 +37,13 @@ namespace Griffin.Cqs.InversionOfControl
         }
 
         /// <summary>
-        ///     Scope used to resolve subscribers
+        ///     Scope used to resolve subscribers.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <c>null</c> if one scope is used per handler.
+        ///     </para>
+        /// </remarks>
         public IContainerScope Scope { get; private set; }
 
         /// <summary>

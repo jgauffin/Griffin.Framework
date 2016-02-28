@@ -64,12 +64,15 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Http\IntegrationTest.cs" />
     <Compile Include="InversionOfControl\CommandInvokedEventArgsTests.cs" />
+    <Compile Include="InversionOfControl\EventHandlerRegistryTests.cs" />
     <Compile Include="InversionOfControl\IocRequestReplyBusTests.cs" />
     <Compile Include="InversionOfControl\IocQueryBusTests.cs" />
     <Compile Include="InversionOfControl\IocEventBusTests.cs" />
     <Compile Include="InversionOfControl\IocCommandBusTests.cs" />
     <Compile Include="InversionOfControl\MemoryQueueTests.cs" />
     <Compile Include="InversionOfControl\QueuedEventBusTests.cs" />
+    <Compile Include="InversionOfControl\SeparateScopesIocEventBusTests.cs" />
+    <Compile Include="InversionOfControl\Subjects\SupriseSucceeded.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

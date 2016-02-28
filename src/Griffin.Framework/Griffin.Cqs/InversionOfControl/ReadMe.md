@@ -27,24 +27,24 @@ It's possible thanks to lazy loading. You can do something like this for Unity:
 ```csharp
 public class CompositionRoot
 {
-	private static UnityContainerWrapper _container;
+    private static UnityContainerWrapper _container;
 
-	public static void Register()
-	{
-		var container = new UnityContainer()
+    public static void Register()
+    {
+        var container = new UnityContainer()
 
-		container.RegisterType<IQueryBus, ContainerQueryBus>(new ContainerControlledLifetimeManager());
-		container.RegisterType<ICommandBus, ContainerCommandBus>(new ContainerControlledLifetimeManager());
-		container.RegisterType<IApplicationEventBus, ContainerEventBus>(new ContainerControlledLifetimeManager());
-		container.RegisterType<IRequestReplyBus, ContainerRequestReplyBus>(new ContainerControlledLifetimeManager());
+        container.RegisterType<IQueryBus, ContainerQueryBus>(new ContainerControlledLifetimeManager());
+        container.RegisterType<ICommandBus, ContainerCommandBus>(new ContainerControlledLifetimeManager());
+        container.RegisterType<IApplicationEventBus, ContainerEventBus>(new ContainerControlledLifetimeManager());
+        container.RegisterType<IRequestReplyBus, ContainerRequestReplyBus>(new ContainerControlledLifetimeManager());
 
-		// Lazy load the container.
-		container.RegisterType<IContainer>(new InjectionFactory(c => _container));
+        // Lazy load the container.
+        container.RegisterType<IContainer>(new InjectionFactory(c => _container));
 
-		// [.. your other registrations ..]
+        // [.. your other registrations ..]
 
-		_container = new UnityContainerWrapper(container);
-	}
+        _container = new UnityContainerWrapper(container);
+    }
 }
 ```
 

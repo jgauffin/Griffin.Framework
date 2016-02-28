@@ -10,13 +10,14 @@ using Griffin.Cqs.Authorization;
 namespace Griffin.Cqs.InversionOfControl
 {
     /// <summary>
-    ///     Uses your favorite inversion of control container to publish events
+    ///     Uses your favorite inversion of control container to publish events.
     /// </summary>
     /// <remarks>
     ///     <para>
     ///         The handlers will be invoked asynchronously, but the publish method will not return before all subscribers have
     ///         finished their processing.
     ///     </para>
+    /// <para>This implementation uses a single IoC scope for all handlers. If you want to have a separate scope per handler use <see cref="SeparateScopesIocEventBus"/> instead.</para>
     /// </remarks>
     public class IocEventBus : IEventBus
     {
@@ -32,6 +33,7 @@ namespace Griffin.Cqs.InversionOfControl
             if (container == null) throw new ArgumentNullException("container");
             _container = container;
         }
+        
 
         /// <summary>
         ///     Publish a new application event.
