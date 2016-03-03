@@ -151,6 +151,56 @@ namespace Griffin.Cqs.Tests.InversionOfControl
             actual.Should().BeTrue();
         }
 
+
+        [Fact]
+        public async Task should_trigger_scope_closing_on_successful_invocation()
+        {
+            var registry = new EventHandlerRegistry();
+            var container = Substitute.For<IContainer>();
+            var scope = Substitute.For<IContainerScope>();
+            var handler = new SuccessfulHandler();
+            ScopeClosingEventArgs actual = null;
+            registry.Map<TestEvent>(handler.GetType());
+            scope.Resolve(handler.GetType()).Returns(handler);
+            container.CreateScope().Returns(scope);
+
+            var sut = new SeparateScopesIocEventBus(container, registry);
+            sut.ScopeClosing += (sender, args) => actual = args;
+            await sut.PublishAsync(new TestEvent());
+
+            actual.Should().NotBeNull();
+            actual.HandlersWasSuccessful.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task should_trigger_scope_closing_on_failing_handler()
+        {
+            var registry = new EventHandlerRegistry();
+            var container = Substitute.For<IContainer>();
+            var scope = Substitute.For<IContainerScope>();
+            var handler = new FailingHandler();
+            ScopeClosingEventArgs actual = null;
+            registry.Map<TestEvent>(handler.GetType());
+            scope.Resolve(handler.GetType()).Returns(handler);
+            container.CreateScope().Returns(scope);
+
+            var sut = new SeparateScopesIocEventBus(container, registry);
+            sut.ScopeClosing += (sender, args) => actual = args;
+            try
+            {
+                await sut.PublishAsync(new TestEvent());
+            }
+            catch (AggregateException)
+            {
+                //ignore for test purposes
+            }
+
+
+            actual.Should().NotBeNull();
+            actual.HandlersWasSuccessful.Should().BeFalse();
+        }
+
+
         [Fact]
         public async Task event_should_report_Failure_if_one_handler_throws_an_exception()
         {

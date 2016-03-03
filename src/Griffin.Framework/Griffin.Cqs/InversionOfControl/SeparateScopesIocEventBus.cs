@@ -49,7 +49,7 @@ namespace Griffin.Cqs.InversionOfControl
         public async Task PublishAsync<TApplicationEvent>(TApplicationEvent e)
             where TApplicationEvent : ApplicationEvent
         {
-            var handlers = _registry.Lookup(typeof (TApplicationEvent)).ToList();
+            var handlers = _registry.Lookup(typeof(TApplicationEvent)).ToList();
             if (GlobalConfiguration.AuthorizationFilter != null)
             {
                 var ctx = new AuthorizationFilterContext(e, handlers);
@@ -95,8 +95,10 @@ namespace Griffin.Cqs.InversionOfControl
                 sw.Start();
                 try
                 {
-                    await ((IApplicationEventSubscriber<TEventType>) subscriber).HandleAsync(e);
+                    await ((IApplicationEventSubscriber<TEventType>)subscriber).HandleAsync(e);
                     eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+                    if (ScopeClosing != null)
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope) { HandlersWasSuccessful = true });
                 }
                 catch (Exception ex)
                 {
@@ -104,8 +106,12 @@ namespace Griffin.Cqs.InversionOfControl
                     {
                         Failure = new HandlerFailure(subscriber, ex)
                     });
+                    if (ScopeClosing != null)
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope) { HandlersWasSuccessful = false });
                     throw;
                 }
+
+
             }
         }
 
