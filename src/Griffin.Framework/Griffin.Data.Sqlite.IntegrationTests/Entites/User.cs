@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.AccessControl;
 
 namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 {

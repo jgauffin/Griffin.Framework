@@ -96,9 +96,6 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             }
         }
 
-     
-       
-
         [Fact]
         public async Task enumerate()
         {
@@ -166,8 +163,5 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
             users.Count.Should().Be(0);
         }
-
-        
-
     }
 }

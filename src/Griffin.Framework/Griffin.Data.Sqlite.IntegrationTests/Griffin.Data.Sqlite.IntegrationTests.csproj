@@ -64,10 +64,14 @@
     <Compile Include="Entites\Message.cs" />
     <Compile Include="Entites\MessageMapper.cs" />
     <Compile Include="Entites\MessageTable.cs" />
+    <Compile Include="Entites\News.cs" />
+    <Compile Include="Entites\NewsMapper.cs" />
+    <Compile Include="Entites\NewsTable.cs" />
     <Compile Include="Entites\User.cs" />
     <Compile Include="Entites\UserMapper.cs" />
     <Compile Include="Entites\UserTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlCommandBuilderTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

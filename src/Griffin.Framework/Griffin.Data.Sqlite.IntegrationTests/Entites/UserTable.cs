@@ -7,16 +7,10 @@ namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 {
     public class UserTable
     {
-        private readonly List<User> _users = new List<User>();
-
-        public List<User> Users
-        {
-            get { return _users; }
-        }
+        public List<User> Users { get; } = new List<User>();
 
         public void Create(SQLiteConnection connection)
         {
-
             using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText =
@@ -25,10 +19,14 @@ namespace Griffin.Data.Sqlite.IntegrationTests.Entites
             }
         }
 
+        public void Delete()
+        {
+        }
+
         public void Insert(SQLiteConnection connection, int numberOfUsers)
         {
-            Random r = new Random();
-            for (int i = 0; i < numberOfUsers; i++)
+            var r = new Random();
+            for (var i = 0; i < numberOfUsers; i++)
             {
                 var user = new User
                 {
@@ -43,11 +41,6 @@ namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 
                 connection.Insert(user);
             }
-        }
-
-        public void Delete()
-        {
-
         }
     }
 }
