@@ -25,17 +25,17 @@ namespace Griffin.Logging
         {
             get
             {
-                if (_current == null)
+                if (_current != null)
+                    return _current;
+
+                lock (SynLock)
                 {
-                    lock (SynLock)
+                    if (_current == null)
                     {
-                        if (_current == null)
-                        {
-                            //not a problem on x86 & x64
-                            // ReSharper disable PossibleMultipleWriteAccessInDoubleCheckLocking
-                            _current = new NullLogProvider();
-                            // ReSharper restore PossibleMultipleWriteAccessInDoubleCheckLocking
-                        }
+                        //not a problem on x86 & x64
+                        // ReSharper disable PossibleMultipleWriteAccessInDoubleCheckLocking
+                        _current = new NullLogProvider();
+                        // ReSharper restore PossibleMultipleWriteAccessInDoubleCheckLocking
                     }
                 }
 

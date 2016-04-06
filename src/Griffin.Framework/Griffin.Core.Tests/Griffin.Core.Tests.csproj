@@ -129,6 +129,9 @@
     <Compile Include="Logging\LogManagerTests.cs" />
     <Compile Include="Logging\NamespaceFilterTests.cs" />
     <Compile Include="Logging\Providers\LogProviderTests.cs" />
+    <Compile Include="Logging\Subjects\ClassB.cs" />
+    <Compile Include="Logging\Subjects\ClassA.cs" />
+    <Compile Include="Logging\Subjects\SomeLogger.cs" />
     <Compile Include="Net\Buffers\BufferPoolTests.cs" />
     <Compile Include="Net\Buffers\BufferSliceTests.cs" />
     <Compile Include="Net\Channels\ClientServerHelper.cs" />

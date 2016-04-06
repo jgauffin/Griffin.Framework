@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.Messages;
 using Griffin.Net.Protocols.Http.Serializers;
@@ -192,17 +193,24 @@ namespace Griffin.Net.Protocols.Http
                 {
                     var result = _messageSerializer.Deserialize(message.Headers["Content-Type"], message.Body);
                     if (result == null)
-                        throw new BadRequestException("Unsupported content-type: " + message.ContentType);
-
-                    var formAndFiles = result as FormAndFilesResult;
-                    if (formAndFiles != null)
                     {
-                        request.Form = formAndFiles.Form;
-                        request.Files = formAndFiles.Files;
+                        //it's a so simple protocol, we can expect that the client can handle it.
+                        if (!"text/plain".Equals(message.Headers["Content-Type"], StringComparison.OrdinalIgnoreCase))
+                        throw new BadRequestException("Unsupported content-type: " + message.ContentType);
                     }
                     else
-                        throw new HttpException(500, "Unknown decoder result: " + result);
+                    {
+                        var formAndFiles = result as FormAndFilesResult;
+                        if (formAndFiles != null)
+                        {
+                            request.Form = formAndFiles.Form;
+                            request.Files = formAndFiles.Files;
+                        }
+                        else
+                            throw new HttpException(500, "Unknown decoder result: " + result);
+                    }
                 }
+
                 var cookies = request.Headers["Cookie"];
                 if (cookies != null)
                 {
