@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Serializers;
 
 namespace Griffin.Net.Protocols.Http
 {
     /// <summary>
-    /// HTTP listener
+    ///     HTTP listener
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Will produce <see cref="HttpRequest"/> unless you change the <see cref="BodyDecoder"/> property, which will make the listener produce <see cref="HttpRequest"/> instead.
-    /// </para>
+    ///     <para>
+    ///         Will produce <see cref="HttpRequest" /> unless you change the <see cref="BodyDecoder" /> property, which will
+    ///         make the listener produce <see cref="HttpRequest" /> instead.
+    ///     </para>
     /// </remarks>
     public class HttpListener : ChannelTcpListener
     {
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpListener"/> class.
+        ///     Initializes a new instance of the <see cref="HttpListener" /> class.
         /// </summary>
         /// <param name="configuration"></param>
         public HttpListener(ChannelTcpListenerConfiguration configuration)
@@ -26,7 +27,7 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpListener"/> class.
+        ///     Initializes a new instance of the <see cref="HttpListener" /> class.
         /// </summary>
         public HttpListener()
         {
@@ -38,26 +39,14 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
-        /// Used to decode the body of incoming request to form/files.
+        ///     Used to decode the body of incoming request to form/files.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Per default <c>null</c> which means that nothing will be done with the body by the library.
-        /// </para>
+        ///     <para>
+        ///         Per default <c>null</c> which means that nothing will be done with the body by the library.
+        ///     </para>
         /// </remarks>
         public IMessageSerializer BodyDecoder { get; set; }
-
-        /// <summary>
-        /// A client has connected (nothing has been sent or received yet)
-        /// </summary>
-        /// <param name="channel">Channel which we created for the remote socket.</param>
-        /// <returns></returns>
-        protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)
-        {
-            channel.ChannelFailure = OnDecoderFailure;
-            //GriffinNetworking.cerchannel.
-            return base.OnClientConnected(channel);
-        }
 
         /// <summary>
         ///     Start this listener
@@ -73,40 +62,30 @@ namespace Griffin.Net.Protocols.Http
             base.Start(address, port);
         }
 
-        private void OnDecoderFailure(ITcpChannel channel, Exception error)
+        /// <summary>
+        ///     A client has connected (nothing has been sent or received yet)
+        /// </summary>
+        /// <param name="channel">Channel which we created for the remote socket.</param>
+        /// <returns></returns>
+        protected override ClientConnectedEventArgs OnClientConnected(ITcpChannel channel)
         {
-            if (!channel.IsConnected)
-                return;
-
-            var pos = error.Message.IndexOfAny(new[] { '\r', '\n' });
-            var descr = pos == -1 ? error.Message : error.Message.Substring(0, pos);
-            var response = new HttpResponse(HttpStatusCode.BadRequest, descr, "HTTP/1.1");
-            var counter = (int)channel.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 1);
-            response.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
-            try
-            {
-                channel.Send(response);
-                channel.Close();
-            }
-            catch (Exception ex)
-            {
-            }
-
+            channel.ChannelFailure = OnDecoderFailure;
+            //GriffinNetworking.cerchannel.
+            return base.OnClientConnected(channel);
         }
 
 
-
         /// <summary>
-        /// Receive a new message from the specified client
+        ///     Receive a new message from the specified client
         /// </summary>
         /// <param name="source">Channel for the client</param>
         /// <param name="msg">Message (as decoded by the specified <see cref="IMessageDecoder" />).</param>
         protected override void OnMessage(ITcpChannel source, object msg)
         {
-            var message = (IHttpMessage)msg;
+            var message = (IHttpMessage) msg;
 
             //TODO: Try again if we fail to update
-            var counter = (int)source.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 0) + 1;
+            var counter = (int) source.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 0) + 1;
             source.Data.TryUpdate(HttpMessage.PipelineIndexKey, counter, counter - 1);
 
             message.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
@@ -116,6 +95,27 @@ namespace Griffin.Net.Protocols.Http
                 request.RemoteEndPoint = source.RemoteEndpoint;
 
             base.OnMessage(source, msg);
+        }
+
+        private void OnDecoderFailure(ITcpChannel channel, Exception error)
+        {
+            if (!channel.IsConnected || error is SocketException)
+                return;
+
+            try
+            {
+                var pos = error.Message.IndexOfAny(new[] {'\r', '\n'});
+                var descr = pos == -1 ? error.Message : error.Message.Substring(0, pos);
+                var response = new HttpResponse(HttpStatusCode.BadRequest, descr, "HTTP/1.1");
+                var counter = (int) channel.Data.GetOrAdd(HttpMessage.PipelineIndexKey, x => 1);
+                response.Headers[HttpMessage.PipelineIndexKey] = counter.ToString();
+                channel.Send(response);
+                channel.Close();
+            }
+            catch (Exception ex)
+            {
+                OnListenerError(ex);
+            }
         }
     }
 }

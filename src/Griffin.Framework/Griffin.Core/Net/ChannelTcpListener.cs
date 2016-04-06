@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
-using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
 
@@ -115,8 +114,8 @@ namespace Griffin.Net
         ///     Start this listener.
         /// </summary>
         /// <remarks>
-        /// This also pre-configures 20 channels that can be used and reused during the lifetime of 
-        /// this listener.
+        ///     This also pre-configures 20 channels that can be used and reused during the lifetime of
+        ///     this listener.
         /// </remarks>
         /// <param name="address">Address to accept connections on</param>
         /// <param name="port">Port to use. Set to <c>0</c> to let the OS decide which port to use. </param>
@@ -132,11 +131,11 @@ namespace Griffin.Net
             _listener = new TcpListener(address, port);
             _listener.Start();
 
-            for (int i = 0; i < 20; i++)
+            for (var i = 0; i < 20; i++)
             {
                 var decoder = _configuration.DecoderFactory();
                 var encoder = _configuration.EncoderFactory();
-                var channel  = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
+                var channel = _channelFactory.Create(_bufferPool.Pop(), encoder, decoder);
                 _channels.Push(channel);
             }
 
@@ -155,7 +154,7 @@ namespace Griffin.Net
         /// <summary>
         ///     An internal error occurred
         /// </summary>
-        public event EventHandler<ErrorEventArgs> ListenerError = delegate { };
+        public event EventHandler<ErrorEventArgs> ListenerError;
 
         /// <summary>
         ///     To allow the sub classes to configure this class in their constructors.
@@ -203,13 +202,6 @@ namespace Griffin.Net
             _messageReceived(source, msg);
         }
 
-        private void OnChannelDisconnect(ITcpChannel source, Exception exception)
-        {
-            OnClientDisconnected(source, exception);
-            source.Cleanup();
-            _channels.Push(source);
-        }
-
         private void OnAcceptSocket(IAsyncResult ar)
         {
             if (_shuttingDown)
@@ -220,7 +212,6 @@ namespace Griffin.Net
                 // Required as _listener.Stop() disposes the underlying socket
                 // thus causing an objectDisposedException here.
                 var socket = _listener.EndAcceptSocket(ar);
-
 
 
                 ITcpChannel channel;
@@ -246,11 +237,28 @@ namespace Griffin.Net
             }
             catch (Exception exception)
             {
-                ListenerError(this, new ErrorEventArgs(exception));
+                OnListenerError(exception);
             }
 
 
             _listener.BeginAcceptSocket(OnAcceptSocket, null);
+        }
+
+        private void OnChannelDisconnect(ITcpChannel source, Exception exception)
+        {
+            OnClientDisconnected(source, exception);
+            source.Cleanup();
+            _channels.Push(source);
+        }
+
+        /// <summary>
+        /// Invoke when the listener itself fails
+        /// </summary>
+        /// <param name="ex">Caught exception</param>
+        protected virtual void OnListenerError(Exception ex)
+        {
+            if (ListenerError != null)
+                ListenerError(this, new ErrorEventArgs(ex));
         }
     }
 }
