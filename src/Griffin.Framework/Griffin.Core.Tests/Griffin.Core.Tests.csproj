@@ -108,6 +108,9 @@
     <Compile Include="Data\Mapper\TestMappings\UsingReflection.cs" />
     <Compile Include="Data\Mapper\TestMappings\WithInterfaceMapping.cs" />
     <Compile Include="Data\MappingProviderTests.cs" />
+    <Compile Include="Data\Queries\QueryResultTests.cs" />
+    <Compile Include="Data\Queries\QueryConstraintsTests.cs" />
+    <Compile Include="Data\Queries\User.cs" />
     <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
     <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
     <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
