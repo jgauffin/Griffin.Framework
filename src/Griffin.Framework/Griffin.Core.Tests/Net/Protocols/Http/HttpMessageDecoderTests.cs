@@ -66,6 +66,27 @@ hello queue a");
             sw.ReadToEnd().Should().Be("hello queue a");
         }
 
+        [Fact]
+        public void allow_text_plain_even_if_the_decoder_doesnt_support_it()
+        {
+            IHttpRequest actual = null;
+            var buffer = new SocketBufferFake();
+            buffer.Buffer =
+                Encoding.ASCII.GetBytes(
+                    @"PUT /?query HTTP/1.0
+host: www.onetrueerror.com
+content-type: text/plain
+content-length:13
+
+hello queue a");
+            buffer.BytesTransferred = buffer.Buffer.Length;
+
+            var sut = new HttpMessageDecoder();
+            sut.MessageReceived = o => actual = (IHttpRequest)o;
+            sut.ProcessReadBytes(buffer);
+
+            actual.Body.Position.Should().Be(0);
+        }
 
         [Fact]
         public void decode_two_messages()
