@@ -16,7 +16,7 @@ namespace Griffin.Net.Protocols.Http
         private int _offset;
         private readonly MemoryStream _stream;
         private int _totalAmountToSend;
-        private readonly StreamWriter _writer;
+        private readonly StreamWriter _headerWriter;
         private object _resetLock = new object();
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Griffin.Net.Protocols.Http
         {
             _stream = new MemoryStream(_buffer);
             _stream.SetLength(0);
-            _writer = new StreamWriter(_stream);
+            _headerWriter = new StreamWriter(_stream);
         }
 
         /// <summary>
@@ -83,13 +83,13 @@ namespace Griffin.Net.Protocols.Http
                 return;
             }
 
-            _writer.WriteLine(_message.StatusLine);
+            _headerWriter.WriteLine(_message.StatusLine);
             foreach (var header in _message.Headers)
             {
-                _writer.Write("{0}: {1}\r\n", header.Key, header.Value);
+                _headerWriter.Write("{0}: {1}\r\n", header.Key, header.Value);
             }
-            _writer.Write("\r\n");
-            _writer.Flush();
+            _headerWriter.Write("\r\n");
+            _headerWriter.Flush();
             _isHeaderSent = true;
             buffer.UserToken = _message;
 

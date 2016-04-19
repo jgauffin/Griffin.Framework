@@ -10,14 +10,14 @@ namespace Griffin.Core.Tests.Logging
 {
     public class LogManagerTests
     {
-        [Fact, ExclusivelyUses("LogManager")]
-        public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
-        {
-            LogManager.Provider = null;
-            var actual = LogManager.GetLogger<LogManagerTests>();
+[Fact, ExclusivelyUses("LogManager")]
+public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
+{
+    LogManager.Provider = null;
+    var actual = LogManager.GetLogger<LogManagerTests>();
 
-            actual.Should().BeAssignableTo<NullLogger>();
-        }
+    actual.Should().BeAssignableTo<NullLogger>();
+}
 
         [Fact, ExclusivelyUses("LogManager")]
         public void assigning_a_new_provider_removes_the_old_one()

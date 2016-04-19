@@ -323,7 +323,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static TEntity FirstOrDefault<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper)
+        public static TEntity FirstOrDefault<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -559,7 +559,7 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         public static IEnumerable<TEntity> ToEnumerable<TEntity>(this IDbCommand cmd, bool ownsConnection,
-            ICrudEntityMapper<TEntity> mapper)
+            IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");
@@ -650,7 +650,7 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static IList<TEntity> ToList<TEntity>(this IDbCommand cmd, ICrudEntityMapper<TEntity> mapper)
+        public static IList<TEntity> ToList<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper)
         {
             if (cmd == null) throw new ArgumentNullException("cmd");
             if (mapper == null) throw new ArgumentNullException("mapper");

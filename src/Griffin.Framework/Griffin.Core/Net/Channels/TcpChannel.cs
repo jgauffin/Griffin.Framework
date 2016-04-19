@@ -198,7 +198,7 @@ namespace Griffin.Net.Channels
         public void Send(object message)
         {
             if (_socket == null || !_socket.Connected)
-                throw new SocketException((int) SocketError.NotConnected);
+                throw new SocketException((int)SocketError.NotConnected);
 
             _sendLock.Wait();
             _messagePendingSendOperation = message;
@@ -286,7 +286,7 @@ namespace Griffin.Net.Channels
         {
             try
             {
-                throw new SocketException((int) socketError);
+                throw new SocketException((int)socketError);
             }
             catch (Exception ex)
             {
@@ -297,10 +297,12 @@ namespace Griffin.Net.Channels
         /// <summary>
         ///     Detected a disconnect
         /// </summary>
-        /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
         /// <param name="exception">Why we got disconnected</param>
-        private void HandleDisconnect2(SocketError socketError, Exception exception)
+        private void OnChannelFailure(Exception exception)
         {
+            if (ChannelFailure != null)
+                ChannelFailure(this, exception);
+
             try
             {
                 _socket.Close();
@@ -309,7 +311,8 @@ namespace Griffin.Net.Channels
             }
             catch (Exception ex)
             {
-                ChannelFailure(this, ex);
+                if (ChannelFailure != null)
+                    ChannelFailure(this, ex);
             }
         }
 
@@ -399,18 +402,26 @@ namespace Griffin.Net.Channels
                 return;
             }
 
-            var isComplete = _encoder.OnSendCompleted(e.BytesTransferred);
-            if (!isComplete)
+            try
             {
-                _encoder.Send(_writeArgsWrapper);
-                var isPending = _socket.SendAsync(_writeArgs);
-                if (!isPending)
-                    OnSendCompleted(this, _writeArgs);
-                return;
-            }
+                var isComplete = _encoder.OnSendCompleted(e.BytesTransferred);
+                if (!isComplete)
+                {
+                    _encoder.Send(_writeArgsWrapper);
+                    var isPending = _socket.SendAsync(_writeArgs);
+                    if (!isPending)
+                        OnSendCompleted(this, _writeArgs);
+                    return;
+                }
 
-            _sendLock.Release();
-            _sendCompleteAction(this, _messagePendingSendOperation);
+                _sendLock.Release();
+                _sendCompleteAction(this, _messagePendingSendOperation);
+            }
+            catch (Exception ex)
+            {
+                _sendLock.Release();
+                OnChannelFailure(ex);
+            }
         }
 
         private void ReadAsync()
