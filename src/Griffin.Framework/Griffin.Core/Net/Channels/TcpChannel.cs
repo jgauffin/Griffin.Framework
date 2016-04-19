@@ -320,6 +320,7 @@ namespace Griffin.Net.Channels
         ///     Detected a disconnect
         /// </summary>
         /// <param name="socketError">ProtocolNotSupported = decoder failure.</param>
+        /// <param name="ex">Exection that caused disconnect (if any)</param>
         private void HandleRemoteDisconnect(SocketError socketError, Exception ex)
         {
             try
