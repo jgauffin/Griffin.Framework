@@ -17,6 +17,7 @@ namespace Griffin.Net
     public class ChannelTcpListener : IMessagingListener
     {
         private readonly ConcurrentStack<ITcpChannel> _channels = new ConcurrentStack<ITcpChannel>();
+        private readonly ConcurrentDictionary<string, ITcpChannel> _usedChannels = new ConcurrentDictionary<string, ITcpChannel>();
         private IBufferSlicePool _bufferPool;
         private ITcpChannelFactory _channelFactory;
         private ChannelTcpListenerConfiguration _configuration;
@@ -38,16 +39,10 @@ namespace Griffin.Net
 
         /// <summary>
         /// </summary>
-        public ChannelTcpListener()
-        {
-            Configure(
-                new ChannelTcpListenerConfiguration(
+        public ChannelTcpListener() : this(new ChannelTcpListenerConfiguration(
                     () => new MicroMessageDecoder(new DataContractMessageSerializer()),
-                    () => new MicroMessageEncoder(new DataContractMessageSerializer()))
-                );
-
-            ChannelFactory = new TcpChannelFactory();
-        }
+                    () => new MicroMessageEncoder(new DataContractMessageSerializer())))
+        { }
 
         /// <summary>
         ///     Port that the server is listening on.
@@ -149,6 +144,10 @@ namespace Griffin.Net
         {
             _shuttingDown = true;
             _listener.Stop();
+            foreach(var channel in _usedChannels)
+            {
+                channel.Value.CloseAsync();
+            }
         }
 
         /// <summary>
@@ -226,6 +225,8 @@ namespace Griffin.Net
                 channel.MessageReceived = OnMessage;
                 channel.Assign(socket);
 
+                _usedChannels.TryAdd(channel.ChannelId, channel);
+
                 var args = OnClientConnected(channel);
                 if (!args.MayConnect)
                 {
@@ -246,6 +247,8 @@ namespace Griffin.Net
 
         private void OnChannelDisconnect(ITcpChannel source, Exception exception)
         {
+            ITcpChannel removed;
+            _usedChannels.TryRemove(source.ChannelId, out removed);
             OnClientDisconnected(source, exception);
             source.Cleanup();
             _channels.Push(source);
