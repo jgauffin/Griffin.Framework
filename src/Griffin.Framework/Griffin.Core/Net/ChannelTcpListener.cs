@@ -8,6 +8,7 @@ using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
+using System.Linq;
 
 namespace Griffin.Net
 {
@@ -144,10 +145,9 @@ namespace Griffin.Net
         {
             _shuttingDown = true;
             _listener.Stop();
-            foreach(var channel in _usedChannels)
-            {
-                channel.Value.CloseAsync();
-            }
+            var tasks = _usedChannels.Values.Select(x => x.CloseAsync()).ToArray();
+            if (tasks.Any())
+                System.Threading.Tasks.Task.WaitAll(tasks);
         }
 
         /// <summary>
