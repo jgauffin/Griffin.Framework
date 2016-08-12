@@ -26,7 +26,7 @@ namespace Griffin.Net
         private readonly IMessageEncoder _encoder;
         private readonly IBufferSlice _readBuffer;
         private readonly ConcurrentQueue<object> _readItems = new ConcurrentQueue<object>();
-		private readonly AutoResetEvent _readEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent _readEvent = new AutoResetEvent(false);
         private readonly SemaphoreSlim _sendCompletedSemaphore = new SemaphoreSlim(0, 1);
         private readonly SemaphoreSlim _sendQueueSemaphore = new SemaphoreSlim(1, 1);
         private ITcpChannel _channel;
@@ -260,31 +260,31 @@ namespace Griffin.Net
         /// </exception>
         public async Task<object> ReceiveAsync(TimeSpan timeout, CancellationToken cancellation)
         {
-			return await Task.Run(() =>
-			{
-				var handles = new WaitHandle[] { _readEvent, cancellation.WaitHandle };
+            return await Task.Run(() =>
+            {
+                var handles = new WaitHandle[] { _readEvent, cancellation.WaitHandle };
 
-				WaitHandle.WaitAny(handles);
+                WaitHandle.WaitAny(handles);
 
-				if (cancellation.IsCancellationRequested)
-					return null;
+                if (cancellation.IsCancellationRequested)
+                    return null;
 
-				object item;
-				var gotItem = _readItems.TryDequeue(out item);
+                object item;
+                var gotItem = _readItems.TryDequeue(out item);
 
-				if (!gotItem)
-					throw new ChannelException(
-						"Was signalled that something have been received, but found nothing in the in queue");
+                if (!gotItem)
+                    throw new ChannelException(
+                        "Was signalled that something have been received, but found nothing in the in queue");
 
-				if (item is ChannelException)
-					throw (ChannelException)item;
+                if (item is ChannelException)
+                    throw (ChannelException)item;
 
-				// signal so that more items can be read directly
-				if (_readItems.Count > 0)
-					_readEvent.Set();
+                // signal so that more items can be read directly
+                if (_readItems.Count > 0)
+                    _readEvent.Set();
 
-				return item;
-			});
+                return item;
+            });
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Griffin.Net
 
 
             _readItems.Enqueue(message);
-			_readEvent.Set();
+            _readEvent.Set();
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace Griffin.Net
             if (!_readEvent.WaitOne(0))
             {
                 _readItems.Enqueue(new ChannelException("Socket got disconnected", arg2));
-				_readEvent.Set();
+                _readEvent.Set();
             }
         }
 
