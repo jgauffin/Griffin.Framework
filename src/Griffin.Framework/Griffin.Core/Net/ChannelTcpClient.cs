@@ -229,7 +229,7 @@ namespace Griffin.Net
         /// </returns>
         public Task<object> ReceiveAsync(CancellationToken cancellation)
         {
-            return ReceiveAsync(TimeSpan.FromMilliseconds(-1), CancellationToken.None);
+            return ReceiveAsync(TimeSpan.FromMilliseconds(-1), cancellation);
         }
 
         /// <summary>
