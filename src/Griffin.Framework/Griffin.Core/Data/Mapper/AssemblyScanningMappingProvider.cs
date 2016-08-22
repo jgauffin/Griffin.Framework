@@ -223,7 +223,7 @@ namespace Griffin.Data.Mapper
             catch (Exception exception)
             {
                 throw new MappingException(type,
-                    "Failed to initialize mapper class. Is the mappings correct? Check inner exception for more information.",
+                    "Failed to initialize mapper class. Is the mapping correct? Check inner exception for more information.",
                     exception);
             }
             return instance;

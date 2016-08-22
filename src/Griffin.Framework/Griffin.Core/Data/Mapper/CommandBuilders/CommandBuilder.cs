@@ -160,6 +160,9 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 command.AddParameter(property.PropertyName, value);
             }
 
+            if (updates.Length < 2 || where.Length < 5)
+                throw new DataException(string.Format("Could not construct a proper UPDATE command. Is your mapping for '{0}' correct?\r\n UPDATE clause '{1}'\r\n WHERE clause '{2}'", entity.GetType().FullName, updates, @where));
+
             command.CommandText = string.Format("UPDATE {0} SET {1} WHERE {2}",
                 TableName,
                 updates.Remove(updates.Length - 2, 2),

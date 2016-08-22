@@ -90,7 +90,7 @@ namespace Griffin.Net.Protocols.Http
 
                 _ranges.Add(ourRange);
                 TotalLength = TotalLength + ourRange.Count;
-                if (TotalLength >= streamLength)
+                if (TotalLength > streamLength)
                     throw new ArgumentException(
                         string.Format("Inner stream is just {0} bytes long, while we should send {1} bytes.",
                             streamLength, TotalLength));

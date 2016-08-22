@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Runtime.ExceptionServices;
 
 namespace Griffin.Data
 {
@@ -45,6 +46,12 @@ namespace Griffin.Data
         /// <returns>Created exception</returns>
         public static DataException CreateDataException(this IDbCommand cmd, Exception inner)
         {
+            // Failed to generate a command. Throw original exception.
+            if (string.IsNullOrEmpty(cmd.CommandText))
+            {
+                ExceptionDispatchInfo.Capture(inner).Throw();
+            }
+
             var pos = inner.Message.IndexOfAny(new[] { '\r', '\n' });
             var innerMsg = pos == -1 ? inner.Message : inner.Message.Substring(0, pos);
             if (inner is DataException || inner.GetType().Namespace == "System.Data")

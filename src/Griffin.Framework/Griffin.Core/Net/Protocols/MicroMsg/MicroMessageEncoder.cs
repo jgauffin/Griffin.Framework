@@ -125,7 +125,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             else
             {
                 _bytesEnqueued = Math.Min(_bufferSlice.Capacity, _bytesLeftToSend);
-                _bodyStream.Write(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
+                _bodyStream.Read(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
                 args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
             }
         }
