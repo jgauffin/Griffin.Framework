@@ -10,15 +10,6 @@ namespace Griffin.Core.Tests.Logging
 {
     public class LogManagerTests
     {
-[Fact, ExclusivelyUses("LogManager")]
-public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
-{
-    LogManager.Provider = null;
-    var actual = LogManager.GetLogger<LogManagerTests>();
-
-    actual.Should().BeAssignableTo<NullLogger>();
-}
-
         [Fact, ExclusivelyUses("LogManager")]
         public void assigning_a_new_provider_removes_the_old_one()
         {
@@ -35,6 +26,15 @@ public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
         }
 
         [Fact, ExclusivelyUses("LogManager")]
+        public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
+        {
+            LogManager.Provider = null;
+            var actual = LogManager.GetLogger<LogManagerTests>();
+
+            actual.Should().BeAssignableTo<NullLogger>();
+        }
+
+        [Fact, ExclusivelyUses("LogManager")]
         public void get_logger_using_the_non_generic_method_should_return_expected_logger()
         {
             var provider = Substitute.For<ILogProvider>();
@@ -46,6 +46,5 @@ public void default_setting_returns_null_logger_to_get_rid_of_null_checks()
 
             actual.Should().Be(expected);
         }
-
     }
 }
