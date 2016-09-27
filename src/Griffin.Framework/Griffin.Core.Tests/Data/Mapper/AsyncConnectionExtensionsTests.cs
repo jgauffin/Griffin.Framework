@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,7 +14,7 @@ using Xunit;
 
 namespace Griffin.Core.Tests.Data.Mapper
 {
-    public class AsyncUnitOfWorkExtensionsTests : IMappingProvider
+    public class AsyncConnectionExtensionsTests : IMappingProvider
     {
         public class MyEntity
         {
@@ -21,20 +22,20 @@ namespace Griffin.Core.Tests.Data.Mapper
             public string Name { get; set; }
         }
 
-        
+
         [Fact]
         public async Task ToList_should_work_with_an_entity_mapper_and_a_single_line()
         {
             var cmd = Substitute.For<DbCommand>();
             var reader = Substitute.For<DbDataReader>();
-            var uow = Substitute.For<IAdoNetUnitOfWork>();
+            var connection = Substitute.For<IDbConnection>();
+            connection.CreateCommand().Returns(cmd);
             reader["Id"].Returns(10);
             reader.ReadAsync().Returns(Task.FromResult(true), Task.FromResult(false));
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
-            uow.CreateCommand().Returns(cmd);
 
-            var actual = await uow.ToListAsync(new BasicMapper(), "SELECT * FROM Tests");
+            var actual = await connection.ToListAsync(new BasicMapper(), "SELECT * FROM Tests");
 
             actual[0].Id.Should().Be(10);
         }
@@ -44,15 +45,16 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
             var cmd = Substitute.For<DbCommand>();
             var reader = Substitute.For<DbDataReader>();
-            var uow = Substitute.For<IAdoNetUnitOfWork>();
+            var connection = Substitute.For<IDbConnection>();
+            connection.CreateCommand().Returns(cmd);
             reader["Id"].Returns(10, 20);
             reader["Name"].Returns("Adam", "Bertil");
             reader.ReadAsync().Returns(Task.FromResult(true), Task.FromResult(true), Task.FromResult(false));
             cmd.ExecuteReaderAsync().Returns(Task.FromResult(reader));
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
-            uow.CreateCommand().Returns(cmd);
+            connection.CreateCommand().Returns(cmd);
 
-            var actual = await uow.ToListAsync(new BasicMapper(), "SELECT * FROM Tests");
+            var actual = await connection.ToListAsync(new BasicMapper(), "SELECT * FROM Tests");
 
             actual[0].Id.Should().Be(10);
             actual[0].Name.Should().Be("Adam");

@@ -67,6 +67,9 @@
     <Compile Include="Entites\News.cs" />
     <Compile Include="Entites\NewsMapper.cs" />
     <Compile Include="Entites\NewsTable.cs" />
+    <Compile Include="Entites\SimpleUser.cs" />
+    <Compile Include="Entites\SimpleUserMapper.cs" />
+    <Compile Include="Entites\SimpleUserTable.cs" />
     <Compile Include="Entites\User.cs" />
     <Compile Include="Entites\UserMapper.cs" />
     <Compile Include="Entites\UserTable.cs" />

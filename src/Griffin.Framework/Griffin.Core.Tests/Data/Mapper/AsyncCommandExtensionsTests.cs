@@ -129,6 +129,8 @@ namespace Griffin.Core.Tests.Data.Mapper
             actual[0].Id.Should().Be("10");
         }
 
+      
+
         public class TestEntity
         {
             public string Id { get; set; }

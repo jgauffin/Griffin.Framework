@@ -262,13 +262,15 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
 
         [Fact]
-        public async Task Insert_row()
+        public async Task Insert_row_with_auto_incremet()
         {
-            var expected = new User() { FirstName = "Arne", Id = Guid.NewGuid() };
+            var table = new SimpleUserTable();
+            table.Create(_connection);
+            var expected = new SimpleUser() { FirstName = "Arne"};
 
             await _connection.InsertAsync(expected);
 
-            var actual = await _connection.FirstAsync<User>(new { expected.Id });
+            var actual = await _connection.FirstAsync<SimpleUser>(new { expected.Id });
             actual.FirstName.Should().Be(expected.FirstName);
             actual.Id.Should().Be(expected.Id);
         }
@@ -326,5 +328,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             var actual = await _connection.FirstAsync<User>(new { expected.Id });
             actual.FirstName.Should().Be(expected.FirstName);
         }
+
+
     }
 }

@@ -81,6 +81,7 @@
     <Compile Include="Data\Mapper\AdoNetEntityEnumeratorTests.cs" />
     <Compile Include="Data\Mapper\AssemblyScanningMappingProviderTests.cs" />
     <Compile Include="Data\Mapper\AsyncCommandExtensionsTests.cs" />
+    <Compile Include="Data\Mapper\AsyncConnectionExtensionsTests.cs" />
     <Compile Include="Data\Mapper\AsyncUnitOfWorkExtensionsTests.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderTests.cs" />
     <Compile Include="Data\Mapper\CommandBuilders\FakePropertyMapping.cs" />

@@ -596,7 +596,6 @@ namespace Griffin.Data.Mapper
         ///         disposed when you are
         ///         done with it.
         ///     </para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
         /// </remarks>
         /// <example>
         ///     <code>
@@ -633,6 +632,75 @@ namespace Griffin.Data.Mapper
                             var entity = mapping.Create(reader);
                             mapping.Map(reader, entity);
                             items.Add((TEntity) entity);
+                        }
+                    }
+                    return items;
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Generate a complete list before returning.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="unitOfWork">Unit of work to invoke <c>ExecuteReaderAsync()</c> on (through a created <c>DbCommand</c>).</param>
+        /// <param name="mapping">Mapping used to translate from db table rows to .NET object</param>
+        /// <param name="query">Query or short query (<c><![CDATA["projectId = @id AND dateCreated < @minDate"]]></c>)</param>
+        /// <param name="parameters">
+        ///     Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or
+        ///     a value array
+        /// </param>
+        /// <returns>A list which is generated asynchronously.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         For more information about the "query" and "parameters" arguments, see
+        ///         <see cref="CommandExtensions.ApplyQuerySql{TEntity}" />.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        /// <para>Do note that column names must be used for this overload.</para>
+        /// </remarks>
+        /// <example>
+        ///     <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = await unitOfWork.ToListAsync<User>("SELECT * FROM Users WHERE Age = 37");
+        /// var users = await unitOfWork.ToListAsync<User>("SELECT * FROM Users WHERE Age = @age LIMIT 1, 10", new { age = submittedAge });
+        /// var users = await unitOfWork.ToListAsync<User>("SELECT * FROM Users WHERE Age = @1 LIMIT 1, 10", user.FirstName);
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task<List<TEntity>> ToListAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork,
+            IEntityMapper<TEntity> mapping, string query, params object[] parameters)
+        {
+            if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
+            if (mapping == null) throw new ArgumentNullException("mapping");
+            if (query == null) throw new ArgumentNullException("query");
+            if (parameters == null) throw new ArgumentNullException("parameters");
+
+            using (var cmd = unitOfWork.CreateDbCommand())
+            {
+                cmd.ApplyQuerySql<TEntity>(mapping, query, parameters);
+
+                try
+                {
+                    var items = new List<TEntity>();
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var entity = mapping.Create(reader);
+                            mapping.Map(reader, entity);
+                            items.Add((TEntity)entity);
                         }
                     }
                     return items;

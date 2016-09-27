@@ -685,5 +685,65 @@ namespace Griffin.Data.Mapper
                 throw cmd.CreateDataException(e);
             }
         }
+
+        /// <summary>
+        ///     Generate a complete list before returning.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to map</typeparam>
+        /// <param name="connection">Connection to invoke <c>ExecuteReader()</c> on (through a created <c>DbCommand</c>).</param>
+        /// <param name="mapping">Mapping used to translate from db table rows to .NET object</param>
+        /// <param name="query">Query</param>
+        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
+        /// <returns>A list.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
+        ///     </para>
+        ///     <para>
+        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
+        ///         connection/command/datareader is
+        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
+        ///         disposed when you are
+        ///         done with it.
+        ///     </para>
+        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// // All these examples are valid:
+        /// <![CDATA[
+        /// var users = connection.ToList<User>("SELECT * FROM Users WHERE Age = 37");
+        /// var users = connection.ToList<User>("SELECT * FROM Users WHERE FirstName = @name", new { name = user.FirstName });
+        /// var users = connection.ToList<User>("SELECT * FROM Users WHERE FirstName = @1 AND Age < @2", 'A%', 35);
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static IList<TEntity> ToList<TEntity>(this IDbConnection connection, IEntityMapper<TEntity> mapping, string query, params object[] parameters)
+        {
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (mapping == null) throw new ArgumentNullException("mapping");
+
+            var cmd = connection.CreateDbCommand();
+            cmd.ApplyQuerySql<TEntity>(mapping, query, parameters);
+
+            var items = new List<TEntity>();
+            try
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var entity = mapping.Create(reader);
+                        mapping.Map(reader, entity);
+                        items.Add((TEntity)entity);
+                    }
+                }
+                return items;
+            }
+            catch (Exception e)
+            {
+                throw cmd.CreateDataException(e);
+            }
+        }
     }
 }

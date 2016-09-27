@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using FluentAssertions;
 using Griffin.Logging;
 using Griffin.Logging.Loggers;
@@ -8,8 +9,15 @@ using Xunit;
 
 namespace Griffin.Core.Tests.Logging
 {
-    public class LogManagerTests
+    public class LogManagerTests : IDisposable
     {
+        private object _lock = new object();
+
+        public LogManagerTests()
+        {
+            Monitor.Enter(_lock);
+        }
+
         [Fact, ExclusivelyUses("LogManager")]
         public void assigning_a_new_provider_removes_the_old_one()
         {
@@ -45,6 +53,11 @@ namespace Griffin.Core.Tests.Logging
             var actual = LogManager.GetLogger(GetType());
 
             actual.Should().Be(expected);
+        }
+
+        public void Dispose()
+        {
+            Monitor.Exit(_lock);
         }
     }
 }

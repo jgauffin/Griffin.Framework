@@ -177,6 +177,126 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Builds a command using a query and query parameters.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to load</typeparam>
+        /// <param name="cmd">Command to add parameters to (should end with " WHERE " so that this method can add the constraints properly)</param>
+        /// <param name="mapper">Mapper to use to convert properties to columns</param>
+        /// <param name="sql">Complete (<code>"SELECT * FROM user WHERE id = @id"</code>) or short (<code>"id = @id"</code>).</param>
+        /// <param name="parameters">Anonymous object (<code>new { id = user.Id }</code>), a dictionary or an array of values</param>
+        /// <remarks>
+        /// <para>
+        /// Query 
+        /// </para>
+        /// 
+        /// </remarks>
+        /// <example>
+        /// <para>Using complete query, with named arguments</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("SELECT * FROM Users WHERE Id = @id", new { id = user.Id});
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using complete query, with array of values</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("SELECT * FROM Users WHERE Id = @1", user.Id);
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using short query and named parameters</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("SELECT * FROM YourTableOrview WHERE Age <= @age AND City = @city", new { age = dto.Age, city = dto.City});
+        ///         return cmd.ToList<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// <para>Using short query and a value array</para>
+        /// <code>
+        /// <![CDATA[
+        /// public void GetUser(string id)
+        /// {
+        ///     using (var command = connection.CreateCommand())
+        ///     {
+        ///         command.ApplyQuerySql("SELECT * FROM YourTableOrview WHERE Age <= @1 AND City = @2", dto.Age, dto.City);
+        ///         return cmd.First<User>();
+        ///     }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static void ApplyQuerySql<TEntity>(this IDbCommand cmd, IEntityMapper mapper, string sql, params object[] parameters)
+        {
+            var isSingleValueArray = parameters.Length == 1 && sql.Contains("@1");
+            if (!sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException(
+                    "This overload (with 'IEntityMapper' instead of 'ICrudEntityMapper' requires complete SQL statements. Start with 'SELECT '");
+
+            cmd.CommandText = sql;
+            if (parameters.Length == 0)
+                return;
+
+            if (isSingleValueArray || parameters.Length > 1)
+            {
+                for (var i = 1; i <= parameters.Length; i++)
+                {
+                    cmd.AddParameter(i.ToString(CultureInfo.InvariantCulture), parameters[i - 1]);
+                }
+                return;
+            }
+
+            IDictionary<string, object> arguments;
+            if (parameters[0] is IDictionary<string, object>)
+                arguments = (IDictionary<string, object>)parameters[0];
+            else if (parameters[0] is IDictionary)
+            {
+                var dict = (IDictionary)parameters[0];
+                arguments = new Dictionary<string, object>(dict.Count);
+                foreach (var key in dict.Keys)
+                {
+                    arguments.Add(key.ToString(), dict[key]);
+                }
+            }
+            else
+                arguments = parameters[0].ToDictionary();
+
+            foreach (var kvp in arguments)
+            {
+                object value;
+                try
+                {
+                    value = kvp.Value;
+                }
+                catch (InvalidCastException exception)
+                {
+                    throw new MappingException(typeof(TEntity),
+                        "Failed to cast '" + kvp.Key + "' from '" + kvp.Value.GetType() + "'.", exception);
+                }
+
+                cmd.AddParameter(kvp.Key, value);
+            }
+        }
+
+        /// <summary>
         ///     Fetches the first row from a query, but mapped as an entity.
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider"/>.</typeparam>
