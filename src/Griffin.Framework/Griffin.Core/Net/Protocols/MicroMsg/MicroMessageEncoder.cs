@@ -222,10 +222,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             BitConverter2.GetBytes((int) _bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
             BitConverter2.GetBytes((byte) contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
             Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
-
-            // the header length field is not included in _headerSize as it's a header prefix.
-            // hence the +2
-            return _headerSize + 2;
+            return _headerSize;
         }
     }
 }
