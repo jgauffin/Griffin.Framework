@@ -87,12 +87,13 @@ namespace Griffin.Data.Mapper.CommandBuilders
             var values = "";
             foreach (var key in _keys)
             {
-                if (key.IsAutoIncrement)
-                    continue;
-
                 var value = key.GetValue(entity);
                 if (value == null || (TreatZeroAsNullForKeys && value.Equals(0)))
                     continue;
+
+                if (key.IsAutoIncrement && value.Equals(0))
+                    continue;
+
                 columns += string.Format("{0}, ", key.ColumnName);
                 values += string.Format("@{0}, ", key.PropertyName);
                 command.AddParameter(key.PropertyName, value);

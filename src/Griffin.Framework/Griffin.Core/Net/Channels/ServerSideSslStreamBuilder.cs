@@ -4,6 +4,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Griffin.Net.Channels
 {
@@ -23,6 +24,7 @@ namespace Griffin.Net.Channels
             if (certificate == null) throw new ArgumentNullException("certificate");
             Certificate = certificate;
             Protocols = allowedProtocols;
+            HandshakeTimeout = TimeSpan.FromSeconds(3);
         }
 
         /// <summary>
@@ -38,7 +40,10 @@ namespace Griffin.Net.Channels
 
             try
             {
-                stream.AuthenticateAsServer(Certificate, UseClientCertificate, Protocols, CheckCertificateRevocation);
+                var t = stream.AuthenticateAsServerAsync(Certificate, UseClientCertificate, Protocols, CheckCertificateRevocation);
+                t.Wait(HandshakeTimeout);
+                if (t.Status == TaskStatus.WaitingForActivation)
+                    throw new InvalidOperationException("Handshake was not completed within the given interval '" + HandshakeTimeout + "'.");
             }
             catch (IOException err)
             {
@@ -60,6 +65,11 @@ namespace Griffin.Net.Channels
         /// check if the certificate have been revoked.
         /// </summary>
         public bool CheckCertificateRevocation { get; set; }
+
+        /// <summary>
+        /// Amount of time to wait for the TSL handshake to complete.
+        /// </summary>
+        public TimeSpan HandshakeTimeout { get; set; }
 
         /// <summary>
         /// Allowed protocols

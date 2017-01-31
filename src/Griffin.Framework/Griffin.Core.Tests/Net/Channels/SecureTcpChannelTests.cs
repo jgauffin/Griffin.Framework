@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -97,18 +98,25 @@ namespace Griffin.Core.Tests.Net.Channels
             var slice = new BufferSlice(new byte[65535], 0, 65535);
             var encoder = new StringEncoder();
             var decoder = new StringDecoder();
-            object expected = null;
 
             var sut = CreateClientChannel(slice, encoder, decoder);
-            sut.MessageReceived += (channel, message) => expected = message;
+            sut.MessageReceived += (channel, message) =>
+            {
+            };
             var stream = new SslStream(new NetworkStream(_helper.Server));
             stream.BeginAuthenticateAsServer(_certificate, OnAuthenticated, stream);
             sut.Assign(_helper.Client);
             sut.Send("Hello world");
 
+            //i do not know why this loop is required.
+            //for some reason the send message is divided into two tcp packets 
+            //when using SslStream.
+            var bytesReceived = 0;
             var buf = new byte[65535];
-            var tmp = stream.Read(buf, 0, 65535);
-            var actual = Encoding.ASCII.GetString(buf, 4, tmp - 4); // string encoder have a length header.
+            while (bytesReceived < 15)
+                bytesReceived += stream.Read(buf, bytesReceived, 15);
+
+            var actual = Encoding.ASCII.GetString(buf, 4, bytesReceived - 4); // string encoder have a length header.
             actual.Should().Be("Hello world");
         }
 
@@ -139,7 +147,7 @@ namespace Griffin.Core.Tests.Net.Channels
                 var stream = (SslStream)ar.AsyncState;
                 stream.EndAuthenticateAsServer(ar);
             }
-            catch{ }
+            catch { }
         }
 
         [Fact]

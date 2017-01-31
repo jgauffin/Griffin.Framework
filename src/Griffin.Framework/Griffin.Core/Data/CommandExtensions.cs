@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 using System.Runtime.ExceptionServices;
 
 namespace Griffin.Data
@@ -52,9 +53,22 @@ namespace Griffin.Data
                 ExceptionDispatchInfo.Capture(inner).Throw();
             }
 
-            var pos = inner.Message.IndexOfAny(new[] { '\r', '\n' });
-            var innerMsg = pos == -1 ? inner.Message : inner.Message.Substring(0, pos);
-            if (inner is DataException || inner.GetType().Namespace == "System.Data")
+            var exceptionToAnalyze = inner;
+            if (exceptionToAnalyze is AggregateException)
+                exceptionToAnalyze = inner.InnerException;
+
+            var includeSql = exceptionToAnalyze is DataException ||
+                             exceptionToAnalyze is DbException ||
+                             exceptionToAnalyze.GetType().Namespace.StartsWith("System.Data");
+
+            if (exceptionToAnalyze.InnerException != null && !includeSql)
+                includeSql = exceptionToAnalyze.InnerException is DataException ||
+                             exceptionToAnalyze.InnerException is DbException ||
+                             exceptionToAnalyze.InnerException.GetType().Namespace.StartsWith("System.Data");
+
+            var pos = exceptionToAnalyze.Message.IndexOfAny(new[] { '\r', '\n' });
+            var innerMsg = pos == -1 ? exceptionToAnalyze.Message : exceptionToAnalyze.Message.Substring(0, pos);
+            if (includeSql)
             {
                 var str = innerMsg + "\r\nQuery:" + cmd.CommandText;
                 foreach (IDbDataParameter parameter in cmd.Parameters)

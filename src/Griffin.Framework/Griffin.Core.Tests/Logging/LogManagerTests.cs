@@ -11,7 +11,7 @@ namespace Griffin.Core.Tests.Logging
 {
     public class LogManagerTests : IDisposable
     {
-        private object _lock = new object();
+        private static object _lock = new object();
 
         public LogManagerTests()
         {
