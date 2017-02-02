@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core", "Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
 EndProject
@@ -48,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCqs.Server", "..\..\samples\Cqs\Webdemo\HttpCqs.Server\HttpCqs.Server.csproj", "{546D46CF-920A-41CB-B99B-422174A414DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCqs.Contracts", "..\..\samples\Cqs\Webdemo\HttpCqs.Contracts\HttpCqs.Contracts.csproj", "{706683DF-9DE6-4BE6-A3F7-463E487737D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpRouting", "..\..\samples\Networking\HttpRouting\HttpRouting.csproj", "{38A1C023-FEAF-4290-95A4-242044CCF1FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +121,10 @@ Global
 		{706683DF-9DE6-4BE6-A3F7-463E487737D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{706683DF-9DE6-4BE6-A3F7-463E487737D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{706683DF-9DE6-4BE6-A3F7-463E487737D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38A1C023-FEAF-4290-95A4-242044CCF1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38A1C023-FEAF-4290-95A4-242044CCF1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38A1C023-FEAF-4290-95A4-242044CCF1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38A1C023-FEAF-4290-95A4-242044CCF1FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,5 +132,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{546D46CF-920A-41CB-B99B-422174A414DE} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
 		{706683DF-9DE6-4BE6-A3F7-463E487737D8} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
+		{38A1C023-FEAF-4290-95A4-242044CCF1FF} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
 	EndGlobalSection
 EndGlobal
