@@ -88,7 +88,7 @@ namespace Griffin.Data.Queries
         {
             if (pageNumber < 1 || pageNumber > 1000)
                 throw new ArgumentOutOfRangeException("pageNumber", "Page number must be between 1 and 1000.");
-            if (pageSize < 1 || pageNumber > 1000)
+            if (pageSize < 1 || pageSize > 1000)
                 throw new ArgumentOutOfRangeException("pageSize", "Page size must be between 1 and 1000.");
 
             PageSize = pageSize;
