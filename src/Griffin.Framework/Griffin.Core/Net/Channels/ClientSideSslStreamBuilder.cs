@@ -19,7 +19,7 @@ namespace Griffin.Net.Channels
         public ClientSideSslStreamBuilder(string commonName)
         {
             CommonName = commonName;
-            Protocols = SslProtocols.Default;
+            Protocols = SslProtocols.Ssl3 | SslProtocols.Tls;
         }
 
         /// <summary>
