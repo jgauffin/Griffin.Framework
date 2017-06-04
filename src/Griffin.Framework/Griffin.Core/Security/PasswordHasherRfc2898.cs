@@ -16,7 +16,8 @@ namespace Griffin.Security
         public string CreateSalt()
         {
             var salt = new byte[24];
-            using (var csprng = new RNGCryptoServiceProvider())
+
+            using (var csprng = RandomNumberGenerator.Create()) // new RNGCryptoServiceProvider())
             {
                 csprng.GetBytes(salt);
             }
