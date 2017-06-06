@@ -173,7 +173,7 @@ namespace Griffin.Net.Protocols.MicroMsg
                 //bodyStream is null for channels that connected
                 //but never sent a message.
                 if (_bodyStream != null)
-                    _bodyStream.Close();
+                    _bodyStream.Dispose();
                 _bodyStream = null;
             }
             else

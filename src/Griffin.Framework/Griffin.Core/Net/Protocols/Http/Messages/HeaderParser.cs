@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Griffin.Net.Channels;
+using System.Reflection;
 
 namespace Griffin.Net.Protocols.Http.Messages
 {
@@ -28,7 +29,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </summary>
         public string State
         {
-            get { return _parserMethod.Method.Name; }
+            get { return _parserMethod.GetMethodInfo().Name; }
         }
 
         /// <summary>

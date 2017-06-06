@@ -28,7 +28,7 @@ namespace Griffin.Net
         {
         }
 
-         /// <summary>
+        /// <summary>
         /// Initializes a new instance of the <see cref="ChannelException"/> class.
         /// </summary>
         /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object data about the exception being thrown.</param>

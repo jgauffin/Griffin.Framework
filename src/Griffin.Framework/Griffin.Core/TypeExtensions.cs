@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace Griffin
 {
@@ -16,10 +17,10 @@ namespace Griffin
         public static string GetSimpleAssemblyQualifiedName(this Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
-            if (type.Assembly.IsDynamic)
+            if (type.GetTypeInfo().Assembly.IsDynamic)
                 throw new InvalidOperationException("Can't use dynamic assemblies.");
 
-            return type.FullName + ", " + type.Assembly.GetName().Name;
+            return type.FullName + ", " + type.GetTypeInfo().Assembly.GetName().Name;
         }
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace Griffin
         /// <returns>String representation</returns>
         public static string GetFriendlyTypeName(this Type t)
         {
-            if (!t.IsGenericType)
+            if (!t.GetTypeInfo().IsGenericType)
                 return t.Name;
             var genericTypeName = t.GetGenericTypeDefinition().Name;
             genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
@@ -45,15 +46,15 @@ namespace Griffin
         /// <returns><c>true</c> if the concrete implements the service; otherwise <c>false</c></returns>
         public static bool IsAssignableFromGeneric(this Type serviceType, Type concreteType)
         {
-            var interfaceTypes = concreteType.GetInterfaces();
-            if (interfaceTypes.Any(it => it.IsGenericType && it.GetGenericTypeDefinition() == serviceType))
+            var interfaceTypes = concreteType.GetTypeInfo().GetInterfaces();
+            if (interfaceTypes.Any(it => it.GetTypeInfo().IsGenericType && it.GetGenericTypeDefinition() == serviceType))
                 return true;
 
-            var baseType = concreteType.BaseType;
+            var baseType = concreteType.GetTypeInfo().BaseType;
             if (baseType == null)
                 return false;
 
-            return baseType.IsGenericType &&
+            return baseType.GetTypeInfo().IsGenericType &&
                    baseType.GetGenericTypeDefinition() == serviceType ||
                    IsAssignableFromGeneric(serviceType, baseType);
         }
@@ -95,7 +96,7 @@ namespace Griffin
         /// </example>
         public static bool IsSimpleType(this Type type)
         {
-            return type.IsPrimitive
+            return type.GetTypeInfo().IsPrimitive
                    || type == typeof (decimal)
                    || type == typeof (string)
                    || type == typeof (DateTime)

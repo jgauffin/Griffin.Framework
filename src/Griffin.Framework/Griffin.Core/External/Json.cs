@@ -41,6 +41,9 @@
 // NOTE: uncomment the following line if you are compiling under Window Metro style application/library.
 // usually already defined in properties
 //#define NETFX_CORE;
+#if NETCOREAPP1_1
+#define NETFX_CORE
+#endif
 
 // If you are targetting WinStore, WP8 and NET4.5+ PCL make sure to #define SIMPLE_JSON_TYPEINFO;
 
@@ -1319,9 +1322,9 @@ namespace Griffin.Core.External.SimpleJson
             if (type == typeof(Guid) && string.IsNullOrEmpty(str))
                 return default(Guid);
 
-            if (type.IsEnum)
+            if (type.GetTypeInfo().IsEnum)
             {
-                if (value.GetType().IsPrimitive)
+                if (value.GetType().GetTypeInfo().IsPrimitive)
                 {
                     var value2 = Convert.ChangeType(value, Enum.GetUnderlyingType(type));
                     if (!Enum.IsDefined(type, value2))
