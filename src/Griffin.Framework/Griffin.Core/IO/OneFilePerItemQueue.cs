@@ -217,7 +217,8 @@ namespace Griffin.IO
                     FileSystemRights.Modify | FileSystemRights.ReadAndExecute,
                     AccessControlType.Allow));
             }
-            Directory.CreateDirectory(directoryName, security);
+            Directory.CreateDirectory(directoryName);
+            new DirectoryInfo(directoryName).SetAccessControl(security);
         }
 
         private void FindIndexes()
