@@ -24,7 +24,7 @@ namespace Griffin.IO
         {
             if (source == null) throw new ArgumentNullException("source");
             if (destination == null) throw new ArgumentNullException("destination");
-            var security = Directory.GetAccessControl(source);
+            var security = new DirectoryInfo(source).GetAccessControl();
             Copy(source, destination, copySubDirs, security);
         }
 
