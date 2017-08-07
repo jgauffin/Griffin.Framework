@@ -105,7 +105,11 @@ namespace Griffin.ApplicationServices
         private readonly IAppServiceLocator _serviceLocator;
         private readonly Timer _timer;
         private TimeSpan _checkInterval;
+#if NETSTANDARD2_0
+        private ISettingsRepository _settings;
+#else
         private ISettingsRepository _settings = new AppConfigServiceSettings();
+#endif
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ApplicationServiceManager" /> class.
@@ -144,7 +148,11 @@ namespace Griffin.ApplicationServices
         public ISettingsRepository Settings
         {
             get { return _settings; }
+#if NETSTANDARD2_0
+            set { _settings = value ?? throw new ArgumentNullException(nameof(value)); }
+#else
             set { _settings = value ?? new AppConfigServiceSettings(); }
+#endif
         }
 
         /// <summary>
