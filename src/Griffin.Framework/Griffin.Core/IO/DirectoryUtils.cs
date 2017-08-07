@@ -61,7 +61,8 @@ namespace Griffin.IO
 
             if (!Directory.Exists(destination))
             {
-                Directory.CreateDirectory(destination, security);
+                Directory.CreateDirectory(destination);
+                new DirectoryInfo(destination).SetAccessControl(security);
             }
 
             var files = dir.GetFiles();
