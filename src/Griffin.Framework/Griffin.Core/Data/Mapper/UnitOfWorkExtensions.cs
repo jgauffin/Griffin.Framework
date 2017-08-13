@@ -222,7 +222,7 @@ namespace Griffin.Data.Mapper
                 foreach (var parameter in args)
                 {
                     Data.CommandExtensions.AddParameter(cmd, parameter.Key, parameter.Value);
-                    if (parameter.Value.Contains("%"))
+                    if (parameter.Value is string && parameter.Value.Contains("%"))
                         cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " LIKE @" + parameter.Key + " AND ";
                     else
                         cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " = @" + parameter.Key + " AND ";
