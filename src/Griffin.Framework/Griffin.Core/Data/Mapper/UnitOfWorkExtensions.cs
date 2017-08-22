@@ -217,7 +217,7 @@ namespace Griffin.Data.Mapper
             var mapper = EntityMappingProvider.GetMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
-                cmd.CommandText = string.Format("SELECT TOP 100 * FROM {0} WHERE ", mapper.TableName);
+                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapper.TableName);
                 var args = ObjectExtensions.ToDictionary(parameters);
                 foreach (var parameter in args)
                 {

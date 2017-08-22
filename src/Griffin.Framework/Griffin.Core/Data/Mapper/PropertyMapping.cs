@@ -163,11 +163,15 @@ namespace Griffin.Data.Mapper
                 }
                 _setter((TEntity) destination, adapted);
             }
+            catch (IndexOutOfRangeException ex)
+            {
+                throw new MappingException(typeof(TEntity), "Property " + typeof(TEntity) + "." + PropertyName + " cannot be mapped since column '" + ColumnName + "' do not exist.", ex);
+            }
             catch (Exception exception)
             {
                 throw new MappingException(typeof (TEntity),
-                    string.Format("Failed to cast column value to property value for '{0}', column value type: {1}.",
-                        PropertyName, value.GetType().FullName), exception);
+                    string.Format("Property {0}.{1} cannot be converted from column value column value type '{2}' to property type '{3}'.",
+                        typeof(TEntity), PropertyName, value.GetType().FullName, PropertyType), exception);
             }
         }
 

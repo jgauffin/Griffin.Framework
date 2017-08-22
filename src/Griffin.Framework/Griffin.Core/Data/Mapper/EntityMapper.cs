@@ -76,7 +76,7 @@ namespace Griffin.Data.Mapper
         /// <param name="destination">Entity to fill with information</param>
         void IEntityMapper.Map(IDataRecord source, object destination)
         {
-            Map(source, (TEntity) destination);
+            Map(source, (TEntity)destination);
         }
 
 
@@ -87,24 +87,8 @@ namespace Griffin.Data.Mapper
         /// <param name="destination">Entity to fill with information</param>
         public void Map(IDataRecord source, TEntity destination)
         {
-            string propertyName = null;
-            try
-            {
-                foreach (var mapping in _mappings)
-                {
-                    propertyName = mapping.Key;
-                    mapping.Value.Map(source, destination);
-                }
-            }
-            catch (Exception exception)
-            {
-                if (exception is MappingException)
-                    throw;
-
-                throw new MappingException(typeof (TEntity),
-                    string.Format("Failed to cast column value to property value for '{0}.{1}'.",
-                        typeof (TEntity).FullName, propertyName), exception);
-            }
+            foreach (var mapping in _mappings)
+                mapping.Value.Map(source, destination);
         }
 
         /// <summary>
@@ -162,7 +146,7 @@ namespace Griffin.Data.Mapper
         /// </example>
         public virtual void Configure(IDictionary<string, IPropertyMapping> mappings)
         {
-            var type = typeof (TEntity);
+            var type = typeof(TEntity);
 
             MapProperties(type);
         }
@@ -180,18 +164,18 @@ namespace Griffin.Data.Mapper
         {
             //credits: http://stackoverflow.com/questions/6582259/fast-creation-of-objects-instead-of-activator-createinstancetype
 
-            var entityType = typeof (TEntity);
+            var entityType = typeof(TEntity);
             var dynMethod = new DynamicMethod("Griffin$OBJ_FACTORY_" + entityType.Name, entityType, null, entityType);
             var ilGen = dynMethod.GetILGenerator();
             var constructor =
                 entityType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null,
                     Type.EmptyTypes, null);
             if (constructor == null)
-                throw new MappingException(typeof (TEntity),
-                    "Failed to find a default constructor for '" + typeof (TEntity).FullName + "'.");
+                throw new MappingException(typeof(TEntity),
+                    "Failed to find a default constructor for '" + typeof(TEntity).FullName + "'.");
             ilGen.Emit(OpCodes.Newobj, constructor);
             ilGen.Emit(OpCodes.Ret);
-            return (Func<TEntity>) dynMethod.CreateDelegate(typeof (Func<TEntity>));
+            return (Func<TEntity>)dynMethod.CreateDelegate(typeof(Func<TEntity>));
         }
 
         /// <summary>
@@ -206,8 +190,8 @@ namespace Griffin.Data.Mapper
             if (_mappings.ContainsKey(propertyInfo.Name))
                 return new FluentPropertyMapping<TEntity, TProperty>((PropertyMapping<TEntity>)_mappings[propertyInfo.Name]);
 
-            var setter = BuildSetter(typeof (TEntity), propertyInfo);
-            var getter = BuildGetter(typeof (TEntity), propertyInfo);
+            var setter = BuildSetter(typeof(TEntity), propertyInfo);
+            var getter = BuildGetter(typeof(TEntity), propertyInfo);
             var mapping = new PropertyMapping<TEntity>(propertyInfo.Name, setter, getter)
             {
                 PropertyType = propertyInfo.PropertyType
@@ -219,7 +203,7 @@ namespace Griffin.Data.Mapper
         private void MapProperties(Type type)
         {
             var properties =
-                typeof (TEntity).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                typeof(TEntity).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             foreach (var property in properties)
             {
                 //already mapped in the constructor.
@@ -229,10 +213,10 @@ namespace Griffin.Data.Mapper
                     var mapping2 = _mappings[property.Name];
                     if (!mapping2.CanRead && !mapping2.CanWrite)
                         _mappings.Remove(property.Name);
-                    
+
                     continue;
                 }
-                    
+
 
                 var setter = BuildSetter(type, property);
                 var getter = BuildGetter(type, property);
@@ -256,10 +240,10 @@ namespace Griffin.Data.Mapper
                     return null;
 
                 //getter = field.GetValue;
-                var paramExpression = Expression.Parameter(typeof (TEntity), "instance");
+                var paramExpression = Expression.Parameter(typeof(TEntity), "instance");
                 Expression fieldGetter = Expression.Field(paramExpression, field.Name);
                 if (field.FieldType.IsPrimitive)
-                    fieldGetter = Expression.Convert(fieldGetter, typeof (object));
+                    fieldGetter = Expression.Convert(fieldGetter, typeof(object));
 
                 var result =
                     Expression.Lambda<Func<TEntity, object>>(fieldGetter, paramExpression).Compile();
@@ -270,10 +254,10 @@ namespace Griffin.Data.Mapper
                 //var m = method;
                 //getter = (instance) => m.Invoke(instance, null);
 
-                var instance = Expression.Parameter(typeof (TEntity), "i");
+                var instance = Expression.Parameter(typeof(TEntity), "i");
                 var prop = Expression.Property(instance, property);
-                var convert = Expression.TypeAs(prop, typeof (object));
-                var result = (Func<TEntity, object>) Expression.Lambda(convert, instance).Compile();
+                var convert = Expression.TypeAs(prop, typeof(object));
+                var result = (Func<TEntity, object>)Expression.Lambda(convert, instance).Compile();
                 getter = result;
             }
             return getter;
@@ -290,8 +274,8 @@ namespace Griffin.Data.Mapper
                 if (field == null)
                     return null;
 
-                var instance = Expression.Parameter(typeof (TEntity), "instance");
-                var value = Expression.Parameter(typeof (object), "value");
+                var instance = Expression.Parameter(typeof(TEntity), "instance");
+                var value = Expression.Parameter(typeof(object), "value");
                 var result =
                     Expression.Lambda<Action<TEntity, object>>(
                         Expression.Assign(
@@ -304,13 +288,13 @@ namespace Griffin.Data.Mapper
             }
             else
             {
-                var instance = Expression.Parameter(typeof (TEntity), "i");
-                var argument = Expression.Parameter(typeof (object), "a");
+                var instance = Expression.Parameter(typeof(TEntity), "i");
+                var argument = Expression.Parameter(typeof(object), "a");
                 var setterCall = Expression.Call(
                     instance,
                     method,
                     Expression.Convert(argument, property.PropertyType));
-                var result = (Action<TEntity, object>) Expression.Lambda(setterCall, instance, argument)
+                var result = (Action<TEntity, object>)Expression.Lambda(setterCall, instance, argument)
                     .Compile();
 
 
