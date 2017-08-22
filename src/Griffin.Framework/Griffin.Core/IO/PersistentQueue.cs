@@ -59,7 +59,8 @@ namespace Griffin.IO
             security.AddAccessRule(new FileSystemAccessRule(sid,
                 FileSystemRights.Modify | FileSystemRights.ReadAndExecute,
                 AccessControlType.Allow));
-            Directory.CreateDirectory(directoryName, security);
+            Directory.CreateDirectory(directoryName);
+            new DirectoryInfo(directoryName).SetAccessControl(security);
         }
 
 

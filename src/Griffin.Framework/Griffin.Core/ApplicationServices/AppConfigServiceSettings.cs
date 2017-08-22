@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETSTANDARD2_0
+using System;
 using System.Configuration;
 
 namespace Griffin.ApplicationServices
@@ -59,3 +60,4 @@ namespace Griffin.ApplicationServices
         }
     }
 }
+#endif

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using System.Net.Configuration;
+//using System.Net.Configuration; TODO: check - looks like this namespace is not used
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
