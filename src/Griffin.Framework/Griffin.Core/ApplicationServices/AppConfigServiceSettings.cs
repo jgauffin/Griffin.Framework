@@ -1,6 +1,5 @@
-﻿#if !NETSTANDARD2_0
-using System;
-using System.Configuration;
+﻿using System;
+using Griffin.Configuration;
 
 namespace Griffin.ApplicationServices
 {
@@ -42,6 +41,18 @@ namespace Griffin.ApplicationServices
     /// </example>
     public class AppConfigServiceSettings : ISettingsRepository
     {
+        private readonly IConfigurationReader _configReader;
+#if !NET45
+        public AppConfigServiceSettings(IConfigurationReader configReader)
+        {
+            _configReader = configReader;
+        }
+#else
+        public AppConfigServiceSettings()
+        {
+            _configReader = new ConfigurationManagerReader();
+        }
+#endif
         /// <summary>
         ///     Check if a service/job should be running.
         /// </summary>
@@ -55,9 +66,7 @@ namespace Griffin.ApplicationServices
         public bool IsEnabled(Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
-
-            return ConfigurationManager.AppSettings[type.Name + ".Enabled"] == "true";
+            return _configReader.ReadAppSetting(type.Name + ".Enabled") == "true";
         }
     }
 }
-#endif

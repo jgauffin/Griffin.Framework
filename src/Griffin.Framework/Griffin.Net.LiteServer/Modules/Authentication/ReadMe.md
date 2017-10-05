@@ -49,7 +49,7 @@ Look at the source code of [IPrincipalFactory](IPrincipalFactory.cs) for a sampl
 
 ## Custom messages
 
-The built in messages are tagged with `[Serializable]` and `[DataContract]`/`[DataMember]` attributes. But if that is not enough for your own 
+The built in messages are tagged with `` and `[DataContract]`/`[DataMember]` attributes. But if that is not enough for your own 
 serializer you can specify your own message implementations using `authModule.AuthenticationMessageFactory = new YourCustomFactory()`;
 
 Look at [AuthenticationMessageFactory](AuthenticationMessageFactory.cs) for a sample implementation.

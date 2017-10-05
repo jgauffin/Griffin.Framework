@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 
 namespace Griffin.Data
 {
@@ -14,7 +15,7 @@ namespace Griffin.Data
         /// <remarks>
         ///     <para>The created command have been enlisted in the local transaction which is wrapped by this Unit Of Work.</para>
         /// </remarks>
-        /// <exception cref="DataException">Failed to create the command</exception>
+        /// <exception cref="DbException">Failed to create the command</exception>
         IDbCommand CreateCommand();
 
         /// <summary>

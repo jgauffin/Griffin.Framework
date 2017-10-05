@@ -29,6 +29,7 @@ namespace Griffin.Logging.Loggers
         /// </remarks>
         public bool UseStackFrame { get; set; }
 
+#if NET451
         /// <summary>
         /// Used to get the correct frame when <see cref="UseStackFrame"/> is set to true.
         /// </summary>
@@ -55,7 +56,7 @@ namespace Griffin.Logging.Loggers
 
             return new StackFrame(_frameSkipCount);
         }
-
+#endif
 
 
         /// <summary>
@@ -67,9 +68,14 @@ namespace Griffin.Logging.Loggers
             string caller;
             if (UseStackFrame)
             {
+#if NET451
                 var frame = GetStackFrame();
                 caller = frame.GetMethod().ReflectedType.Name + "." +
                              frame.GetMethod().Name + "():" + frame.GetFileLineNumber();
+#else
+                caller = (Environment.StackTrace ?? "").Split('\n')[0].Trim('\r');
+#endif
+                
             }
             else
             {

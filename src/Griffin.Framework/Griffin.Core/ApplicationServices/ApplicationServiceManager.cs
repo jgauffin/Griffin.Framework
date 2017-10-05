@@ -105,7 +105,7 @@ namespace Griffin.ApplicationServices
         private readonly IAppServiceLocator _serviceLocator;
         private readonly Timer _timer;
         private TimeSpan _checkInterval;
-#if NETSTANDARD2_0
+#if !NET45
         private ISettingsRepository _settings;
 #else
         private ISettingsRepository _settings = new AppConfigServiceSettings();
@@ -148,11 +148,12 @@ namespace Griffin.ApplicationServices
         public ISettingsRepository Settings
         {
             get { return _settings; }
-#if NETSTANDARD2_0
-            set { _settings = value ?? throw new ArgumentNullException(nameof(value)); }
-#else
-            set { _settings = value ?? new AppConfigServiceSettings(); }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                _settings = value;
+            }
         }
 
         /// <summary>
@@ -289,22 +290,17 @@ namespace Griffin.ApplicationServices
 
                 if (!IsEnabled(service.GetType()))
                 {
-                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Disabled", "Disabled through configuration.");
                     _logger.Debug("Service is disabled '" + service.GetType().FullName + "'.");
                     continue;
                 }
-                Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Disabled");
 
                 try
                 {
                     _logger.Info("Starting service '" + service.GetType().FullName + "'.");
                     service.Start();
-                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Faulted");
-                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Started", "Started through ApplicationserviceManager.Start().");
                 }
                 catch (Exception exception)
                 {
-                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Faulted", exception.Message, exception);
                     exceptions.Add(new StartServiceException(service, exception));
                 }
             }
@@ -340,7 +336,6 @@ namespace Griffin.ApplicationServices
                 try
                 {
                     _logger.Info("Stopping service '" + service.GetType().FullName + "'.");
-                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Started");
                     service.Stop();
                 }
                 catch (Exception exception)
@@ -373,25 +368,21 @@ namespace Griffin.ApplicationServices
                     {
                         if (guarded.IsRunning)
                         {
-                            Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Disabled", "Disabled during runtime.");
                             _logger.Info("Stopping service that have been disabled '" + service.GetType().FullName +
                                          "'.");
                             service.Stop();
                         }
                         continue;
                     }
-                    Signals.Signal.Reset("ApplicationServices[" + service.GetType().FullName + "].Disabled");
 
                     if (guarded.IsRunning)
                         continue;
 
                     _logger.Info("Starting service that should be running '" + service.GetType().FullName + "'.");
                     service.Start();
-                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Started", "Started during runtime.");
                 }
                 catch (Exception exception)
                 {
-                    Signals.Signal.Raise("ApplicationServices[" + service.GetType().FullName + "].Faulted", exception.Message, exception);
                     var args = new ApplicationServiceFailedEventArgs(service, exception);
                     ServiceStartFailed(this, args);
                     if (!args.CanContinue)

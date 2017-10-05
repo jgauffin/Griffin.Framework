@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Security.Authentication;
-using System.Threading.Tasks;
-using Griffin.Net.Authentication.HashAuthenticator.Messages;
 using Griffin.Net.Authentication.Messages;
 using Griffin.Net.Channels;
 using Griffin.Security;

@@ -5,13 +5,13 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
-using Griffin.Core.External.SimpleJson;
 using Griffin.Cqs.Authorization;
 using Griffin.Cqs.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Authentication;
 using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
+using Newtonsoft.Json;
 
 namespace Griffin.Cqs.Http
 {
@@ -324,7 +324,7 @@ namespace Griffin.Cqs.Http
 
                 var contentType = "application/json;encoding=utf8";
                 json = CqsSerializer == null
-                    ? SimpleJson.SerializeObject(cqsReplyObject.Body)
+                    ? JsonConvert.SerializeObject(cqsReplyObject.Body)
                     : CqsSerializer.Serialize(cqsReplyObject.Body, out contentType);
                 reply.ContentType = contentType;
 

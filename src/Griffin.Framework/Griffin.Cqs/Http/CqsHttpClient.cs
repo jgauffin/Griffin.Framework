@@ -4,8 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetCqs;
-using Griffin.Core.External.SimpleJson;
-using Griffin.Net.Protocols.Serializers;
+using Newtonsoft.Json;
 
 namespace Griffin.Cqs.Http
 {
@@ -170,7 +169,7 @@ namespace Griffin.Cqs.Http
                 throw new InvalidOperationException("Failed to load type " + responseTypeName);
 
             return CqsSerializer == null
-                ? SimpleJson.DeserializeObject(responseJson, type)
+                ? JsonConvert.DeserializeObject(responseJson, type)
                 : CqsSerializer.Deserialize(type, responseJson);
         }
 
@@ -189,7 +188,7 @@ namespace Griffin.Cqs.Http
 
                 var contentType = "application/json;encoding=utf8";
                 json = CqsSerializer == null
-                    ? SimpleJson.SerializeObject(cqsObject)
+                    ? JsonConvert.SerializeObject(cqsObject)
                     : CqsSerializer.Serialize(cqsObject, out contentType);
                 request.ContentType = contentType;
 

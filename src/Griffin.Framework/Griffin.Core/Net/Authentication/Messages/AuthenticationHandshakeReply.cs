@@ -6,7 +6,7 @@ namespace Griffin.Net.Authentication.Messages
     /// <summary>
     ///     Default implementation supporting data contracts
     /// </summary>
-    [DataContract, Serializable]
+    [DataContract]
     public class AuthenticationHandshakeReply : IAuthenticationHandshakeReply
     {
         /// <summary>

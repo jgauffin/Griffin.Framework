@@ -13,22 +13,26 @@ namespace Griffin.Net.Protocols.Http
     public class BasicHttpResponse : HttpMessage, IHttpResponse
     {
         private string _reasonPhrase;
+        private readonly HttpCookieCollection<IResponseCookie> _cookies = new HttpCookieCollection<IResponseCookie>();
 
         public BasicHttpResponse(int httpStatusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
 
-            HttpStatusCode = httpStatusCode;
+            StatusCode = httpStatusCode;
             ReasonPhrase = reasonPhrase;
         }
+
+        /// <inheritdoc />
+        public IHttpCookieCollection<IResponseCookie> Cookies { get { return _cookies; } }
 
         /// <summary>
         ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
         /// </summary>
-        public int HttpStatusCode { get; set; }
+        public int StatusCode { get; set; }
 
         /// <summary>
-        ///     Why the specified <see cref="HttpStatusCode" /> was set.
+        ///     Why the specified <see cref="StatusCode" /> was set.
         /// </summary>
         public string ReasonPhrase
         {
@@ -47,7 +51,7 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public override string StatusLine
         {
-            get { return HttpVersion + " " + HttpStatusCode + " " + ReasonPhrase; }
+            get { return HttpVersion + " " + StatusCode + " " + ReasonPhrase; }
         }
     }
 }

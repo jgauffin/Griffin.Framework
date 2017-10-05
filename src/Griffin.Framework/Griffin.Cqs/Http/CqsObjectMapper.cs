@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using DotNetCqs;
-using Griffin.Core.External.SimpleJson;
+using Newtonsoft.Json;
 
 namespace Griffin.Cqs.Http
 {
@@ -48,7 +48,7 @@ namespace Griffin.Cqs.Http
 
             return Deserializer != null
                 ? Deserializer.Deserialize(type, json)
-                : SimpleJson.DeserializeObject(json, type);
+                : JsonConvert.DeserializeObject(json, type);
         }
 
         /// <summary>

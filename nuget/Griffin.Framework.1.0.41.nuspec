@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Griffin.Framework</id>
+        <version>1.0.41</version>
+        <title>Griffin.Framework</title>
+        <authors>jgauffin</authors>
+        <projectUrl>http://github.com/jgauffin/griffin.framework</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Data mapper
+=========
+Contains a data mapper layer built as an extension to ADO.NET. i.e. the layer do not hide ADO.NET but extends it making it trivial to do CRUD operations and map DB records to domain entities
+
+Performant networking
+================
+Contains a performant networking layer removed the need to do the raw IO operations yourself. 
+
+Use our built in HTTP library for interoperability or our built in protocol MicroMsg to easily send/receive .NET objects over the network.
+
+IoC support
+========
+Many parts of the library have built in IoC support. You can for instance use attributes to automatically register your classes in the container (without a RegisterType line for every class)
+
+Read more at the project homepage.</description>
+        <summary>Allows you to write your applications faster and more cleanly.
+
+* Fast network lib
+* ADO.NET data mapper
+* IoC support for long running tasks/jobs
+* Easier IoC registrations
+* DI in WinServices</summary>
+        <releaseNotes>* corrected exception formatting for the data Mapper
+* adjusted so that primary keys are excluded from inserts if they are set to 0.
+* Added a timeout to the HTTPS server handshake</releaseNotes>
+        <copyright>&amp;copy; 2015 Gauffin Interactive AB</copyright>
+        <language>en-US</language>
+        <tags>data mapper ado.net sockets networking</tags>
+    </metadata>
+    <files>
+        <file src="lib\net45\Griffin.Core.dll" target="lib\net45\Griffin.Core.dll" />
+        <file src="lib\net45\Griffin.Core.pdb" target="lib\net45\Griffin.Core.pdb" />
+        <file src="lib\net45\Griffin.Core.XML" target="lib\net45\Griffin.Core.XML" />
+    </files>
+</package>

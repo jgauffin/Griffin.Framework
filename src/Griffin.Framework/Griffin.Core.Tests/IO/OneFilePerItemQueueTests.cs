@@ -12,7 +12,7 @@ namespace Griffin.Core.Tests.IO
 {
     public class OneFilePerItemQueueTests
     {
-        [Serializable]
+        
         public class User
         {
             public string Id { get; set; }

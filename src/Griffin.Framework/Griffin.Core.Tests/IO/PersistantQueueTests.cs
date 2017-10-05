@@ -26,7 +26,7 @@ namespace Griffin.Core.Tests.IO
             actual.UserName.Should().Be(item.UserName);
         }
 
-        [Serializable]
+        
         public class TestDTO
         {
             private static readonly Random _random = new Random();

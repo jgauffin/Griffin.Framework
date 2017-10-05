@@ -11,7 +11,7 @@ namespace Griffin.Cqs.Net
     /// Used to distinguish local exceptions (i.e. client failure) from server side failures.
     /// </para>
     /// </remarks>
-    [Serializable]
+    
     public class ServerSideException : Exception
     {
         /// <summary>
