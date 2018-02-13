@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DotNetCqs;
 using Griffin.Cqs.InversionOfControl;
+using Griffin.Cqs.Reliable;
 
 namespace Griffin.Cqs
 {

@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net.Authentication;
+using Griffin.Net.Authentication.HashAuthenticator;
 using Griffin.Net.Authentication.Messages;
 using Griffin.Security;
 

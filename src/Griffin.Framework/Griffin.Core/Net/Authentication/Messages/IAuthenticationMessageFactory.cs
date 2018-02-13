@@ -44,7 +44,7 @@ namespace Griffin.Net.Authentication.Messages
         ///     Sent by server to indicate how the authentication went
         /// </summary>
         /// <param name="state">How it went</param>
-        /// <param name="authenticationToken">Token created by the server using <see cref="IAuthenticate.ClientSalt"/> to prove the server identity. <c>null</c> if authentication failed.</param>
+        /// <param name="authenticationToken">Token created by the server using <see cref="Griffin.Net.Authentication.Messages.IAuthenticate.ClientSalt"/> to prove the server identity. <c>null</c> if authentication failed.</param>
         /// <returns>message that can be serialized</returns>
         IAuthenticateReply CreateAuthenticationResult(AuthenticateReplyState state, string authenticationToken);
     }

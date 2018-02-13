@@ -8,27 +8,37 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     /// <remarks>
     /// <para>The purpose of this class is to do as little as possible with the response to make the processing more straightforward and without
-    /// any unnessacary steps.</para>
+    /// any unnecessary steps.</para>
     /// </remarks>
     public class BasicHttpResponse : HttpMessage, IHttpResponse
     {
         private string _reasonPhrase;
+        private readonly HttpCookieCollection<IResponseCookie> _cookies = new HttpCookieCollection<IResponseCookie>();
 
+        /// <summary>
+        /// Creates a new instance of <see cref="BasicHttpResponse"/>.
+        /// </summary>
+        /// <param name="httpStatusCode">status code</param>
+        /// <param name="reasonPhrase">why the status code was used</param>
+        /// <param name="httpVersion">typically "HTTP/1.1"</param>
         public BasicHttpResponse(int httpStatusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
 
-            HttpStatusCode = httpStatusCode;
+            StatusCode = httpStatusCode;
             ReasonPhrase = reasonPhrase;
         }
+
+        /// <inheritdoc />
+        public IHttpCookieCollection<IResponseCookie> Cookies { get { return _cookies; } }
 
         /// <summary>
         ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
         /// </summary>
-        public int HttpStatusCode { get; set; }
+        public int StatusCode { get; set; }
 
         /// <summary>
-        ///     Why the specified <see cref="HttpStatusCode" /> was set.
+        ///     Why the specified <see cref="StatusCode" /> was set.
         /// </summary>
         public string ReasonPhrase
         {
@@ -47,7 +57,7 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public override string StatusLine
         {
-            get { return HttpVersion + " " + HttpStatusCode + " " + ReasonPhrase; }
+            get { return HttpVersion + " " + StatusCode + " " + ReasonPhrase; }
         }
     }
 }

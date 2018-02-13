@@ -163,6 +163,10 @@ namespace Griffin.Net.Protocols.Http.Messages
         public IHttpCookieCollection<IHttpCookie> Parse(string value)
         {
             if (value == null) throw new ArgumentNullException("value");
+
+            _index = 0;
+            _cookieValue = "";
+            _cookieName = "";
             _headerValue = value;
             _cookies = new HttpCookieCollection<IHttpCookie>();
             _parserMethod = Name_Before;

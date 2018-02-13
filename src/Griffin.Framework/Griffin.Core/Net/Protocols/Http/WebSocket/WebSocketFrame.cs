@@ -11,7 +11,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// The specification for this frame can be found at http://tools.ietf.org/html/rfc6455#section-5.2.
     /// </para>
     /// </remarks>
-    internal class WebSocketFrame
+    public class WebSocketFrame
     {
         /// <summary>
         /// Maximum fragment length. (<value>65535</value>)

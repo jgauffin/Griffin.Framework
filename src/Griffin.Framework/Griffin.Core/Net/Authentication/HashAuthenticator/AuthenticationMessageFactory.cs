@@ -1,7 +1,8 @@
 using System;
+using Griffin.Net.Authentication.Messages;
 using Griffin.Security;
 
-namespace Griffin.Net.Authentication.Messages
+namespace Griffin.Net.Authentication.HashAuthenticator
 {
     /// <summary>
     ///     Default implementation which creates the default messages defined in the [Messages](Messages) folder.
@@ -10,17 +11,28 @@ namespace Griffin.Net.Authentication.Messages
     {
         private IPasswordHasher _hasher = new PasswordHasherRfc2898();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationMessageFactory"/> class.
+        /// </summary>
         public AuthenticationMessageFactory()
         {
             
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthenticationMessageFactory"/> class.
+        /// </summary>
+        /// <param name="hasher">The hasher.</param>
+        /// <exception cref="System.ArgumentNullException">hasher</exception>
         public AuthenticationMessageFactory(IPasswordHasher hasher)
         {
             if (hasher == null) throw new ArgumentNullException("hasher");
             Hasher = hasher;
         }
 
+        /// <summary>
+        /// Used by the factory to generate salts.
+        /// </summary>
         public IPasswordHasher Hasher
         {
             get { return _hasher; }

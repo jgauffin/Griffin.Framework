@@ -251,7 +251,7 @@ namespace Griffin.Cqs.Net
                     }
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 //TODO: Log
             }

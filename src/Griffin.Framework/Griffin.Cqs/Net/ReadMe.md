@@ -7,7 +7,7 @@ The following namespace contains an implementation which uses `Griffin.Net` to t
 
 Exceptions are automatically transported back to the client which makes this library transparent (looks like the CQS object was executed locally).
 
-Do note that all exceptions must be created with support for serialization, i.e. mark it with `[Serializable]` and include the serialization constructor:
+Do note that all exceptions must be created with support for serialization, i.e. mark it with `` and include the serialization constructor:
 
 ```csharp
 using System;
@@ -15,7 +15,7 @@ using System.Runtime.Serialization;
 
 namespace Griffin.Cqs
 {
-    [Serializable]
+    
     public class CqsHandlerMissingException : Exception
     {
 
@@ -44,7 +44,7 @@ using System.Runtime.Serialization;
 
 namespace Griffin.Cqs
 {
-    [Serializable]
+    
     public class CqsHandlerMissingException : Exception
     {
         public CqsHandlerMissingException(Type type)

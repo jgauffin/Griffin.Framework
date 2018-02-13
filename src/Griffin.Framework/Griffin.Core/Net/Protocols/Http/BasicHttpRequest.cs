@@ -1,15 +1,22 @@
 ﻿using System;
+using System.Net;
+using Griffin.Net.Protocols.Http.Messages;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    /// Minimal implementation of HTTP request
+    /// </summary>
     public class BasicHttpRequest : HttpMessage, IHttpRequest
     {
-        private string _pathAndQuery;
+        private readonly HttpFileCollection _files = new HttpFileCollection();
+        private readonly ParameterCollection _form = new ParameterCollection();
         private string _httpMethod;
+        private string _pathAndQuery;
         private Uri _uri;
 
         /// <summary>
-        /// 
+        /// Creates a new instance of <see cref="BasicHttpRequest"/>.
         /// </summary>
         /// <param name="httpMethod">Method like <c>POST</c>.</param>
         /// <param name="pathAndQuery">Absolute path and query string (if one exist)</param>
@@ -18,7 +25,7 @@ namespace Griffin.Net.Protocols.Http
             : base(httpVersion)
         {
             HttpMethod = httpMethod;
-            Uri = new Uri("http://localhost" + pathAndQuery);
+            Uri = new Uri("http://notspecified" + pathAndQuery);
         }
 
         /// <summary>
@@ -58,24 +65,42 @@ namespace Griffin.Net.Protocols.Http
             }
         }
 
-        protected override void OnHeaderSet(string name, string value)
+        /// <inheritdoc />
+        public EndPoint RemoteEndPoint { get; set; }
+
+        /// <inheritdoc />
+        public IParameterCollection Form
         {
-            if (name.Equals("host", StringComparison.OrdinalIgnoreCase))
-            {
-                //TODO: Identify schema
-                Uri = new Uri("http://" + value + _pathAndQuery);
-            }
+            get { return _form; }
+        }
 
+        /// <inheritdoc />
+        public IHttpFileCollection Files
+        {
+            get { return _files; }
+        }
 
-            base.OnHeaderSet(name, value);
+        IHttpResponse IHttpRequest.CreateResponse()
+        {
+            return new BasicHttpResponse(200, "", "HTTP/1.1");
         }
 
         /// <summary>
-        /// Status line for requests is "HttpMethod PathAndQuery HttpVersion"
+        ///     Status line for requests is "HttpMethod PathAndQuery HttpVersion"
         /// </summary>
         public override string StatusLine
         {
             get { return HttpMethod + " " + _pathAndQuery + " " + HttpVersion; }
+        }
+
+        /// <inheritdoc />
+        protected override void OnHeaderSet(string name, string value)
+        {
+            if (name.Equals("host", StringComparison.OrdinalIgnoreCase))
+                Uri = new Uri(string.Format("http://{0}{0}", value, _pathAndQuery));
+
+
+            base.OnHeaderSet(name, value);
         }
     }
 }

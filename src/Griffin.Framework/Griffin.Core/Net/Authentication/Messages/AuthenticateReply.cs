@@ -6,7 +6,7 @@ namespace Griffin.Net.Authentication.Messages
     /// <summary>
     /// Default implementation which is Serializable and tagged with data contract attributes.
     /// </summary>
-    [DataContract, Serializable]
+    [DataContract]
     public class AuthenticateReply : IAuthenticateReply
     {
         /// <summary>

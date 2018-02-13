@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Net.Configuration;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Http.WebSocket

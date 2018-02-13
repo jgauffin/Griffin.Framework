@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Configuration;
+using Griffin.Configuration;
 
 namespace Griffin.ApplicationServices
 {
     /// <summary>
-    ///     Uses <c>app.config</c> (eller <c>web.config)</c>) to identify services that should be started by Griffin Framework.
+    ///     Uses <c>app.config</c> (or <c>web.config)</c>) to identify services that should be started by Griffin Framework.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         There must exist a key per service in <c><![CDATA[<appSettings>]]></c>. It defines wether a service should be
+    ///         There must exist a key per service in <c><![CDATA[<appSettings>]]></c>. It defines whether a service should be
     ///         running or not. <see cref="IApplicationService" />. The name
     ///         should be "ClassName.Enabled". For instance if you have a class named "StatisticsGenerator" the key should be
     ///         named "StatisticsGenerator.Enabled":
@@ -41,6 +41,20 @@ namespace Griffin.ApplicationServices
     /// </example>
     public class AppConfigServiceSettings : ISettingsRepository
     {
+        private readonly IConfigurationReader _configReader;
+#if !NET45
+        /// <inheritdoc />
+        public AppConfigServiceSettings(IConfigurationReader configReader)
+        {
+            _configReader = configReader;
+        }
+#else
+        /// <inheritdoc />
+        public AppConfigServiceSettings()
+        {
+            _configReader = new ConfigurationManagerReader();
+        }
+#endif
         /// <summary>
         ///     Check if a service/job should be running.
         /// </summary>
@@ -54,8 +68,7 @@ namespace Griffin.ApplicationServices
         public bool IsEnabled(Type type)
         {
             if (type == null) throw new ArgumentNullException("type");
-
-            return ConfigurationManager.AppSettings[type.Name + ".Enabled"] == "true";
+            return _configReader.ReadAppSetting(type.Name + ".Enabled") == "true";
         }
     }
 }

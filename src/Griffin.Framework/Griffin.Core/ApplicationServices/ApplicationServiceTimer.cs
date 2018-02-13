@@ -101,11 +101,9 @@ namespace Griffin.ApplicationServices
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 Execute();
-                Signals.Signal.Reset("ApplicationServices[" + GetType().FullName + "].Faulted");
             }
             catch (Exception exception)
             {
-                Signals.Signal.Raise("ApplicationServices[" + GetType().FullName + "].Faulted", "Timer method failed.", exception);
                 Failed(this, new ApplicationServiceFailedEventArgs(this, exception));
             }
             finally

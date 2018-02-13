@@ -9,6 +9,7 @@ using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Griffin.Net
 {
@@ -135,9 +136,9 @@ namespace Griffin.Net
                 _channels.Push(channel);
             }
 
-            _listener.BeginAcceptSocket(OnAcceptSocket, null);
+            _listener.AcceptSocketAsync().ContinueWith(OnAcceptSocket);
         }
-
+        
         /// <summary>
         ///     Stop the listener.
         /// </summary>
@@ -201,7 +202,7 @@ namespace Griffin.Net
             _messageReceived(source, msg);
         }
 
-        private void OnAcceptSocket(IAsyncResult ar)
+        private void OnAcceptSocket(Task<Socket> task)
         {
             if (_shuttingDown)
                 return;
@@ -210,8 +211,7 @@ namespace Griffin.Net
             {
                 // Required as _listener.Stop() disposes the underlying socket
                 // thus causing an objectDisposedException here.
-                var socket = _listener.EndAcceptSocket(ar);
-
+                var socket = task.Result;
 
                 ITcpChannel channel;
                 if (!_channels.TryPop(out channel))
@@ -242,7 +242,7 @@ namespace Griffin.Net
             }
 
 
-            _listener.BeginAcceptSocket(OnAcceptSocket, null);
+            _listener.AcceptSocketAsync().ContinueWith(OnAcceptSocket);
         }
 
         private void OnChannelDisconnect(ITcpChannel source, Exception exception)

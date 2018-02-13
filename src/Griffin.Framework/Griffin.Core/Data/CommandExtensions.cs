@@ -39,6 +39,21 @@ namespace Griffin.Data
             return p;
         }
 
+#if NETSTANDARD1_6
+        public class DataException : DbException
+        {
+            private string errorMessage;
+
+            public DataException(string errorMessage):base(errorMessage)
+            {
+            }
+
+            public DataException(string errorMessage, Exception inner):base(errorMessage, inner)
+            {
+            }
+        }
+
+#endif
         /// <summary>
         /// Creates a <c>DataException</c> using the command text and sql parameters.
         /// </summary>
@@ -79,6 +94,5 @@ namespace Griffin.Data
             }
             throw new DataException(innerMsg + " [see inner exception for details]", inner);
         }
-
     }
 }

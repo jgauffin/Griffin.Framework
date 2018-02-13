@@ -168,8 +168,8 @@ namespace Griffin.Data.Mapper
             var dynMethod = new DynamicMethod("Griffin$OBJ_FACTORY_" + entityType.Name, entityType, null, entityType);
             var ilGen = dynMethod.GetILGenerator();
             var constructor =
-                entityType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null,
-                    Type.EmptyTypes, null);
+                entityType.GetTypeInfo().GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null,
+                    CallingConventions.Standard, Type.EmptyTypes, null);
             if (constructor == null)
                 throw new MappingException(typeof(TEntity),
                     "Failed to find a default constructor for '" + typeof(TEntity).FullName + "'.");

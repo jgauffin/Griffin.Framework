@@ -1,340 +1,43 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
+    <PackageId>Griffin.Framework</PackageId>
+    <Authors>jgauffin</Authors>
+    <Description>Business application library - get rid of a lot of boilerplate code.</Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Converted to vstudio 2017 csproj format</PackageReleaseNotes>
+    <Copyright>© Copyright 2017 1TCompany AB. All rights reserved.</Copyright>
+    <PackageTags>logger exceptions data-mapper depdenency-injection tcp sockets</PackageTags>
+    <PackageIconUrl>http://onetrueerror.com/images/nuget_icon.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/onetrueerror/onetrueerror.client.aspnet.mvc5</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseUrl>https://github.com/jgauffin/griffin.framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://griffinframework.net</PackageProjectUrl>
+    <Version>2.0.0-alpha01</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>Griffin</RootNamespace>
-    <AssemblyName>Griffin.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\net451\Griffin.Core.xml</DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Griffin.Core.XML</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net451|AnyCPU'">
+    <NoWarn>1701;1702;1705;4019</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
+    <Content Include="README.txt">
+      <Pack>true</Pack>
+      <PackagePath>README.txt</PackagePath>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+	<PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net451'">
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationServices\AppConfigServiceSettings.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceFailedEventArgs.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceManager.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceThread.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceTimer.cs" />
-    <Compile Include="ApplicationServices\BackgroundJobFailedEventArgs.cs" />
-    <Compile Include="ApplicationServices\BackgroundJobManager.cs" />
-    <Compile Include="ApplicationServices\IApplicationService.cs" />
-    <Compile Include="ApplicationServices\IAppServiceLocator.cs" />
-    <Compile Include="ApplicationServices\IBackgroundJob.cs" />
-    <Compile Include="ApplicationServices\IBackgroundJobAsync.cs" />
-    <Compile Include="ApplicationServices\IGuardedService.cs" />
-    <Compile Include="ApplicationServices\IocAppServiceLocator.cs" />
-    <Compile Include="ApplicationServices\ISettingsRepository.cs" />
-    <Compile Include="ApplicationServices\NamespaceDoc.cs" />
-    <Compile Include="ApplicationServices\ScopeClosingEventArgs.cs" />
-    <Compile Include="ApplicationServices\ScopeCreatedEventArgs.cs" />
-    <Compile Include="ApplicationServices\StartServiceException.cs" />
-    <Compile Include="BitConverter2.cs" />
-    <Compile Include="ConstructorExtensions.cs" />
-    <Compile Include="Container\ContainerLifetime.cs" />
-    <Compile Include="Container\ContainerServiceAttribute.cs" />
-    <Compile Include="Container\IScopedTaskInvoker.cs" />
-    <Compile Include="Container\NamespaceDoc.cs" />
-    <Compile Include="Container\ScopedTaskEventArgs.cs" />
-    <Compile Include="Container\ScopedTaskInvoker.cs" />
-    <Compile Include="Container\ServiceNotRegisteredException.cs" />
-    <Compile Include="Container\DependencyMissingException.cs" />
-    <Compile Include="Container\IContainer.cs" />
-    <Compile Include="Container\IContainerScope.cs" />
-    <Compile Include="Data\AdoNetUnitOfWork.cs" />
-    <Compile Include="Data\CommandExtensions.cs" />
-    <Compile Include="Data\EntityNotFoundException.cs" />
-    <Compile Include="Data\IAdoNetUnitOfWork.cs" />
-    <Compile Include="Data\IUnitOfWork.cs" />
-    <Compile Include="Data\Mapper\AdoNetEntityEnumerable.cs" />
-    <Compile Include="Data\Mapper\AdoNetEntityEnumerator.cs" />
-    <Compile Include="Data\Mapper\AssemblyScanningMappingProvider.cs" />
-    <Compile Include="Data\Mapper\AsyncCommandExtensions.cs" />
-    <Compile Include="Data\Mapper\AsyncConnectionExtensions.cs" />
-    <Compile Include="Data\Mapper\AsyncUnitOfWorkExtensions.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\CommandBuilder.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderFactory.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\ICommandBuilder.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\NamespaceDoc.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\PostgreSqlCommandBuilder.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\SqlServerCommandBuilder.cs" />
-    <Compile Include="Data\Mapper\CommandExtensions.cs" />
-    <Compile Include="Data\Mapper\ConnectionExtensions.cs" />
-    <Compile Include="Data\Mapper\DateTimeExtensions.cs" />
-    <Compile Include="Data\Mapper\CrudEntityMapper.cs" />
-    <Compile Include="Data\Mapper\EntityMapper.cs" />
-    <Compile Include="Data\Mapper\EntityMappingProvider.cs" />
-    <Compile Include="Data\Mapper\FluentPropertyMapping.cs" />
-    <Compile Include="Data\Mapper\ICrudEntityMapper.cs" />
-    <Compile Include="Data\Mapper\IMappingProvider.cs" />
-    <Compile Include="Data\Mapper\IPropertyMapping.cs" />
-    <Compile Include="Data\Mapper\IEntityMapper.cs" />
-    <Compile Include="Data\Mapper\UnitOfWorkExtensions.cs" />
-    <Compile Include="Data\Mapper\MappingException.cs" />
-    <Compile Include="Data\Mapper\MappingForAttribute.cs" />
-    <Compile Include="Data\Mapper\MappingNotFoundException.cs" />
-    <Compile Include="Data\Mapper\NamespaceDoc.cs" />
-    <Compile Include="Data\Mapper\PropertyMapping.cs" />
-    <Compile Include="Data\Mapper\ValueHandler.cs" />
-    <Compile Include="Data\NamespaceDoc.cs" />
-    <Compile Include="Data\Queries\IQueryConstraints.cs" />
-    <Compile Include="Data\Queries\IQueryResult.cs" />
-    <Compile Include="Data\Queries\QueryConstraints.cs" />
-    <Compile Include="Data\Queries\QueryConstraintsExtensions.cs" />
-    <Compile Include="Data\Queries\QueryResult.cs" />
-    <Compile Include="Data\Queries\SortOrder.cs" />
-    <Compile Include="Data\TransactionAlreadyClosedException.cs" />
-    <Compile Include="Data\UnitOfWorkExtensions.cs" />
-    <Compile Include="Data\UnitOfWorkFactory.cs" />
-    <Compile Include="External\Inflector.cs" />
-    <Compile Include="External\Json.cs" />
-    <Compile Include="GuidFactory.cs" />
-    <Compile Include="InstanceFactory.cs" />
-    <Compile Include="IO\DirectoryUtils.cs" />
-    <Compile Include="IO\NamespaceDoc.cs" />
-    <Compile Include="IO\OneFilePerItemQueue.cs" />
-    <Compile Include="IO\PersistentCircularIndex.cs" />
-    <Compile Include="IO\PersistentQueue.cs" />
-    <Compile Include="IO\Serializers\BinaryFormatterSerializer.cs" />
-    <Compile Include="IQueue.cs" />
-    <Compile Include="IO\PersistentQueueConfiguration.cs" />
-    <Compile Include="ISerializer.cs" />
-    <Compile Include="Logging\ILogEntryFilter.cs" />
-    <Compile Include="Logging\ILogger.cs" />
-    <Compile Include="Logging\ILoggerFilter.cs" />
-    <Compile Include="Logging\ILogProvider.cs" />
-    <Compile Include="Logging\LogEntry.cs" />
-    <Compile Include="Logging\Loggers\BaseLogger.cs" />
-    <Compile Include="Logging\Loggers\CompositeLogger.cs" />
-    <Compile Include="Logging\Loggers\ConsoleLogger.cs" />
-    <Compile Include="Logging\Loggers\Filters\ExceptionsOnly.cs" />
-    <Compile Include="Logging\Loggers\Filters\LogLevelFilter.cs" />
-    <Compile Include="Logging\Loggers\Filters\NamespaceDoc.cs" />
-    <Compile Include="Logging\Loggers\Filters\NoFilter.cs" />
-    <Compile Include="Logging\Loggers\NamespaceDoc.cs" />
-    <Compile Include="Logging\Loggers\NullLogger.cs" />
-    <Compile Include="Logging\Loggers\SystemDebugLogger.cs" />
-    <Compile Include="Logging\LogLevel.cs" />
-    <Compile Include="Logging\LogManager.cs" />
-    <Compile Include="Logging\NamespaceDoc.cs" />
-    <Compile Include="Logging\Providers\LogProvider.cs" />
-    <Compile Include="Logging\Providers\NamespaceDoc.cs" />
-    <Compile Include="Logging\Providers\NamespaceFilter.cs" />
-    <Compile Include="Logging\Providers\NoFilter.cs" />
-    <Compile Include="Logging\Providers\NullLogProvider.cs" />
-    <Compile Include="MemoryQueue.cs" />
-    <Compile Include="MethodInfoExtensions.cs" />
-    <Compile Include="NamespaceDoc.cs" />
-    <Compile Include="Net\Authentication\AuthenticationDeniedException.cs" />
-    <Compile Include="Net\Authentication\AuthenticationRequiredException.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\HashClientAuthenticator.cs" />
-    <Compile Include="Net\Authentication\IClientAuthenticator.cs" />
-    <Compile Include="Net\Authentication\IUserAccount.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\Authenticate.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\AuthenticateReply.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\AuthenticateReplyState.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\AuthenticationMessageFactory.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\AuthenticationHandshake.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\AuthenticationHandshakeReply.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\IAuthenticate.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\IAuthenticateReply.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\IAuthenticationMessageFactory.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\IAuthenticationHandshake.cs" />
-    <Compile Include="Net\Authentication\HashAuthenticator\Messages\IAuthenticationHandshakeReply.cs" />
-    <Compile Include="Net\ChannelException.cs" />
-    <Compile Include="Net\Channels\BufferPreProcessorHandler.cs" />
-    <Compile Include="Net\ChannelTcpClient.cs" />
-    <Compile Include="Net\Buffers\BufferSlice.cs" />
-    <Compile Include="Net\Buffers\BufferSlicePool.cs" />
-    <Compile Include="Net\Buffers\IBufferSlice.cs" />
-    <Compile Include="Net\Buffers\IBufferSlicePool.cs" />
-    <Compile Include="Net\Buffers\PoolEmptyException.cs" />
-    <Compile Include="Net\Channels\ChannelData.cs" />
-    <Compile Include="Net\Channels\ClientCertificate.cs" />
-    <Compile Include="Net\Channels\ClientSideSslStreamBuilder.cs" />
-    <Compile Include="Net\Channels\ChannelFailureHandler.cs" />
-    <Compile Include="Net\Channels\DisconnectHandler.cs" />
-    <Compile Include="Net\Channels\EmptyEndpoint.cs" />
-    <Compile Include="Net\Channels\IChannelData.cs" />
-    <Compile Include="Net\Channels\ISocketBuffer.cs" />
-    <Compile Include="Net\Channels\ISslStreamBuilder.cs" />
-    <Compile Include="Net\Channels\ITcpChannel.cs" />
-    <Compile Include="Net\Channels\MessageHandler.cs" />
-    <Compile Include="Net\Channels\SecureTcpChannel.cs" />
-    <Compile Include="Net\Channels\ServerSideSslStreamBuilder.cs" />
-    <Compile Include="Net\Channels\SocketAsyncEventArgsWrapper.cs" />
-    <Compile Include="Net\Channels\SocketBuffer.cs" />
-    <Compile Include="Net\Channels\TcpChannel.cs" />
-    <Compile Include="Net\ChannelTcpListener.cs" />
-    <Compile Include="Net\ChannelTcpListenerConfiguration.cs" />
-    <Compile Include="Net\ClientFilterResult.cs" />
-    <Compile Include="Net\FilterMessageHandler.cs" />
-    <Compile Include="Net\IMessageQueue.cs" />
-    <Compile Include="Net\MessageQueue.cs" />
-    <Compile Include="Net\NamespaceDoc.cs" />
-    <Compile Include="Net\Protocols\ClientConnectedEventArgs.cs" />
-    <Compile Include="Net\Protocols\ClientDisconnectedEventArgs.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\CookieAuthentication.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\IWebSocketMessage.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketClientConnectEventArgs.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketClientConnectedEventArgs.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketDecoder.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketEncoder.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketFin.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketFrame.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketUtils.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketListener.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMask.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMessage.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketOpcode.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketRequest.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketResponse.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketRsv.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketUpgradeRequest.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketUpgradeResponse.cs" />
-    <Compile Include="Net\Protocols\Serializers\DecoderFailureException.cs" />
-    <Compile Include="Net\Protocols\Http\Serializers\FormAndFilesResult.cs" />
-    <Compile Include="Net\Protocols\Http\External\ConcurrentPriorityQueue.cs" />
-    <Compile Include="Net\Protocols\Http\HttpCookie.cs" />
-    <Compile Include="Net\Protocols\Http\HttpCookieCollection.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\BasicAuthentication.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\DigestAuthenticator.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\Digest\Nonce.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\Digest\NonceService.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\HostAsRealmRepository.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IAccountService.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IAuthenticationUser.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IAuthenticator.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IPrincipalFactory.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IRealmRepository.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\IUserWithRoles.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\PrincipalFactoryContext.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\SingleRealmRepository.cs" />
-    <Compile Include="Net\Protocols\Http\BadRequestException.cs" />
-    <Compile Include="Net\Protocols\Http\HttpRequest.cs" />
-    <Compile Include="Net\Protocols\Http\HttpResponse.cs" />
-    <Compile Include="Net\Protocols\Http\Serializers\UrlFormattedMessageSerializer.cs" />
-    <Compile Include="Net\Protocols\Serializers\CompositeSerializer.cs" />
-    <Compile Include="Net\Protocols\Serializers\Mono\StrUtils.cs" />
-    <Compile Include="Net\Protocols\Serializers\Mono\HttpMultipart.cs" />
-    <Compile Include="Net\Protocols\Http\Serializers\MultipartSerializer.cs" />
-    <Compile Include="Net\Protocols\Http\HttpException.cs" />
-    <Compile Include="Net\Protocols\Http\HttpListener.cs" />
-    <Compile Include="Net\Protocols\Http\HttpMessage.cs" />
-    <Compile Include="Net\Protocols\Http\HttpMessageDecoder.cs" />
-    <Compile Include="Net\Protocols\Http\HttpMessageEncoder.cs" />
-    <Compile Include="Net\Protocols\Http\HttpResponseCookie.cs" />
-    <Compile Include="Net\Protocols\Http\IHeaderCollection.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpCookie.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpCookieCollection.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpFile.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpFileCollection.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpMessage.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpRequest.cs" />
-    <Compile Include="Net\Protocols\Http\IHttpResponse.cs" />
-    <Compile Include="Net\Protocols\Http\IParameter.cs" />
-    <Compile Include="Net\Protocols\Http\IParameterCollection.cs" />
-    <Compile Include="Net\Protocols\Http\IResponseCookie.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpCookieParser.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpFile.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpFileCollection.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpHeaderValue.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\ParameterCollection.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HeaderCollection.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HeaderParser.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\Parameter.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\ReaderResult.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\TextReaderExtensions.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\UrlDecoder.cs" />
-    <Compile Include="Net\IMessageDecoder.cs" />
-    <Compile Include="Net\IMessageEncoder.cs" />
-    <Compile Include="Net\Protocols\Http\PipelinedMessageQueue.cs" />
-    <Compile Include="Net\Protocols\Http\Range.cs" />
-    <Compile Include="Net\Protocols\Http\RangeCollection.cs" />
-    <Compile Include="Net\Protocols\IMessagingListener.cs" />
-    <Compile Include="Net\Channels\ITcpChannelFactory.cs" />
-    <Compile Include="Net\Protocols\Serializers\IMessageSerializer.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageClient.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoder.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoder.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\NamespaceDoc.cs" />
-    <Compile Include="Net\Protocols\Serializers\DataContractMessageSerializer.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageTcpListener.cs" />
-    <Compile Include="Net\Protocols\Strings\StringDecoder.cs" />
-    <Compile Include="Net\Protocols\Strings\StringEncoder.cs" />
-    <Compile Include="Net\Channels\TcpChannelFactory.cs" />
-    <Compile Include="Net\Channels\SecureTcpChannelFactory.cs" />
-    <Compile Include="ObjectExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueueFullException.cs" />
-    <Compile Include="Reflection\ExpressionExtensions.cs" />
-    <Compile Include="Security\IPasswordHasher.cs" />
-    <Compile Include="Security\PasswordHasherRfc2898.cs" />
-    <Compile Include="Signals\NamespaceDoc.cs" />
-    <Compile Include="Signals\Signal.cs" />
-    <Compile Include="Signals\SignalDTO.cs" />
-    <Compile Include="Signals\SignalManager.cs" />
-    <Compile Include="Signals\SignalRaisedEventArgs.cs" />
-    <Compile Include="Signals\SignalSubmitter.cs" />
-    <Compile Include="Signals\SignalSuppressedEventArgs.cs" />
-    <Compile Include="Signals\SignalKind.cs" />
-    <Compile Include="TypeExtensions.cs" />
-    <Compile Include="WaitHandleExtensions.cs" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Data\ReadMe.md" />
-    <None Include="Logging\ReadMe.md" />
-    <None Include="Net\Authentication\HashAuthenticator\Messages\ReadMe.md" />
-    <None Include="Net\cert\GriffinNetworkingTemp.pfx" />
-    <None Include="Net\Channels\ReadMe.md" />
-    <None Include="Net\Protocols\MicroMsg\ReadMe.md" />
-    <None Include="Net\Protocols\ReadMe.md" />
-    <None Include="Net\Protocols\Strings\ReadMe.md" />
-    <None Include="ReadMe.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Net\cert\howto.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Net\Protocols\MessageDeserializers\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

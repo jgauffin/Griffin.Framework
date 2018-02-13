@@ -94,7 +94,7 @@ namespace Griffin.ApplicationServices
         }
 
         /// <summary>
-        ///     Stäng ned det som tjänsten hanterar
+        ///     Shut down the running service.
         /// </summary>
         public void Stop()
         {
@@ -104,9 +104,11 @@ namespace Griffin.ApplicationServices
             _shutDownEvent.Set();
             try
             {
-                if (!_workThread.Join(StopWaitTime))
+                if (!_workThread.Join((int)StopWaitTime.TotalMilliseconds))
                 {
+#if !NETSTANDARD1_6
                     _workThread.Abort();
+#endif
                     Failed(this,
                         new ApplicationServiceFailedEventArgs(this,
                             new Exception("Failed to stop thread '" + GetType().FullName +

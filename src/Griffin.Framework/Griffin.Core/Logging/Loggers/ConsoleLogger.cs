@@ -10,7 +10,6 @@ namespace Griffin.Logging.Loggers
     /// <remarks>Prints one stack frame using colored output.</remarks>
     public class ConsoleLogger : BaseLogger
     {
-        private int _frameSkipCount = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
@@ -28,6 +27,9 @@ namespace Griffin.Logging.Loggers
         /// <para>Do note that there is a performance hit by using this class.</para>
         /// </remarks>
         public bool UseStackFrame { get; set; }
+
+#if NET451
+        private int _frameSkipCount = -1;
 
         /// <summary>
         /// Used to get the correct frame when <see cref="UseStackFrame"/> is set to true.
@@ -55,7 +57,7 @@ namespace Griffin.Logging.Loggers
 
             return new StackFrame(_frameSkipCount);
         }
-
+#endif
 
 
         /// <summary>
@@ -67,9 +69,14 @@ namespace Griffin.Logging.Loggers
             string caller;
             if (UseStackFrame)
             {
+#if NET451
                 var frame = GetStackFrame();
                 caller = frame.GetMethod().ReflectedType.Name + "." +
                              frame.GetMethod().Name + "():" + frame.GetFileLineNumber();
+#else
+                caller = (Environment.StackTrace ?? "").Split('\n')[0].Trim('\r');
+#endif
+                
             }
             else
             {

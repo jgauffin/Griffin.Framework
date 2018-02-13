@@ -6,7 +6,7 @@ namespace Griffin.Cqs
     /// <summary>
     /// Some of the CQS messages allows only one handler to avoid ambiguity.
     /// </summary>
-    [Serializable]
+    
     public class OnlyOneHandlerAllowedException : Exception
     {
         /// <summary>

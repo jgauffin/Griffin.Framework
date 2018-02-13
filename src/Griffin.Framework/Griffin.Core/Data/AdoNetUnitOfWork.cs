@@ -102,7 +102,7 @@ namespace Griffin.Data
         public void SaveChanges()
         {
             if (_transaction == null)
-                throw new TransactionAlreadyClosedException();
+                throw new TransactionAlreadyClosedException("No transaction was allocated for our unit of work on connection '" + _connection.ConnectionString + "'.");
 
             _transaction.Commit();
             _transaction = null;

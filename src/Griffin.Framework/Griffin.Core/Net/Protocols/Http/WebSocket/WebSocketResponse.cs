@@ -7,7 +7,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// </summary>
     public class WebSocketResponse : WebSocketMessage
     {
-        internal WebSocketResponse(WebSocketFrame frame)
+        public WebSocketResponse(WebSocketFrame frame)
             : base(frame.Opcode, frame.Payload)
         {
         }

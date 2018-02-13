@@ -6,7 +6,7 @@ namespace Griffin.Net.Protocols.Serializers
     /// <summary>
     ///     A decoder failed to decode request/response body
     /// </summary>
-    [Serializable]
+    
     public class DecoderFailureException : Exception
     {
         /// <summary>
@@ -16,24 +16,7 @@ namespace Griffin.Net.Protocols.Serializers
         public DecoderFailureException(string errorMessage) : base(errorMessage)
         {
         }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="DecoderFailureException" /> class.
-        /// </summary>
-        /// <param name="info">
-        ///     The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> that holds the serialized object
-        ///     data about the exception being thrown.
-        /// </param>
-        /// <param name="context">
-        ///     The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual
-        ///     information about the source or destination.
-        /// </param>
-        protected DecoderFailureException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context)
-        {
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DecoderFailureException"/> class.
         /// </summary>

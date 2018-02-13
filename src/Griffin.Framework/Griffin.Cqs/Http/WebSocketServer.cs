@@ -9,12 +9,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
-using Griffin.Core.External.SimpleJson;
 using Griffin.Cqs.Net;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Authentication;
 using Griffin.Net.Protocols.Http.WebSocket;
+using Newtonsoft.Json;
 
 namespace Griffin.Cqs.Http
 {
@@ -195,7 +195,7 @@ namespace Griffin.Cqs.Http
             }
 
 
-            var cqs = SimpleJson.DeserializeObject(json, type);
+            var cqs = JsonConvert.DeserializeObject(json, type);
             ClientResponse cqsReplyObject;
 
             try
@@ -204,7 +204,7 @@ namespace Griffin.Cqs.Http
             }
             catch (HttpException ex)
             {
-                var responseJson = SimpleJson.SerializeObject(new
+                var responseJson = JsonConvert.SerializeObject(new
                 {
                     error = ex.Message,
                     statusCode = ex.HttpCode
@@ -215,7 +215,7 @@ namespace Griffin.Cqs.Http
             }
             catch (Exception ex)
             {
-                var responseJson = SimpleJson.SerializeObject(new
+                var responseJson = JsonConvert.SerializeObject(new
                 {
                     error = ex.Message,
                     statusCode = 500
@@ -228,7 +228,7 @@ namespace Griffin.Cqs.Http
 
             if (cqsReplyObject.Body is Exception)
             {
-                var responseJson = SimpleJson.SerializeObject(new
+                var responseJson = JsonConvert.SerializeObject(new
                 {
                     error = ((Exception)cqsReplyObject.Body).Message,
                     statusCode = 500
@@ -238,7 +238,7 @@ namespace Griffin.Cqs.Http
             }
             else
             {
-                json = SimpleJson.SerializeObject(cqsReplyObject.Body);
+                json = JsonConvert.SerializeObject(cqsReplyObject.Body);
                 var reply = CreateWebSocketResponse(json);
                 channel.Send(reply);
             }
