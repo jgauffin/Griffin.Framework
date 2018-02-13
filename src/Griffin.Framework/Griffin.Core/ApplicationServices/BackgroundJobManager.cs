@@ -9,7 +9,7 @@ using Griffin.Logging;
 namespace Griffin.ApplicationServices
 {
     /// <summary>
-    ///     Used to execute all classes that implement <see cref="IBackgroundJob" />. The jobs are executed in parallell.
+    ///     Used to execute all classes that implement <see cref="IBackgroundJob" />. The jobs are executed in parallel.
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -20,7 +20,7 @@ namespace Griffin.ApplicationServices
     ///         ) is created for every time a job is executed.
     ///     </para>
     ///     <para>
-    ///         By subscribing on the event <see cref="ScopeClosing" /> you can for instance commit an unit of work everytime a
+    ///         By subscribing on the event <see cref="ScopeClosing" /> you can for instance commit an unit of work every time a
     ///         job have been executed.
     ///     </para>
     ///     <para>
@@ -31,15 +31,6 @@ namespace Griffin.ApplicationServices
     ///         when we are going to execute each job we use <c><![CDATA[scope.Resolve(jobType)]]></c> for every job that is
     ///         about to be executed.
     ///     </para>
-    /// <para>
-    /// The following signals are implemented (see <see cref="Signals"/>):
-    /// </para>
-    /// <list type="bullet">
-    /// <item>
-    /// <term>ApplicationServices[fullTypeNameForServiceClass].Faulted</term>
-    /// <description>Failed to execute job successfully.</description>
-    /// </item>
-    /// </list>
     /// </remarks>
     /// <example>
     ///     <para>
@@ -156,7 +147,7 @@ namespace Griffin.ApplicationServices
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Will do one initial resolve on al jobs in the container to be able to discover their <c>Type</c>. Without this
+        ///         Will do one initial resolve on all jobs in the container to be able to discover their <c>Type</c>. Without this
         ///         check it would not be
         ///         possible to run each job in an isolated scope.
         ///     </para>
@@ -301,11 +292,8 @@ namespace Griffin.ApplicationServices
             }
 
             /// <summary>
-            ///     Exekvera jobbet.
+            ///     NOOP
             /// </summary>
-            /// <remarks>
-            ///     Eventuella undantag hanteras av klassen som exekverar jobbet.
-            /// </remarks>
             public void Execute()
             {
             }

@@ -4,6 +4,9 @@ using Griffin.Net.Protocols.Http.Messages;
 
 namespace Griffin.Net.Protocols.Http
 {
+    /// <summary>
+    /// Minimal implementation of HTTP request
+    /// </summary>
     public class BasicHttpRequest : HttpMessage, IHttpRequest
     {
         private readonly HttpFileCollection _files = new HttpFileCollection();
@@ -13,6 +16,7 @@ namespace Griffin.Net.Protocols.Http
         private Uri _uri;
 
         /// <summary>
+        /// Creates a new instance of <see cref="BasicHttpRequest"/>.
         /// </summary>
         /// <param name="httpMethod">Method like <c>POST</c>.</param>
         /// <param name="pathAndQuery">Absolute path and query string (if one exist)</param>
@@ -93,7 +97,7 @@ namespace Griffin.Net.Protocols.Http
         protected override void OnHeaderSet(string name, string value)
         {
             if (name.Equals("host", StringComparison.OrdinalIgnoreCase))
-                Uri = new Uri("http://" + value + _pathAndQuery);
+                Uri = new Uri(string.Format("http://{0}{0}", value, _pathAndQuery));
 
 
             base.OnHeaderSet(name, value);

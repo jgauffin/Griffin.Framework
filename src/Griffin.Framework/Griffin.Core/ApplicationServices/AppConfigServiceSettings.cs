@@ -4,11 +4,11 @@ using Griffin.Configuration;
 namespace Griffin.ApplicationServices
 {
     /// <summary>
-    ///     Uses <c>app.config</c> (eller <c>web.config)</c>) to identify services that should be started by Griffin Framework.
+    ///     Uses <c>app.config</c> (or <c>web.config)</c>) to identify services that should be started by Griffin Framework.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         There must exist a key per service in <c><![CDATA[<appSettings>]]></c>. It defines wether a service should be
+    ///         There must exist a key per service in <c><![CDATA[<appSettings>]]></c>. It defines whether a service should be
     ///         running or not. <see cref="IApplicationService" />. The name
     ///         should be "ClassName.Enabled". For instance if you have a class named "StatisticsGenerator" the key should be
     ///         named "StatisticsGenerator.Enabled":
@@ -43,11 +43,13 @@ namespace Griffin.ApplicationServices
     {
         private readonly IConfigurationReader _configReader;
 #if !NET45
+        /// <inheritdoc />
         public AppConfigServiceSettings(IConfigurationReader configReader)
         {
             _configReader = configReader;
         }
 #else
+        /// <inheritdoc />
         public AppConfigServiceSettings()
         {
             _configReader = new ConfigurationManagerReader();

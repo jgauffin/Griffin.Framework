@@ -8,6 +8,7 @@
     /// .NET standard dropped ConfigurationManager, so this is our alternative.
     /// </para>
     /// </remarks>
+    /// TODO: Change this to a more specific class (with methods like IsServiceEnabled)
     public interface IConfigurationReader
     {
         string ReadAppSetting(string name);

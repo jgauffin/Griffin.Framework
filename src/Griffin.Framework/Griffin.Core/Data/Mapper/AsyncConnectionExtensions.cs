@@ -92,7 +92,7 @@ namespace Griffin.Data.Mapper
         ///     Execute a query directly
         /// </summary>
         /// <param name="connection">Connection to execute query on</param>
-        /// <param name="sql">sql query</param>
+        /// <param name="sql">SQL query</param>
         /// <param name="parameters">parameters used in the query</param>
         /// <returns>Task to wait on for completion</returns>
         /// <remarks>
@@ -222,7 +222,7 @@ namespace Griffin.Data.Mapper
         /// command.Parameters.Add(p);
         /// </code>
         /// </example>
-        /// <exception cref="EntityNotFoundException">Failed to find an entity mathing the query</exception>
+        /// <exception cref="EntityNotFoundException">Failed to find an entity matching the query</exception>
         public static Task<TEntity> FirstAsync<TEntity>(this IDbConnection connection, string query,
             params object[] parameters)
         {
@@ -391,7 +391,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
@@ -438,7 +438,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
@@ -501,7 +501,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
@@ -558,7 +558,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
@@ -606,7 +606,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.
@@ -674,7 +674,7 @@ namespace Griffin.Data.Mapper
         ///     </para>
         ///     <para>
         ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
+        ///         Connection/Command/DataReader is
         ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
         ///         disposed when you are
         ///         done with it.

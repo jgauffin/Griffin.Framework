@@ -20,30 +20,13 @@ namespace Griffin.ApplicationServices
     ///         Otherwise they will only be started/stopped when <c>Start()</c>/<c>Stop()</c> is invoked on this manager.
     ///     </para>
     ///     <para>
-    ///         You can also start/stop services at runtime using your config file (app/web.config) if you use the
+    ///         You can also start/stop services at runtime using your configuration file (app/web.config) if you use the
     ///         <see cref="AppConfigServiceSettings" /> class as configuration source (or your own implementation).
     ///     </para>
     ///     <para>
     ///         If you are using a inversion of control container your classes should be registered as "Single Instance" in it
     ///         for this class to work properly.
     ///     </para>
-    /// <para>
-    /// The following signals are implemented (see <see cref="Signals"/>):
-    /// </para>
-    /// <list type="bullet">
-    /// <item>
-    /// <term>ApplicationServices[fullTypeNameForServiceClass].Disabled</term>
-    /// <description>Application service have been disabled through configuration</description>
-    /// </item>
-    /// <item>
-    /// <term>ApplicationServices[fullTypeNameForServiceClass].Running</term>
-    /// <description>Application service is currently running</description>
-    /// </item>
-    /// <item>
-    /// <term>ApplicationServices[fullTypeNameForServiceClass].Faulted</term>
-    /// <description>Fails to start service successfully.</description>
-    /// </item>
-    /// </list>
     /// </remarks>
     /// <example>
     ///     <para>Start by creating a class:</para>
@@ -350,7 +333,7 @@ namespace Griffin.ApplicationServices
         }
 
         /// <summary>
-        ///     check services wether they should be started/stopped.
+        ///     check services whether they should be started/stopped.
         /// </summary>
         /// <returns></returns>
         internal void CheckServices()

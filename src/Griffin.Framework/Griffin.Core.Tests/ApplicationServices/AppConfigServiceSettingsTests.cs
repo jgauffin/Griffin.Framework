@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Griffin.ApplicationServices;
+using Griffin.Configuration;
 using Xunit;
 
 namespace Griffin.Core.Tests.ApplicationServices
@@ -7,6 +8,8 @@ namespace Griffin.Core.Tests.ApplicationServices
     
     public class AppConfigServiceSettingsTests
     {
+        private IConfigurationReader _reader = new ConfigurationManagerReader();
+
         public class DisabledServoce
         {
             
@@ -23,7 +26,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void disabled_service_should_also_be_reported_as_disabled()
         {
-            var sut = new AppConfigServiceSettings();
+            var sut = new AppConfigServiceSettings(_reader);
 
             sut.IsEnabled(typeof (DisabledServoce)).Should().BeFalse();
         }
@@ -31,7 +34,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void enabled_service_should_Be_reported_as_enabled()
         {
-            var sut = new AppConfigServiceSettings();
+            var sut = new AppConfigServiceSettings(_reader);
 
             sut.IsEnabled(typeof(EnabledService)).Should().BeTrue();
         }
@@ -39,7 +42,7 @@ namespace Griffin.Core.Tests.ApplicationServices
         [Fact]
         public void non_configured_service_should_be_reported_as_disabler_per_default()
         {
-            var sut = new AppConfigServiceSettings();
+            var sut = new AppConfigServiceSettings(_reader);
 
             sut.IsEnabled(typeof(NonExistantService)).Should().BeFalse();
         }

@@ -8,13 +8,19 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     /// <remarks>
     /// <para>The purpose of this class is to do as little as possible with the response to make the processing more straightforward and without
-    /// any unnessacary steps.</para>
+    /// any unnecessary steps.</para>
     /// </remarks>
     public class BasicHttpResponse : HttpMessage, IHttpResponse
     {
         private string _reasonPhrase;
         private readonly HttpCookieCollection<IResponseCookie> _cookies = new HttpCookieCollection<IResponseCookie>();
 
+        /// <summary>
+        /// Creates a new instance of <see cref="BasicHttpResponse"/>.
+        /// </summary>
+        /// <param name="httpStatusCode">status code</param>
+        /// <param name="reasonPhrase">why the status code was used</param>
+        /// <param name="httpVersion">typically "HTTP/1.1"</param>
         public BasicHttpResponse(int httpStatusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");

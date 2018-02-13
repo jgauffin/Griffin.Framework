@@ -10,7 +10,6 @@ namespace Griffin.Logging.Loggers
     /// <remarks>Prints one stack frame using colored output.</remarks>
     public class ConsoleLogger : BaseLogger
     {
-        private int _frameSkipCount = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
@@ -30,6 +29,8 @@ namespace Griffin.Logging.Loggers
         public bool UseStackFrame { get; set; }
 
 #if NET451
+        private int _frameSkipCount = -1;
+
         /// <summary>
         /// Used to get the correct frame when <see cref="UseStackFrame"/> is set to true.
         /// </summary>

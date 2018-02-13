@@ -7,6 +7,7 @@ using DotNetCqs;
 using FluentAssertions;
 using Griffin.Container;
 using Griffin.Cqs.InversionOfControl;
+using Griffin.Cqs.Reliable;
 using NSubstitute;
 using Xunit;
 

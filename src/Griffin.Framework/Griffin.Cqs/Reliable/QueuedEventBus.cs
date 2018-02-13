@@ -1,18 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.ApplicationServices;
-using Griffin.Container;
-using Griffin.IO;
+using Griffin.Cqs.InversionOfControl;
 
-namespace Griffin.Cqs.InversionOfControl
+namespace Griffin.Cqs.Reliable
 {
     /// <summary>
-    ///     Event bus implementation using autofac as a container.
+    ///     Uses a queue to store messages before invoking them (to be able to retry etc)
     /// </summary>
     /// <remarks>
     ///     <para>
@@ -50,8 +46,7 @@ namespace Griffin.Cqs.InversionOfControl
 
             _queue = queue;
             _innerBus = innerBus;
-            var iocBus = _innerBus as IocEventBus;
-            if (iocBus != null)
+            if (_innerBus is IocEventBus iocBus)
             {
                 iocBus.EventPublished += OnDelegateEventPublished;
                 iocBus.HandlerFailed += OnDelegateHandlerFailed;
