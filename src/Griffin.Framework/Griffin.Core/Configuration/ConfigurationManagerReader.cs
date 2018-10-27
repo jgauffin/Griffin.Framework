@@ -1,10 +1,6 @@
-﻿#if NET451
-using System;
-using System.Collections.Generic;
+﻿#if NET451 || NET45
+using System.Collections.Specialized;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Griffin.Configuration
 {
@@ -18,10 +14,15 @@ namespace Griffin.Configuration
         public string ReadValue(string sectionName, string propertyName)
         {
             var section =  ConfigurationManager.GetSection(sectionName) as AppSettingsSection;
-            if (section == null)
-                throw new ConfigurationErrorsException("Section " + sectionName + " is not of type AppSettingsSection");
+            if (section != null)
+                return section.Settings[propertyName].Value;
 
-            return section.Settings[propertyName].Value;
+            var section2 =  ConfigurationManager.GetSection(sectionName) as NameValueCollection;
+            if (section2 != null)
+                return section2[propertyName];
+                
+    
+            throw new ConfigurationErrorsException("Section " + sectionName + " is not of type AppSettingsSection");
         }
     }
 }

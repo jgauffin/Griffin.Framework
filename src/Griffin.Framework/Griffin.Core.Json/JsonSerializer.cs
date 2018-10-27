@@ -24,7 +24,7 @@ namespace Griffin.Core.Json
                 ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
                 ObjectCreationHandling = ObjectCreationHandling.Auto,
                 TypeNameHandling = TypeNameHandling.Auto,
-                TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple
             };
 
             Encoding = Encoding.UTF8;

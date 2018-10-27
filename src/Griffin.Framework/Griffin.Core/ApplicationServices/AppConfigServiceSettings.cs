@@ -42,13 +42,12 @@ namespace Griffin.ApplicationServices
     public class AppConfigServiceSettings : ISettingsRepository
     {
         private readonly IConfigurationReader _configReader;
-#if !NET45
         /// <inheritdoc />
         public AppConfigServiceSettings(IConfigurationReader configReader)
         {
             _configReader = configReader;
         }
-#else
+#if NET45 || NET451
         /// <inheritdoc />
         public AppConfigServiceSettings()
         {
