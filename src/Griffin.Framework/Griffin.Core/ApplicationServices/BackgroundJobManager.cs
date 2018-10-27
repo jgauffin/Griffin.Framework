@@ -107,6 +107,11 @@ namespace Griffin.ApplicationServices
         public TimeSpan ExecuteInterval { get; set; }
 
         /// <summary>
+        /// Dont execute jobs in parallell (parallell executions can cause deadloks for DB jobs)
+        /// </summary>
+        public bool ExecuteSequentially { get; set; }
+
+        /// <summary>
         ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -182,45 +187,30 @@ namespace Griffin.ApplicationServices
             Task allTask = null;
             try
             {
-                Parallel.ForEach(_syncJobTypes, jobType =>
+                if (ExecuteSequentially)
                 {
-                    IBackgroundJob job = null;
-                    try
+                    foreach (var jobType in _syncJobTypes)
                     {
-                        using (var scope = _container.CreateScope())
-                        {
-                            try
-                            {
-                                job = (IBackgroundJob)scope.Resolve(jobType);
-                                if (job == null)
-                                    throw new InvalidOperationException(string.Format("Failed to resolve job type '{0}'.", jobType.FullName));
-
-                                ScopeCreated(this, new ScopeCreatedEventArgs(scope));
-                                job.Execute();
-                                ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
-                            }
-                            catch (Exception exception)
-                            {
-                                var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
-                                JobFailed(this, args);
-                                ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
-                            }
-                        }
+                        ExecuteSyncJob(jobType);
                     }
-                    catch (Exception exception)
+
+                    foreach (var jobType in _asyncJobTypes)
                     {
-                        JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
-                        _logger.Error("Failed to execute job: " + job, exception);
+                        ExecuteAsyncJob(jobType).GetAwaiter().GetResult();
                     }
-                });
+                }
+                else
+                {
+                    Parallel.ForEach(_syncJobTypes, ExecuteSyncJob);
+                    var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
+                    allTask = Task.WhenAll(tasks);
+                    allTask.Wait();
+                }
 
-                var tasks = _asyncJobTypes.Select(ExecuteAsyncJob);
-                allTask = Task.WhenAll(tasks);
-                allTask.Wait();
             }
             catch (Exception exception)
             {
-                _logger.Error("failed to execute jobs", exception);
+                _logger.Error("failed to execute jobs.", exception);
                 if (allTask != null)
                     JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(GetType(), allTask.Exception), exception));
                 else
@@ -228,6 +218,42 @@ namespace Griffin.ApplicationServices
             }
         }
 
+        private void ExecuteJobs()
+        {
+
+        }
+
+        private void ExecuteSyncJob(Type jobType)
+        {
+            IBackgroundJob job = null;
+            try
+            {
+                using (var scope = _container.CreateScope())
+                {
+                    try
+                    {
+                        job = (IBackgroundJob)scope.Resolve(jobType);
+                        if (job == null)
+                            throw new InvalidOperationException(string.Format("Failed to resolve job type '{0}'.", jobType.FullName));
+
+                        ScopeCreated(this, new ScopeCreatedEventArgs(scope));
+                        job.Execute();
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope, true));
+                    }
+                    catch (Exception exception)
+                    {
+                        var args = new BackgroundJobFailedEventArgs(job ?? new NoJob(jobType, exception), exception);
+                        JobFailed(this, args);
+                        ScopeClosing(this, new ScopeClosingEventArgs(scope, false) { Exception = exception });
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                JobFailed(this, new BackgroundJobFailedEventArgs(new NoJob(jobType, exception), exception));
+                _logger.Error("Failed to execute job: " + job, exception);
+            }
+        }
         private async Task ExecuteAsyncJob(Type jobType)
         {
             IBackgroundJobAsync job = null;

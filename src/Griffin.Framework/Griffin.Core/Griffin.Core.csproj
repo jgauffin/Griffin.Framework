@@ -1,22 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net451;netstandard2.0</TargetFrameworks>
     <PackageId>Griffin.Framework</PackageId>
     <Authors>jgauffin</Authors>
     <Description>Business application library - get rid of a lot of boilerplate code.</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Converted to vstudio 2017 csproj format</PackageReleaseNotes>
-    <Copyright>© Copyright 2017 1TCompany AB. All rights reserved.</Copyright>
-    <PackageTags>logger exceptions data-mapper depdenency-injection tcp sockets</PackageTags>
+    <Copyright>© Copyright 2018 1TCompany AB. All rights reserved.</Copyright>
+    <PackageTags>logger exceptions data-mapper dependency-injection tcp sockets</PackageTags>
     <PackageIconUrl>http://onetrueerror.com/images/nuget_icon.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/onetrueerror/onetrueerror.client.aspnet.mvc5</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseUrl>https://github.com/jgauffin/griffin.framework/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://griffinframework.net</PackageProjectUrl>
-    <Version>2.0.0-alpha01</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>Griffin</RootNamespace>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>2.0.1</Version>
+    <PackageReleaseNotes>Offical 2.0 release</PackageReleaseNotes>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>bin\Release\net451\Griffin.Core.xml</DocumentationFile>
   </PropertyGroup>
