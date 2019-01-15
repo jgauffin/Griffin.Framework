@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {

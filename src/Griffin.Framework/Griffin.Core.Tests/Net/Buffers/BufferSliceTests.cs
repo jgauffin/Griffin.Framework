@@ -39,7 +39,7 @@ namespace Griffin.Core.Tests.Net.Buffers
 
         //    Action x = () => new BufferSlice(buffer, 5, 10);
 
-        //    x.ShouldThrow<ArgumentOutOfRangeException>();
+        //    x.Throws<ArgumentOutOfRangeException>();
         //}
 
         //[Fact]
@@ -48,7 +48,7 @@ namespace Griffin.Core.Tests.Net.Buffers
 
         //    Action x = () => new BufferSlice(null, 5, 10);
 
-        //    x.ShouldThrow<ArgumentNullException>();
+        //    x.Throws<ArgumentNullException>();
         //}
 
         //[Fact]
@@ -99,7 +99,7 @@ namespace Griffin.Core.Tests.Net.Buffers
         //    var sut = new BufferSlice(buffer, 0, 11);
         //    Action x = () => sut.CopyTo(slice, 200);
 
-        //    x.ShouldThrow<ArgumentOutOfRangeException>();
+        //    x.Throws<ArgumentOutOfRangeException>();
         //}
 
         //[Fact]

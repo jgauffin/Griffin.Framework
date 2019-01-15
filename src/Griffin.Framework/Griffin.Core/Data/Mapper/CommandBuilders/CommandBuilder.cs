@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Data.Mapper.CommandBuilders
 {

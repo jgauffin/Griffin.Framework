@@ -18,21 +18,21 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => EntityMappingProvider.Provider = null;
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
 
-[Fact]
-public void the_new_provider_is_used_after_assignment()
-{
-    var provider = Substitute.For<IMappingProvider>();
-    var expected = Substitute.For<ICrudEntityMapper<string>>();
-    provider.Get<string>().Returns(expected);
+        [Fact]
+        public void the_new_provider_is_used_after_assignment()
+        {
+            var provider = Substitute.For<IMappingProvider>();
+            var expected = Substitute.For<ICrudEntityMapper<string>>();
+            provider.GetBase<string>().Returns(expected);
 
-    EntityMappingProvider.Provider = provider;
-    var actual = EntityMappingProvider.GetMapper<string>();
+            EntityMappingProvider.Provider = provider;
+            var actual = EntityMappingProvider.GetBaseMapper<string>();
 
 
-    actual.Should().Be(expected);
-}
+            actual.Should().Be(expected);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Griffin.Data.Mapper
+namespace Griffin.Data.Mapper.Values
 {
     /// <summary>
     ///     Mapping for a class property
@@ -87,6 +87,6 @@ namespace Griffin.Data.Mapper
         /// </summary>
         /// <param name="entity">Entity to retrieve value from</param>
         /// <param name="columnValue">Column value</param>
-        void SetColumnValue(object entity, object columnValue);
+        void SetProperty(object entity, object columnValue);
     }
 }

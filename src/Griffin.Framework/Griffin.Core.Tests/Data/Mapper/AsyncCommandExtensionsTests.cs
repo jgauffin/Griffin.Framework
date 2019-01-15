@@ -11,6 +11,7 @@ using Griffin.AdoNetFakes;
 using Griffin.Data;
 using Griffin.Data.Mapper;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Griffin.Core.Tests.Data.Mapper
@@ -27,7 +28,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => cmd.FirstAsync(new CrudMapper()).Wait();
 
-            actual.ShouldThrow<EntityNotFoundException>();
+            actual.Should().Throw<EntityNotFoundException>();
         }
 
         [Fact]

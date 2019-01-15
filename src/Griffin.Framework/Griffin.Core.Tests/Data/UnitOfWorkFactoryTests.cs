@@ -19,7 +19,7 @@ namespace Griffin.Core.Tests.Data
 
             Action actual = () => UnitOfWorkFactory.Create();
 
-            actual.ShouldThrow<InvalidOperationException>().And.Message.Should().Contain("SetFactoryMethod()");
+            actual.Should().Throw<InvalidOperationException>().And.Message.Should().Contain("SetFactoryMethod()");
         }
 
         [Fact]

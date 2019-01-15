@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Griffin.Data.Mapper.CommandBuilders;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Data.Mapper
 {

@@ -48,7 +48,7 @@ namespace Griffin.Core.Tests.Net.Channels
             sut.HandshakeTimeout = TimeSpan.FromMilliseconds(100);
             Action actual = () => sut.Build(serverChannel, clientServer.Server);
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
 
@@ -66,7 +66,7 @@ namespace Griffin.Core.Tests.Net.Channels
             var sw = Stopwatch.StartNew();
             Action actual = () => sut.Build(serverChannel, clientServer.Server);
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
             sw.Stop();
             sw.ElapsedMilliseconds.Should().BeGreaterOrEqualTo(500);
         }

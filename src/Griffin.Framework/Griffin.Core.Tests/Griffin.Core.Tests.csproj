@@ -1,200 +1,35 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CBFF69B2-8340-412B-96E1-330131663F98}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>net461</TargetFramework>
     <RootNamespace>Griffin.Core.Tests</RootNamespace>
     <AssemblyName>Griffin.Core.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>4014, 1998</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions, Version=3.2.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.3.2.2\lib\net45\FluentAssertions.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentAssertions.Core, Version=3.2.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.3.2.2\lib\net45\FluentAssertions.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Griffin.AdoNetFakes">
-      <HintPath>..\packages\Griffin.AdoNetFakes.2.0.7\lib\net40\Griffin.AdoNetFakes.dll</HintPath>
-    </Reference>
-    <Reference Include="NCrunch.Framework, Version=2.6.0.18, Culture=neutral, PublicKeyToken=01d101bf6f3e0aea, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NCrunch.Framework.2.6.0.18\lib\portable-windows8+net45\NCrunch.Framework.dll</HintPath>
-    </Reference>
-    <Reference Include="NSubstitute, Version=1.7.2.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NSubstitute.1.7.2.0\lib\NET45\NSubstitute.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="xunit">
-      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Griffin.AdoNetFakes" Version="2.0.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
+    <PackageReference Include="NCrunch.Framework" Version="3.17.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="NSubstitute" Version="3.1.0" />
+
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationServices\AppConfigServiceSettingsTests.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceManagerTests.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceThreadTests.cs" />
-    <Compile Include="ApplicationServices\ApplicationServiceTimerTests.cs" />
-    <Compile Include="ApplicationServices\BackgroundJobFailedEventArgsTests.cs" />
-    <Compile Include="ApplicationServices\BackgroundJobManagerTests.cs" />
-    <Compile Include="ApplicationServices\ScopeClosingEventArgsTests.cs" />
-    <Compile Include="ApplicationServices\ScopeCreatedEventArgsTests.cs" />
-    <Compile Include="Data\AdoNetUnitOfWorkTests.cs" />
-    <Compile Include="Data\CommandExtensionsTests.cs" />
-    <Compile Include="Data\DateTimeExtensionsTests.cs" />
-    <Compile Include="Data\EntityNotFoundExceptionTests.cs" />
-    <Compile Include="Data\Mapper\AdoNetEntityEnumerableTests.cs" />
-    <Compile Include="Data\Mapper\AdoNetEntityEnumeratorTests.cs" />
-    <Compile Include="Data\Mapper\AssemblyScanningMappingProviderTests.cs" />
-    <Compile Include="Data\Mapper\AsyncCommandExtensionsTests.cs" />
-    <Compile Include="Data\Mapper\AsyncConnectionExtensionsTests.cs" />
-    <Compile Include="Data\Mapper\AsyncUnitOfWorkExtensionsTests.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\CommandBuilderTests.cs" />
-    <Compile Include="Data\Mapper\CommandBuilders\FakePropertyMapping.cs" />
-    <Compile Include="Data\Mapper\CommandExtensionsTests.cs" />
-    <Compile Include="Data\Mapper\EntityMapperTests.cs" />
-    <Compile Include="Data\Mapper\EntityMappingProviderTests.cs" />
-    <Compile Include="Data\Mapper\MappingExceptionTests.cs" />
-    <Compile Include="Data\Mapper\MappingForAttributeTests.cs" />
-    <Compile Include="Data\Mapper\MappingNotFoundExceptionTests.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\FieldSetterProperty.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\NoDefaultConstructor.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\NoSetterAndNoField.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\PrivateDefaultConstructor.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\PrivateProperty.cs" />
-    <Compile Include="Data\Mapper\PropertyMappings\PrivateSetterProperty.cs" />
-    <Compile Include="Data\Mapper\PropertyMappingTests.cs" />
-    <Compile Include="Data\Mapper\TestMappings\BrokenMapping.cs" />
-    <Compile Include="Data\Mapper\TestMappings\ClassThatHaveAnAbstractMapper.cs" />
-    <Compile Include="Data\Mapper\TestMappings\ClassThatHaveAnAbstractMapperMapper.cs" />
-    <Compile Include="Data\Mapper\TestMappings\IWithInterfaceMapping.cs" />
-    <Compile Include="Data\Mapper\TestMappings\Ok.cs" />
-    <Compile Include="Data\Mapper\TestMappings\OkCustomMapper.cs" />
-    <Compile Include="Data\Mapper\TestMappings\OkMapping.cs" />
-    <Compile Include="Data\Mapper\TestMappings\UsingAttribute.cs" />
-    <Compile Include="Data\Mapper\TestMappings\UsingReflection.cs" />
-    <Compile Include="Data\Mapper\TestMappings\WithInterfaceMapping.cs" />
-    <Compile Include="Data\MappingProviderTests.cs" />
-    <Compile Include="Data\Queries\QueryResultTests.cs" />
-    <Compile Include="Data\Queries\QueryConstraintsTests.cs" />
-    <Compile Include="Data\Queries\User.cs" />
-    <Compile Include="Data\UnitOfWorkFactoryTests.cs" />
-    <Compile Include="Data\Mapper\TestMappings\Empty.cs" />
-    <Compile Include="Data\Mapper\TestMappings\EmptyMapping.cs" />
-    <Compile Include="External\PrivateClass.cs" />
-    <Compile Include="Logging\Loggers\BaseLoggerTests.cs" />
-    <Compile Include="Logging\Loggers\BaseLoggerWrapper.cs" />
-    <Compile Include="Logging\Loggers\ConsoleLoggerTests.cs" />
-    <Compile Include="Logging\Loggers\Filters\ExceptionsOnlyTests.cs" />
-    <Compile Include="Logging\Loggers\Filters\LogLevelFilterTests.cs" />
-    <Compile Include="Logging\Loggers\Filters\NoFilterTests.cs" />
-    <Compile Include="Logging\Loggers\SystemDebugLoggerTests.cs" />
-    <Compile Include="Logging\LogManagerTests.cs" />
-    <Compile Include="Logging\NamespaceFilterTests.cs" />
-    <Compile Include="Logging\Providers\LogProviderTests.cs" />
-    <Compile Include="Logging\Subjects\ClassB.cs" />
-    <Compile Include="Logging\Subjects\ClassA.cs" />
-    <Compile Include="Logging\Subjects\SomeLogger.cs" />
-    <Compile Include="Net\Buffers\BufferPoolTests.cs" />
-    <Compile Include="Net\Buffers\BufferSliceTests.cs" />
-    <Compile Include="Net\CertificateHelper.cs" />
-    <Compile Include="Net\Channels\ServerSideSslStreamBuilderTests.cs" />
-    <Compile Include="Net\Channels\ClientServerHelper.cs" />
-    <Compile Include="Net\Channels\FakeDecoder.cs" />
-    <Compile Include="Net\Channels\FakeEncoder.cs" />
-    <Compile Include="Net\Channels\SecureTcpChannelTests.cs" />
-    <Compile Include="Net\Channels\SocketAsyncEventArgsWrapperTests.cs" />
-    <Compile Include="Net\Channels\TcpChannelTests.cs" />
-    <Compile Include="Net\Channels\TcpIntegrationTests.cs" />
-    <Compile Include="Net\LoadCertificateTest.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\AuthenticationUserStub.cs" />
-    <Compile Include="Net\Protocols\Http\Authentication\DigestAuthenticatorTests.cs" />
-    <Compile Include="Net\Protocols\Http\ListenerTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HeaderParserTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpCookieParserTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HttpMessageDecoderTests.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\MultipartSerializerTests.cs" />
-    <Compile Include="Net\Protocols\Http\BodyDecoders\UrlDecoderTests.cs" />
-    <Compile Include="Net\Protocols\Http\HttpEncoderTests.cs" />
-    <Compile Include="Net\Protocols\Http\HttpMessageDecoderTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\HeaderCollectionTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\ParameterCollectionTests.cs" />
-    <Compile Include="Net\Protocols\Http\Messages\TextReaderExtensionsTests.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketFrameTests.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMessageEncoderTests.cs" />
-    <Compile Include="Net\Protocols\Http\WebSocket\WebSocketMessageDecoderTests.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\CodecTests.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageDecoderTests.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageEncoderTests.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\MicroMessageServerTests.cs" />
-    <Compile Include="Net\Protocols\MicroMsg\StringSerializer.cs" />
-    <Compile Include="Net\Protocols\Strings\StringDecoderTests.cs" />
-    <Compile Include="Net\Protocols\Strings\StringEncoderTests.cs" />
-    <Compile Include="Net\SocketBufferFake.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Net\cert\GriffinNetworkingTemp.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
-      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
-      <Name>Griffin.Core</Name>
-    </ProjectReference>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}"></Service>
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <None Update="Net\cert\GriffinNetworkingTemp.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

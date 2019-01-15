@@ -14,12 +14,12 @@ using HttpListener = Griffin.Net.Protocols.Http.HttpListener;
 
 namespace Griffin.Core.Tests.Net.Protocols.Http
 {
-    public class Issue14_should_work_with_concurrent_requests : IDisposable
+    public class Issue14ShouldWorkWithConcurrentRequests : IDisposable
     {
         private HttpListener _server;
         ManualResetEvent _eventToTriggerBySecond = new ManualResetEvent(false);
 
-        public Issue14_should_work_with_concurrent_requests()
+        public Issue14ShouldWorkWithConcurrentRequests()
         {
             _server = new HttpListener();
             _server.MessageReceived += OnMessage;
@@ -37,7 +37,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
                 _eventToTriggerBySecond.Set();
         }
 
-        [Fact]
+        [Fact(Skip = "Needs a timeout")]
         public void InvokeTwoRequests_Both_Should_succeed()
         {
             var httpMsg = @"GET / HTTP/1.0

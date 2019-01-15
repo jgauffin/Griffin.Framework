@@ -408,7 +408,7 @@ namespace Griffin.Data.Mapper
             {
                 var id = await cmd.ExecuteScalarAsync();
                 if (id != null && id != DBNull.Value)
-                    mapper.Properties[autoKey.PropertyName].SetColumnValue(entity, id);
+                    mapper.Properties[autoKey.PropertyName].SetProperty(entity, id);
                 {
                     return id;
                 }

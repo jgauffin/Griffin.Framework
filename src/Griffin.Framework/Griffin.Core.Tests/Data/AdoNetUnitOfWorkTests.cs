@@ -34,7 +34,7 @@ namespace Griffin.Core.Tests.Data
             sut.SaveChanges();
             Action actual = sut.SaveChanges;
 
-            actual.ShouldThrow<TransactionAlreadyClosedException>();
+            actual.Should().Throw<TransactionAlreadyClosedException>();
         }
 
         [Fact]

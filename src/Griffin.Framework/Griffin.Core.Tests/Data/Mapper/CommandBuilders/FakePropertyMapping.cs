@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using Griffin.Data.Mapper;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
 {
@@ -71,7 +72,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
         /// <param name="entity">Entity to retrieve value from</param>
         /// <param name="value">Column value</param>
         /// <returns>Property value</returns>
-        public void SetColumnValue(object entity, object value)
+        public void SetProperty(object entity, object value)
         {
             throw new NotImplementedException();
         }

@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using Griffin.Data.Mapper.Values;
 using Griffin.Reflection;
 
 namespace Griffin.Data.Mapper

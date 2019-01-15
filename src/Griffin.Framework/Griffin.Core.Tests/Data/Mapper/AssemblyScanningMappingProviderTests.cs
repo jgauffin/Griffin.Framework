@@ -20,7 +20,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             
             Action actual = () => sut.Scan(Assembly.GetExecutingAssembly());
 
-            actual.ShouldThrow<MappingException>();
+            actual.Should().Throw<MappingException>();
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => sut.Get<ClassThatHaveAnAbstractMapper>();
 
-            actual.ShouldThrow<MappingNotFoundException>();
+            actual.Should().Throw<MappingNotFoundException>();
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => sut.Get<WithInterfaceMapping>();
 
-            actual.ShouldThrow<MappingNotFoundException>();
+            actual.Should().Throw<MappingNotFoundException>();
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = sut.Scan;
 
-            actual.ShouldThrow<MappingException>();
+            actual.Should().Throw<MappingException>();
         }
 
         [Fact]

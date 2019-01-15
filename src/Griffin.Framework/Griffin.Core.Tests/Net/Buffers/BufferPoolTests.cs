@@ -17,7 +17,7 @@ namespace Griffin.Core.Tests.Net.Buffers
             sut.Pop();
             Action actual = () => sut.Pop();
 
-            actual.ShouldThrow<PoolEmptyException>();
+            actual.Should().Throw<PoolEmptyException>();
         }
 
         [Fact]

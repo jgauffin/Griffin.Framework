@@ -46,7 +46,7 @@ namespace Griffin.Core.Tests.Net.Channels
             var sut = new TcpChannel(slice, encoder, decoder);
             Action actual = () => sut.Assign(_helper.Client);
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
         [Fact]

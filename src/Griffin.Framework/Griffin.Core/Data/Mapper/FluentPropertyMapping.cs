@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Data.Mapper
 {
@@ -130,6 +131,26 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Use if the column type differs from the property type.
+        /// </summary>
+        /// <param name="fromPropertyConverter">From property converter.</param>
+        /// <returns>this</returns>
+        /// <exception cref="System.ArgumentNullException">fromPropertyConverter</exception>
+        /// <remarks>
+        /// <para>
+        /// Used in CRUD statements
+        /// </para>
+        /// </remarks>
+        public FluentPropertyMapping<TEntity, TPropertyType> ToColumnValue2(
+            PropertyToColumnValueHandler<TEntity> fromPropertyConverter)
+        {
+            if (fromPropertyConverter == null) throw new ArgumentNullException("fromPropertyConverter");
+            _inner.PropertyToColumnAdapter2 = fromPropertyConverter;
+            return this;
+        }
+
+
+        /// <summary>
         /// Use if the property type differs from the column type.
         /// </summary>
         /// <param name="fromColumnConverter">From column converter.</param>
@@ -147,5 +168,25 @@ namespace Griffin.Data.Mapper
             _inner.ColumnToPropertyAdapter = x => fromColumnConverter(x);
             return this;
         }
+
+        /// <summary>
+        /// Use if the property type differs from the column type.
+        /// </summary>
+        /// <param name="adapter">From column converter.</param>
+        /// <returns>this</returns>
+        /// <exception cref="System.ArgumentNullException">fromColumnConverter</exception>
+        /// <remarks>
+        /// <para>
+        /// Used in <code>SELECT</code> statements.
+        /// </para>
+        /// </remarks>
+        public FluentPropertyMapping<TEntity, TPropertyType> ToPropertyValue2(
+            ColumnToPropertyValueHandler adapter)
+        {
+            if (adapter == null) throw new ArgumentNullException("adapter");
+            _inner.ColumnToPropertyAdapter2 = adapter;
+            return this;
+        }
+
     }
 }

@@ -9,6 +9,7 @@ using FluentAssertions;
 using Griffin.Core.Tests.Data.Mapper.PropertyMappings;
 using Griffin.Core.Tests.Data.Mapper.TestMappings;
 using Griffin.Data.Mapper;
+using Griffin.Data.Mapper.Values;
 using NSubstitute;
 using Xunit;
 
@@ -116,7 +117,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => CrudEntityMapper<NoDefaultConstructor>.CreateInstanceFactory()();
 
-actual.ShouldThrow<MappingException>()
+actual.Should().Throw<MappingException>()
     .And.Message.Should().StartWith("Failed to find a default constructor ");
         }
 
@@ -142,6 +143,20 @@ actual.ShouldThrow<MappingException>()
             var keys = sut.GetKeys(expected);
 
             keys.Length.Should().Be(0);
+        }
+
+        [Fact]
+        public void Should_be_able_to_convert_record_to_entity_with_coupled_properties()
+        {
+            var record = Substitute.For<IDataRecord>();
+            record["Value"].Returns("1");
+            record["ValueType"].Returns(1.GetType().FullName);
+            var actual = new EntityWithCoupledFields();
+
+            var sut = new EntityWithCoupledFieldsMapper();
+            sut.Map(record, actual);
+
+            actual.Value.Should().Be(1);
         }
 
         [Fact]

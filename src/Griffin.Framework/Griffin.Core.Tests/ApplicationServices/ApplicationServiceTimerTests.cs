@@ -39,7 +39,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.StartedEvent.WaitOne(100).Should().BeTrue();
             Action actual = sut.Start;
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
 
@@ -61,7 +61,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             var sut = new TestAppService();
             Action actual = sut.Stop;
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
 

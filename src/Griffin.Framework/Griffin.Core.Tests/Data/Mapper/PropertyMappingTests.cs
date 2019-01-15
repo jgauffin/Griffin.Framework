@@ -3,6 +3,7 @@ using System.Data;
 using FluentAssertions;
 using Griffin.Core.Tests.Data.Mapper.TestMappings;
 using Griffin.Data.Mapper;
+using Griffin.Data.Mapper.Values;
 using NSubstitute;
 using Xunit;
 
@@ -109,7 +110,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var actual = new Ok();
 
             var sut = new PropertyMapping<Ok>("FirstName", (o, o1) => o.FirstName = (string)o1, ok => ok.FirstName);
-            sut.SetColumnValue(actual, DBNull.Value);
+            sut.SetProperty(actual, DBNull.Value);
 
             actual.FirstName.Should().Be(null);
         }
@@ -122,7 +123,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             var sut = new PropertyMapping<Ok>("FirstName", (o, o1) => o.FirstName = (string)o1, ok => ok.FirstName);
             sut.PropertyType = typeof (string);
-            sut.SetColumnValue(actual, "Hello");
+            sut.SetProperty(actual, "Hello");
 
             actual.FirstName.Should().Be("Hello");
         }
@@ -135,7 +136,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             var sut = new PropertyMapping<Ok>("Age", (o, o1) => o.Age = (int)o1, ok => ok.Age);
             sut.PropertyType = typeof(int);
-            sut.SetColumnValue(actual, (decimal)1);
+            sut.SetProperty(actual, (decimal)1);
 
             actual.Age.Should().Be(1);
         }

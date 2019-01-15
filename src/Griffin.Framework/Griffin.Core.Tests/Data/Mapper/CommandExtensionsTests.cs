@@ -23,7 +23,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => cmd.First<string>();
 
-            actual.ShouldThrow<EntityNotFoundException>();
+            actual.Should().Throw<EntityNotFoundException>();
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             Action actual = () => cmd.First(new TentityMapper());
 
-            actual.ShouldThrow<EntityNotFoundException>();
+            actual.Should().Throw<EntityNotFoundException>();
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void ToEnumerable_without_arguments_generates_an_enumerable_without_connection_ownership()
         {
             var provider = Substitute.For<IMappingProvider>();
-            provider.Get<Tentity>().Returns(new TentityMapper());
+            provider.GetBase<Tentity>().Returns(new TentityMapper());
             EntityMappingProvider.Provider = provider;
             var connection = new FakeConnection(){CurrentState = ConnectionState.Open};
             var cmd = new FakeCommand(connection, new CommandResult[]{new ReaderCommandResult(){Result = new FakeDataReader(new DataTable())}, });

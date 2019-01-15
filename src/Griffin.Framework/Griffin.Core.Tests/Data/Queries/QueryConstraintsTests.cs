@@ -13,7 +13,7 @@ namespace Griffin.Core.Tests.Data.Queries
             var constraints = new QueryConstraints<User>();
             Action actual = () => constraints.SortBy("Arne");
 
-            actual.ShouldThrow<ArgumentException>();
+            actual.Should().Throw<ArgumentException>();
         }
 
         [Fact]

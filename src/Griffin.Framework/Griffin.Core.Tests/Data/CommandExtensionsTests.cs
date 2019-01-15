@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Griffin.AdoNetFakes;
 using Griffin.Data;
 using Xunit;
 using FluentAssertions;
+using NSubstitute.ExceptionExtensions;
 using CommandExtensions = Griffin.Data.CommandExtensions;
 
 namespace Griffin.Core.Tests.Data
@@ -21,7 +18,7 @@ namespace Griffin.Core.Tests.Data
             IDbCommand sut = null;
             Action actual =  () => sut.AddParameter("name", "arne");
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -31,7 +28,7 @@ namespace Griffin.Core.Tests.Data
             var sut = new FakeCommand();
             Action actual = () => CommandExtensions.AddParameter(sut, null, "arne");
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-﻿namespace Griffin.Data.Mapper
+﻿namespace Griffin.Data.Mapper.Values
 {
     /// <summary>
     ///     Used by the adapters in <see cref="PropertyMapping{TEntity}" />.

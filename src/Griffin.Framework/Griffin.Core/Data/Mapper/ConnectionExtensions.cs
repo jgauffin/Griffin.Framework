@@ -49,7 +49,7 @@ namespace Griffin.Data.Mapper
             if (connection == null) throw new ArgumentNullException("connection");
             if (constraints == null) throw new ArgumentNullException("constraints");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -87,10 +87,20 @@ namespace Griffin.Data.Mapper
             if (connection == null) throw new ArgumentNullException("connection");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
-                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
+                if (!query.Trim().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                {
+                    var crudMapper = mapping as ICrudEntityMapper<TEntity>;
+                    if (crudMapper == null)
+                        throw new MappingException(typeof(TEntity), "Mapping must be of type ICrudEntityMapper<T>.");
+
+                    cmd.CommandText = $"SELECT * FROM {crudMapper.TableName} WHERE ";
+                }
+                else
+                    cmd.CommandText = query;
+                
                 cmd.ApplyQuerySql(mapping, query, parameters);
                 return cmd.FirstOrDefault<TEntity>();
             }
@@ -132,7 +142,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -177,7 +187,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.ApplyQuerySql(mapping, query, parameters);
@@ -208,7 +218,7 @@ namespace Griffin.Data.Mapper
         /// <param name="connection">Connection to create and execute our command on</param>
         public static void Truncate<TEntity>(this IDbConnection connection)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
                 try
@@ -244,7 +254,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
                 try
@@ -255,7 +265,7 @@ namespace Griffin.Data.Mapper
                     {
                         var id = cmd.ExecuteScalar();
                         if (id != null && id != DBNull.Value)
-                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                            mapper.Properties[keys[0].Key].SetProperty(entity, id);
                         return id;
                     }
                     return cmd.ExecuteScalar();
@@ -285,7 +295,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
                 try
@@ -320,7 +330,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
                 try
@@ -364,7 +374,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateCommand())
             {
                 try
@@ -508,7 +518,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
 
             var cmd = connection.CreateDbCommand();
             try
@@ -619,7 +629,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return ToList(connection, mapping, query, parameters);
         }
 

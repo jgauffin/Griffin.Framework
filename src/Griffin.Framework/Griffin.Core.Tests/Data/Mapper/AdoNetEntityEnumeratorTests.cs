@@ -78,7 +78,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, true);
             Action actual = sut.Reset;
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
 
@@ -149,7 +149,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             var sut = new AdoNetEntityEnumerator<string>(cmd, reader, mapper, false);
             Action actual = () => tmp = sut.Current;
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
         [Fact]

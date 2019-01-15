@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 
-namespace Griffin.Data.Mapper
+namespace Griffin.Data.Mapper.Values
 {
     /// <summary>
     ///     Used to convert the database column value and assign it to the property/field in the entity.
@@ -41,6 +41,10 @@ namespace Griffin.Data.Mapper
                 IsPrimaryKey = true;
         }
 
+        internal ColumnToPropertyValueHandler ColumnToPropertyAdapter2 { get; set; }
+
+        internal PropertyToColumnValueHandler<TEntity> PropertyToColumnAdapter2 { get; set; }
+
         /// <summary>
         ///     Gets or sets the type of the property.
         /// </summary>
@@ -61,7 +65,7 @@ namespace Griffin.Data.Mapper
         /// </remarks>
         public object NullValue
         {
-            get { return _nullValue; }
+            get => _nullValue;
             set
             {
                 IsNullable = true;
@@ -73,18 +77,12 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Determines if this property can be written to
         /// </summary>
-        public bool CanWrite
-        {
-            get { return _setter != null; }
-        }
+        public bool CanWrite => _setter != null;
 
         /// <summary>
         ///     Determines if this property can be read
         /// </summary>
-        public bool CanRead
-        {
-            get { return _getter != null; }
-        }
+        public bool CanRead => _getter != null;
 
         /// <summary>
         ///     This property is a primary key
@@ -109,9 +107,10 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Used to convert the database value to the type used by the property
         /// </summary>
+        [Obsolete("Use GetPropertyValue instead.")]
         public ValueHandler ColumnToPropertyAdapter
         {
-            get { return _columnToPropertyAdapter; }
+            get => _columnToPropertyAdapter;
             set
             {
                 if (value == null)
@@ -124,9 +123,10 @@ namespace Griffin.Data.Mapper
         /// <summary>
         ///     Used to convert the property to the type used by the column.
         /// </summary>
+        [Obsolete("Use GetColumnValue for access")]
         public ValueHandler PropertyToColumnAdapter
         {
-            get { return _propertyToColumnAdapter; }
+            get => _propertyToColumnAdapter;
             set
             {
                 if (value == null)
@@ -154,23 +154,27 @@ namespace Griffin.Data.Mapper
 
             try
             {
-                var adapted = _columnToPropertyAdapter(value);
+                var adapted = ConvertColumnValueToPropertyValue(value, source);
                 if (value == DBNull.Value)
                 {
                     if (!IsNullable || !_nullValueIsSet)
                         return;
                     adapted = NullValue;
                 }
+
                 _setter((TEntity) destination, adapted);
             }
             catch (IndexOutOfRangeException ex)
             {
-                throw new MappingException(typeof(TEntity), "Property " + typeof(TEntity) + "." + PropertyName + " cannot be mapped since column '" + ColumnName + "' do not exist.", ex);
+                throw new MappingException(typeof(TEntity),
+                    "Property " + typeof(TEntity) + "." + PropertyName + " cannot be mapped since column '" +
+                    ColumnName + "' do not exist.", ex);
             }
             catch (Exception exception)
             {
-                throw new MappingException(typeof (TEntity),
-                    string.Format("Property {0}.{1} cannot be converted from column value column value type '{2}' to property type '{3}'.",
+                throw new MappingException(typeof(TEntity),
+                    string.Format(
+                        "Property {0}.{1} cannot be converted from column value column value type '{2}' to property type '{3}'.",
                         typeof(TEntity), PropertyName, value.GetType().FullName, PropertyType), exception);
             }
         }
@@ -179,13 +183,21 @@ namespace Griffin.Data.Mapper
         {
             if (entity == null) throw new ArgumentNullException("entity");
             if (!CanRead)
-                throw new MappingException(typeof (TEntity), "Property '" + PropertyName + "' is not readable.");
+                throw new MappingException(typeof(TEntity), "Property '" + PropertyName + "' is not readable.");
 
             var value = _getter((TEntity) entity);
             if (IsNullable && value != null && value.Equals(NullValue))
                 value = DBNull.Value;
 
-            return _propertyToColumnAdapter(value);
+            if (PropertyToColumnAdapter2 != null)
+            {
+                var ctx = new PropertyToColumnValueContext<TEntity>(value, (TEntity) entity);
+                value = PropertyToColumnAdapter2(ctx);
+            }
+            else if (_propertyToColumnAdapter != null)
+                value = _propertyToColumnAdapter(value);
+
+            return value;
         }
 
         /// <summary>
@@ -200,12 +212,12 @@ namespace Griffin.Data.Mapper
         ///         Will attempt to convert the value if it's not directly assignable to the property type.
         ///     </para>
         /// </remarks>
-        public void SetColumnValue(object entity, object columnValue)
+        public void SetProperty(object entity, object columnValue)
         {
             if (!CanWrite)
-                throw new MappingException(typeof (TEntity), "Property '" + PropertyName + "' is not writable.");
+                throw new MappingException(typeof(TEntity), "Property '" + PropertyName + "' is not writable.");
 
-            var adapted = _columnToPropertyAdapter(columnValue);
+            var adapted = ConvertColumnValueToPropertyValue(columnValue, null);
             if (adapted == DBNull.Value)
             {
                 if (!IsNullable || !_nullValueIsSet)
@@ -217,6 +229,47 @@ namespace Griffin.Data.Mapper
             if (!PropertyType.IsInstanceOfType(adapted))
                 adapted = Convert.ChangeType(adapted, PropertyType);
             _setter((TEntity) entity, adapted);
+        }
+
+
+        public object GetPropertyValue(IDataRecord record)
+        {
+            var value = record[ColumnName];
+
+            var context = new ColumnToPropertyValueContext(typeof(TEntity), value, record);
+            if (ColumnToPropertyAdapter2 != null)
+                return ColumnToPropertyAdapter2(context);
+
+            if (_columnToPropertyAdapter != null)
+                return _columnToPropertyAdapter(value);
+
+            return value;
+        }
+
+        /// <summary>
+        ///     Convert the value in the specified record and assign it to the property in the entity.
+        /// </summary>
+        /// <param name="source">Database record</param>
+        /// <param name="destination">Entity instance</param>
+        /// <remarks>
+        ///     <para>Will exit the method without any assignment if the value is <c>DBNull.Value</c>.</para>
+        /// </remarks>
+        public void Map(IDataRecord source, TEntity destination)
+        {
+            if (!CanWrite)
+                return;
+
+            var value = source[ColumnName];
+            var adapted = ConvertColumnValueToPropertyValue(value, source);
+            if (value == DBNull.Value)
+            {
+                if (NullValue != null)
+                    adapted = NullValue;
+                else
+                    return;
+            }
+
+            _setter(destination, adapted);
         }
 
         /// <summary>
@@ -238,35 +291,24 @@ namespace Griffin.Data.Mapper
         public void NotForQueries()
         {
             if (IsPrimaryKey)
-                throw new InvalidOperationException("Primary key properties must be writable. Property: " + PropertyName);
+                throw new InvalidOperationException(
+                    "Primary key properties must be writable. Property: " + PropertyName);
 
             _setter = null;
         }
 
-        /// <summary>
-        ///     Convert the value in the specified record and assign it to the property in the entity.
-        /// </summary>
-        /// <param name="source">Database record</param>
-        /// <param name="destination">Entity instance</param>
-        /// <remarks>
-        ///     <para>Will exit the method without any assignment if the value is <c>DBNull.Value</c>.</para>
-        /// </remarks>
-        public void Map(IDataRecord source, TEntity destination)
+        private object ConvertColumnValueToPropertyValue(object columnValue, IDataRecord record)
         {
-            if (!CanWrite)
-                return;
-
-            var value = source[ColumnName];
-            var adapted = _columnToPropertyAdapter(value);
-            if (value == DBNull.Value)
+            var adapted = columnValue;
+            if (ColumnToPropertyAdapter2 != null)
             {
-                if (NullValue != null)
-                    adapted = NullValue;
-                else
-                    return;
+                var ctx = new ColumnToPropertyValueContext(typeof(TEntity), columnValue, record);
+                adapted = ColumnToPropertyAdapter2(ctx);
             }
+            else if (_columnToPropertyAdapter != null)
+                adapted = _columnToPropertyAdapter(columnValue);
 
-            _setter(destination, adapted);
+            return adapted;
         }
     }
 }

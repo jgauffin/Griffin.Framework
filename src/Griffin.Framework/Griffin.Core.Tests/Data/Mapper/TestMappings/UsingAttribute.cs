@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Core.Tests.Data.Mapper.TestMappings
 {
@@ -128,7 +129,7 @@ namespace Griffin.Core.Tests.Data.Mapper.TestMappings
         /// </remarks>
         public ICommandBuilder CommandBuilder { get; private set; }
 
-      
+        IDictionary<string, IPropertyMapping> ICrudEntityMapper.Properties => throw new NotImplementedException();
     }
 
 }

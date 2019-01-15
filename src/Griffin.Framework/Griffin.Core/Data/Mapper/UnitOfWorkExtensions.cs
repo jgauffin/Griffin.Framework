@@ -47,7 +47,7 @@ namespace Griffin.Data.Mapper
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
             if (constraints == null) throw new ArgumentNullException("constraints");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -85,10 +85,9 @@ namespace Griffin.Data.Mapper
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             using (var cmd = unitOfWork.CreateDbCommand())
             {
-                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
                 cmd.ApplyQuerySql(mapping, query, parameters);
                 return cmd.FirstOrDefault<TEntity>();
             }
@@ -130,7 +129,7 @@ namespace Griffin.Data.Mapper
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -175,7 +174,7 @@ namespace Griffin.Data.Mapper
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             using (var cmd = unitOfWork.CreateDbCommand())
             {
                 cmd.ApplyQuerySql(mapping, query, parameters);
@@ -191,7 +190,7 @@ namespace Griffin.Data.Mapper
         /// <param name="unitOfWork">Uow to extend</param>
         public static void Truncate<TEntity>(this IAdoNetUnitOfWork unitOfWork)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
                 mapper.CommandBuilder.TruncateCommand(cmd);
@@ -212,17 +211,17 @@ namespace Griffin.Data.Mapper
         /// uow.First(new { FirstName = "A%", LastName = "B%" });
         /// </code>
         /// </example>
-        public static IList<TEntity> ToList<TEntity>(this IAdoNetUnitOfWork unitOfWork, dynamic parameters)
+        public static IList<TEntity> ToList<TEntity>(this IAdoNetUnitOfWork unitOfWork, object parameters)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
-                cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapper.TableName);
-                var args = ObjectExtensions.ToDictionary(parameters);
+                cmd.CommandText = $"SELECT * FROM {mapper.TableName} WHERE ";
+                var args = parameters.ToDictionary();
                 foreach (var parameter in args)
                 {
-                    Data.CommandExtensions.AddParameter(cmd, parameter.Key, parameter.Value);
-                    if (parameter.Value is string && parameter.Value.Contains("%"))
+                    cmd.AddParameter(parameter.Key, parameter.Value);
+                    if (parameter.Value is string value && value.Contains("%"))
                         cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " LIKE @" + parameter.Key + " AND ";
                     else
                         cmd.CommandText += mapper.Properties[parameter.Key].ColumnName + " = @" + parameter.Key + " AND ";
@@ -243,7 +242,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">The entity to create.</param>
         public static object Insert<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
                 try
@@ -254,7 +253,7 @@ namespace Griffin.Data.Mapper
                     {
                         var id = cmd.ExecuteScalar();
                         if (id != null && id != DBNull.Value)
-                            mapper.Properties[keys[0].Key].SetColumnValue(entity, id);
+                            mapper.Properties[keys[0].Key].SetProperty(entity, id);
                         return id;
                     }
                     return cmd.ExecuteScalar();
@@ -274,7 +273,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">The entity, must have the PK assigned.</param>
         public static void Update<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
                 try
@@ -297,7 +296,7 @@ namespace Griffin.Data.Mapper
         /// <param name="entity">The entity, must have the PK assigned.</param>
         public static void Delete<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = unitOfWork.CreateCommand())
             {
                 try
@@ -398,9 +397,8 @@ namespace Griffin.Data.Mapper
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
-
-                var cmd = unitOfWork.CreateDbCommand();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
+            var cmd = unitOfWork.CreateDbCommand();
             try
             {
                 cmd.ApplyQuerySql(mapping, query, parameters);
@@ -454,7 +452,7 @@ namespace Griffin.Data.Mapper
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
 
             var cmd = unitOfWork.CreateDbCommand();
             try
@@ -508,7 +506,7 @@ namespace Griffin.Data.Mapper
         /// </code>
         /// </example>
         public static IEnumerable<TEntity> ToEnumerable<TEntity>(this IAdoNetUnitOfWork unitOfWork,
-            bool ownsConnection, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
+            bool ownsConnection, IEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
@@ -557,7 +555,7 @@ namespace Griffin.Data.Mapper
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return ToList(unitOfWork, mapping, query, parameters);
         }
 
@@ -596,67 +594,6 @@ namespace Griffin.Data.Mapper
         /// ]]>
         /// </code>
         /// </example>
-        public static IList<TEntity> ToList<TEntity>(this IAdoNetUnitOfWork unitOfWork, ICrudEntityMapper<TEntity> mapping, string query, params object[] parameters)
-        {
-            if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
-            if (mapping == null) throw new ArgumentNullException("mapping");
-
-            var cmd = unitOfWork.CreateDbCommand();
-            try
-            {
-                cmd.ApplyQuerySql(mapping, query, parameters);
-
-                var items = new List<TEntity>();
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var entity = mapping.Create(reader);
-                        mapping.Map(reader, entity);
-                        items.Add((TEntity)entity);
-                    }
-                }
-                return items;
-            }
-            catch (Exception e)
-            {
-                throw cmd.CreateDataException(e);
-            }
-        }
-
-
-        /// <summary>
-        ///     Generate a complete list before returning.
-        /// </summary>
-        /// <typeparam name="TEntity">Type of entity to map</typeparam>
-        /// <param name="unitOfWork">Connection to invoke <c>ExecuteReader()</c> on (through a created <c>DbCommand</c>).</param>
-        /// <param name="mapping">Mapping used to translate from db table rows to .NET object</param>
-        /// <param name="query">Query</param>
-        /// <param name="parameters">Anonymous object (<c>new { id = dto.ProjectId, @minDate = dto.MinDate }</c>), a dictionary or a value array</param>
-        /// <returns>A list.</returns>
-        /// <remarks>
-        ///     <para>
-        ///         For more information about the "query" and "parameters" arguments, see <see cref="CommandExtensions.ApplyQuerySql{TEntity}"/>.
-        ///     </para>
-        ///     <para>
-        ///         The returned enumerator will not map each row until it's requested. To be able to do that the
-        ///         connection/command/datareader is
-        ///         kept open until the enumerator is disposed. Hence it's important that you make sure that the enumerator is
-        ///         disposed when you are
-        ///         done with it.
-        ///     </para>
-        ///     <para>Uses <see cref="EntityMappingProvider" /> to find the correct <c><![CDATA[IEntityMapper<TEntity>]]></c>.</para>
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// // All these examples are valid:
-        /// <![CDATA[
-        /// var users = unitOfWork.ToList<User>("SELECT * FROM Users WHERE Age = 37");
-        /// var users = unitOfWork.ToList<User>("SELECT * FROM Users WHERE FirstName = @name", new { name = user.FirstName });
-        /// var users = unitOfWork.ToList<User>("SELECT * FROM Users WHERE FirstName = @1 AND Age < @2", 'A%', 35);
-        /// ]]>
-        /// </code>
-        /// </example>
         public static IList<TEntity> ToList<TEntity>(this IAdoNetUnitOfWork unitOfWork, IEntityMapper<TEntity> mapping, string query, params object[] parameters)
         {
             if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
@@ -665,7 +602,7 @@ namespace Griffin.Data.Mapper
             var cmd = unitOfWork.CreateDbCommand();
             try
             {
-                cmd.ApplyQuerySql<TEntity>(mapping, query, parameters);
+                cmd.ApplyQuerySql(mapping, query, parameters);
 
                 var items = new List<TEntity>();
                 using (var reader = cmd.ExecuteReader())

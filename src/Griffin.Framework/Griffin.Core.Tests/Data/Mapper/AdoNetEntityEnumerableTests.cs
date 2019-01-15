@@ -24,7 +24,7 @@ namespace Griffin.Core.Tests.Data.Mapper
             sut.GetEnumerator();
             Action actual = () => sut.GetEnumerator();
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
     }

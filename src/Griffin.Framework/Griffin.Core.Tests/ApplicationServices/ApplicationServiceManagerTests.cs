@@ -4,6 +4,7 @@ using FluentAssertions;
 using Griffin.ApplicationServices;
 using Griffin.Container;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Griffin.Core.Tests.ApplicationServices
@@ -28,7 +29,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.Settings = settingsRepos;
             Action actual = sut.Start;
 
-            actual.ShouldThrow<AggregateException>().And.InnerExceptions.Count.Should().Be(2);
+            actual.Should().Throw<AggregateException>();
             okService.Received().Start();
         }
 
@@ -204,7 +205,7 @@ namespace Griffin.Core.Tests.ApplicationServices
             sut.Settings = settingsRepos;
             Action actual = sut.Stop;
 
-            actual.ShouldThrow<AggregateException>();
+            actual.Should().Throw<AggregateException>();
             okService.Received().Stop();
         }
 

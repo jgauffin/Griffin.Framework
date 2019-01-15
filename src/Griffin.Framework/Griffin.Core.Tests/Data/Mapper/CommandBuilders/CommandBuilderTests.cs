@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
+using Griffin.Data.Mapper.Values;
 using NSubstitute;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
 
             Action actual = () => new CommandBuilder(null);
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -71,7 +72,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual =  () => sut.InsertCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
         [Fact]
@@ -158,7 +159,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.UpdateCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
         [Fact]
@@ -177,7 +178,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.UpdateCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
         [Fact]
@@ -246,7 +247,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.UpdateCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
 
@@ -266,7 +267,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.DeleteCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
         [Fact]
@@ -328,7 +329,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.DeleteCommand(command, entity);
 
-            actual.ShouldThrow<DataException>();
+            actual.Should().Throw<DataException>();
         }
 
 

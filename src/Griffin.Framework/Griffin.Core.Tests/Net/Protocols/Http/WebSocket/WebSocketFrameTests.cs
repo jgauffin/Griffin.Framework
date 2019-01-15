@@ -114,7 +114,8 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.WebSocket
             frame.Payload.ReadByte().Should().Be(buffer[6] ^ maskingKey[2]);
             frame.Payload.ReadByte().Should().Be(buffer[7] ^ maskingKey[3]);
 
-            Assert.DoesNotThrow(() => frame.Unmask());
+            //do not throw an exception
+            frame.Unmask();
         }
 
     }

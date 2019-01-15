@@ -32,35 +32,5 @@ namespace Griffin.Core.Tests.Data.Mapper
 
             sut.Message.Should().Be("Hello");
         }
-
-        [Fact]
-        public void serialization_works_with_datacontract()
-        {
-            var serializer = new DataContractSerializer(typeof(MappingException));
-            var ms = new MemoryStream();
-
-            var sut = new MappingException(typeof(string), "Hello");
-            serializer.WriteObject(ms, sut);
-            ms.Position = 0;
-            var actual = (MappingException)serializer.ReadObject(ms);
-
-            actual.Message.Should().Be("Hello");
-            actual.EntityTypeName.Should().Be(typeof(string).FullName);
-        }
-
-        [Fact]
-        public void serialization_works_with_BinaryFormatter()
-        {
-            var serializer = new BinaryFormatter();
-            var ms = new MemoryStream();
-
-            var sut = new MappingException(typeof(string), "Hello");
-            serializer.Serialize(ms, sut);
-            ms.Position = 0;
-            var actual = (MappingException)serializer.Deserialize(ms);
-
-            actual.Message.Should().Be("Hello");
-            actual.EntityTypeName.Should().Be(typeof(string).FullName);
-        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Griffin.Data.Mapper
 {
@@ -20,6 +21,7 @@ namespace Griffin.Data.Mapper
     {
         private static IMappingProvider _provider = new AssemblyScanningMappingProvider();
         private static bool _scanned = false;
+        private static Dictionary<Type, IEntityMapper> _mirrorMappers = new Dictionary<Type, IEntityMapper>();
 
         /// <summary>
         ///     Provider to use.
@@ -40,12 +42,50 @@ namespace Griffin.Data.Mapper
         }
 
         /// <summary>
+        /// Add mappers which take for granted that table columns match class properties  (in names and count)
+        /// </summary>
+        public static bool UseAutoMappers { get; set; }
+
+        /// <summary>
         ///     Get a mapper.
         /// </summary>
         /// <typeparam name="TEntity">Type of entity to get a mapper for.</typeparam>
         /// <exception cref="MappingNotFoundException">Did not find a mapper for the specified entity.</exception>
         /// <returns></returns>
-        public static ICrudEntityMapper<TEntity> GetMapper<TEntity>()
+        public static IEntityMapper<TEntity> GetEntityMapper<TEntity>()
+        {
+            EnsureThatAssembliesHaveBeenScanned();
+
+            var mapper1 = _provider.GetBase<TEntity>();
+            var mapper = mapper1 as IEntityMapper<TEntity>;
+            if (mapper != null)
+                return mapper;
+
+            if (!UseAutoMappers)
+            {
+                throw new MappingException(typeof(TEntity),
+                    "Expected to find a mapper for " +
+                    typeof(TEntity).FullName);
+            }
+
+            IEntityMapper em;
+            if (_mirrorMappers.TryGetValue(typeof(TEntity), out em) && em is IEntityMapper<TEntity>)
+            {
+                return (EntityMapper<TEntity>)em;
+            }
+
+            em = new MirrorMapper<TEntity>();
+            _mirrorMappers[typeof(TEntity)] = em;
+            return (IEntityMapper<TEntity>)em;
+        }
+
+        /// <summary>
+        ///     Get a mapper.
+        /// </summary>
+        /// <typeparam name="TEntity">Type of entity to get a mapper for.</typeparam>
+        /// <exception cref="MappingNotFoundException">Did not find a mapper for the specified entity.</exception>
+        /// <returns></returns>
+        public static ICrudEntityMapper<TEntity> GetCrudMapper<TEntity>()
         {
             EnsureThatAssembliesHaveBeenScanned();
 

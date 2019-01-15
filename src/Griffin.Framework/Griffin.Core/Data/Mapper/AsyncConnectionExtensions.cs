@@ -27,7 +27,7 @@ namespace Griffin.Data.Mapper
         /// </remarks>
         public static async Task DeleteAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 try
@@ -72,7 +72,7 @@ namespace Griffin.Data.Mapper
         /// </example>
         public static async Task DeleteAsync<TEntity>(this IDbConnection connection, object constraints)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 try
@@ -174,7 +174,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -228,7 +228,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.ApplyQuerySql(mapping, query, parameters);
@@ -283,7 +283,7 @@ namespace Griffin.Data.Mapper
             if (connection == null) throw new ArgumentNullException("connection");
             if (constraints == null) throw new ArgumentNullException("constraints");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -330,7 +330,7 @@ namespace Griffin.Data.Mapper
             if (connection == null) throw new ArgumentNullException("connection");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 cmd.CommandText = string.Format("SELECT * FROM {0} WHERE ", mapping.TableName);
@@ -357,7 +357,7 @@ namespace Griffin.Data.Mapper
         /// </remarks>
         public static async Task<object> InsertAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 try
@@ -463,7 +463,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
 
             var cmd = connection.CreateDbCommand();
             try
@@ -583,7 +583,7 @@ namespace Griffin.Data.Mapper
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var mapping = EntityMappingProvider.GetMapper<TEntity>();
+            var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();
             return await ToListAsync(connection, mapping, query, parameters);
         }
 
@@ -738,7 +738,7 @@ namespace Griffin.Data.Mapper
         /// </remarks>
         public static async Task UpdateAsync<TEntity>(this IDbConnection connection, TEntity entity)
         {
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = connection.CreateDbCommand())
             {
                 try

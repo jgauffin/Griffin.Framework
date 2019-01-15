@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Griffin.Data.Mapper;
+using Griffin.Data.Mapper.Values;
 
 namespace Griffin.Data.Sqlite.IntegrationTests.Entites
 {

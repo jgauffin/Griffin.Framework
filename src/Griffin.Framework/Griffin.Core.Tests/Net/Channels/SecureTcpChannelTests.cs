@@ -12,6 +12,7 @@ using Griffin.Net.Channels;
 using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.Strings;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Channels
@@ -71,7 +72,7 @@ namespace Griffin.Core.Tests.Net.Channels
             var sut = CreateClientChannel(slice, encoder, decoder);
             Action actual = () => sut.Assign(_helper.Client);
 
-            actual.ShouldThrow<InvalidOperationException>();
+            actual.Should().Throw<InvalidOperationException>();
         }
 
         [Fact]

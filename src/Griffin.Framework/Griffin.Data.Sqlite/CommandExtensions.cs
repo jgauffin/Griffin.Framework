@@ -22,7 +22,7 @@ namespace Griffin.Data.Sqlite
             if (pageNumber <= 0) throw new ArgumentOutOfRangeException("pageNumber");
             if (itemsPerPage <= 0) throw new ArgumentOutOfRangeException("itemsPerPage");
 
-            var mapper = EntityMappingProvider.GetMapper<TEntity>();
+            var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             var db = new SqliteCommandBuilder(mapper);
             db.Paging(cmd, pageNumber, itemsPerPage);
         }
