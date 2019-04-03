@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.1.0</Version>
-    <PackageReleaseNotes>Larger rehaul of the Data mapper.</PackageReleaseNotes>
+    <Version>2.1.1</Version>
+    <PackageReleaseNotes>Data mapper will now allow named query parameters with names other than column names</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

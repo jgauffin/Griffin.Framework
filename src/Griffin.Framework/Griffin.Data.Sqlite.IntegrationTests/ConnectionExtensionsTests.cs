@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
@@ -18,6 +19,11 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         public ConnectionExtensionsTests()
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
+            var provider = new AssemblyScanningMappingProvider();
+            provider.Scan(Assembly.GetExecutingAssembly());
+            EntityMappingProvider.Provider = provider;
+
+
             //EntityMappingProvider.Provider = new AssemblyScanningMappingProvider();
             _dbFile = Path.GetTempFileName();
             var cs = "URI=file:" + _dbFile;

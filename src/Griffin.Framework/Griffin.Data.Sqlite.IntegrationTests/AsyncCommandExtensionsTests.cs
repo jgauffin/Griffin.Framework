@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
@@ -20,7 +21,9 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         public AsyncCommandExtensionsTests()
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
-
+            var provider = new AssemblyScanningMappingProvider();
+            provider.Scan(Assembly.GetExecutingAssembly());
+            EntityMappingProvider.Provider = provider;
             _dbFile = Path.GetTempFileName();
             var cs = "URI=file:" + _dbFile;
             _connection = new SQLiteConnection(cs);
@@ -61,10 +64,10 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         {
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT * FROM Users";
+                cmd.CommandText = "SELECT * FROM Users WHERE Id = 8338";
                 Action actual = () => cmd.FirstAsync<User>().Wait();
 
-                actual.ShouldThrow<EntityNotFoundException>();
+                actual.Should().Throw<EntityNotFoundException>();
             }
         }
 
@@ -87,8 +90,8 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT * FROM Users WHERE FirstName = @firstName";
-                cmd.AddParameter("firstName", "First1");
+                cmd.CommandText = "SELECT * FROM Users WHERE FirstName = @someName";
+                cmd.AddParameter("someName", "First1");
                 var actual = await cmd.FirstOrDefaultAsync<User>();
 
                 actual.Should().NotBeNull();
@@ -136,7 +139,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task tolist()
+        public async Task ToList_should_return_rows()
         {
             _userTable.Insert(_connection, 50);
             IList<User> users;

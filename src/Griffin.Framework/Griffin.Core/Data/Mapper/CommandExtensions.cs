@@ -171,11 +171,9 @@ namespace Griffin.Data.Mapper
                 var propertyName = kvp.Key;
                 var value = kvp.Value;
 
-                if (crudMapper != null)
+                // We can use custom names, thus we might not get a match.
+                if (crudMapper != null && crudMapper.Properties.TryGetValue(kvp.Key, out var propertyMapping))
                 {
-                    if (!crudMapper.Properties.TryGetValue(kvp.Key, out var propertyMapping))
-                        throw new DataException(typeof(TEntity).FullName + " does not have a property named " + kvp.Key + ".");
-
                     try
                     {
                         value = propertyMapping.PropertyToColumnAdapter(kvp.Value);
@@ -698,16 +696,14 @@ namespace Griffin.Data.Mapper
         /// <param name="mapper">Mapper, used for short queries</param>
         internal static void ApplySelectQuery<TEntity>(this IDbCommand command, string query, IEntityMapper<TEntity> mapper)
         {
-            if (!query.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-            {
-                var crudMapper = mapper.AsCrudMapper();
-                command.CommandText = $"SELECT * FROM {crudMapper.TableName} WHERE {query}";
-            }
-            else
+            if (query.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
             {
                 command.CommandText = query;
+                return;
             }
 
+            var crudMapper = mapper.AsCrudMapper();
+            command.CommandText = $"SELECT * FROM {crudMapper.TableName} WHERE {query}";
         }
     }
 }

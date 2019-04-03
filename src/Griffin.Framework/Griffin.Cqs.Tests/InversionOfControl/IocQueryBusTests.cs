@@ -21,7 +21,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new IocQueryBus(null);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
 
@@ -40,7 +40,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
             var sut = new IocQueryBus(container);
             Action x = () => sut.QueryAsync(new TestQuery()).Wait();
 
-            x.ShouldThrow<OnlyOneHandlerAllowedException>();
+            x.Should().Throw<OnlyOneHandlerAllowedException>();
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
             var sut = new IocQueryBus(container);
             Action x = () => sut.QueryAsync(new TestQuery()).Wait();
 
-            x.ShouldThrow<CqsHandlerMissingException>();
+            x.Should().Throw<CqsHandlerMissingException>();
         }
 
         [Fact]

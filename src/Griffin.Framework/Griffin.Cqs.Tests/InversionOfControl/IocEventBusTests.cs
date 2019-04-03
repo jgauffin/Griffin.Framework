@@ -23,7 +23,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new IocEventBus(null);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
 

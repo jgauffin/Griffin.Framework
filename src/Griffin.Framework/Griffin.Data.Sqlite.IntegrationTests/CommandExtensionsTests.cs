@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.CommandBuilders;
@@ -19,6 +20,10 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         public CommandExtensionsTests()
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
+            var provider = new AssemblyScanningMappingProvider();
+            provider.Scan(Assembly.GetExecutingAssembly());
+            EntityMappingProvider.Provider = provider;
+
 
             _dbFile = Path.GetTempFileName();
             var cs = "URI=file:" + _dbFile;
@@ -63,7 +68,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
                 cmd.CommandText = "SELECT * FROM Users";
                 Action actual = () => cmd.First<User>();
 
-                actual.ShouldThrow<EntityNotFoundException>();
+                actual.Should().Throw<EntityNotFoundException>();
             }
         }
 

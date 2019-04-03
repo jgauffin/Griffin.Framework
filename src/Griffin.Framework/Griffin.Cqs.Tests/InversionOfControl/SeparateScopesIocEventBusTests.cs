@@ -18,7 +18,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new SeparateScopesIocEventBus(null, registry);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new SeparateScopesIocEventBus(container, null);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
 

@@ -36,7 +36,7 @@ namespace Griffin.Cqs.Tests.Authorization
 
             Action actual = () => new AuthorizeAttribute(null);
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new QueuedEventBus(null, 1);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
 

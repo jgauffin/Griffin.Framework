@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
@@ -21,6 +23,9 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         public AsyncUnitOfWorkExtensionsTests()
         {
             CommandBuilderFactory.Assign(mapper => new SqliteCommandBuilder(mapper));
+            var provider = new AssemblyScanningMappingProvider();
+            provider.Scan(Assembly.GetExecutingAssembly());
+            EntityMappingProvider.Provider = provider;
 
             _dbFile = Path.GetTempFileName();
             var cs = "URI=file:" + _dbFile;
@@ -67,6 +72,16 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             actual.LastName.Should().Be(expected.LastName);
         }
 
+        [Fact]
+        public async Task First_with_short_query()
+        {
+            _userTable.Insert(_connection, 50);
+
+            var sql = "FirstName = @name";
+            var users = await _uow.ToListAsync<User>(sql, new { name = _userTable.Users[0].FirstName });
+
+            users.Count.Should().BeGreaterThan(0);
+        }
 
 
 
@@ -89,7 +104,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
             _userTable.Insert(_connection, 50);
             var expected = _userTable.Users[0];
 
-            await _uow.DeleteAsync<User>(new {expected.Id});
+            await _uow.DeleteAsync<User>(new { expected.Id });
             _uow.SaveChanges();
 
             var actual = await _connection.FirstOrDefaultAsync<User>(new { expected.Id });

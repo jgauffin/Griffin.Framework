@@ -3,7 +3,11 @@ using System.Data;
 
 namespace Griffin.Data.Mapper
 {
-    internal class MirrorMapper<T> : IEntityMapper<T>, IEntityMapper
+    /// <summary>
+    /// Generates a mapping where property names and column names are identical
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class MirrorMapper<T> : IEntityMapper<T>, IEntityMapper
     {
         private readonly Type _type = typeof(T);
 

@@ -41,7 +41,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action actual = () => sut.Map<SupriseSucceeded>(GetType());
 
-            actual.ShouldThrow<ArgumentException>();
+            actual.Should().Throw<ArgumentException>();
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action actual = () => sut.Lookup(GetType());
 
-            actual.ShouldThrow<ArgumentException>();
+            actual.Should().Throw<ArgumentException>();
         }
 
         [Fact]

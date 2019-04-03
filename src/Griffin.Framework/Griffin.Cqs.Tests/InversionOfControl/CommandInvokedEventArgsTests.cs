@@ -20,7 +20,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action actual = () => new CommandInvokedEventArgs(scope, null);
 
-            actual.ShouldThrow<ArgumentNullException>();
+            actual.Should().Throw<ArgumentNullException>();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
             Action x = () => new IocCommandBus(null);
 
-            x.ShouldThrow<ArgumentNullException>();
+            x.Should().Throw<ArgumentNullException>();
         }
 
 
@@ -40,7 +40,7 @@ public void may_only_have_one_command_handler_to_avoid_ambiguity()
     var sut = new IocCommandBus(container);
     Action x = () => sut.ExecuteAsync(new TestCommand()).Wait();
 
-    x.ShouldThrow<OnlyOneHandlerAllowedException>();
+    x.Should().Throw<OnlyOneHandlerAllowedException>();
 }
 
         [Fact]
@@ -55,7 +55,7 @@ public void may_only_have_one_command_handler_to_avoid_ambiguity()
             var sut = new IocCommandBus(container);
             Action x = () => sut.ExecuteAsync(new TestCommand()).Wait();
 
-            x.ShouldThrow<CqsHandlerMissingException>();
+            x.Should().Throw<CqsHandlerMissingException>();
         }
 
         [Fact]
