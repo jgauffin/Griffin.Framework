@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Griffin.Data.Mapper
 {
@@ -21,10 +22,25 @@ namespace Griffin.Data.Mapper
         /// <param name="constraints">properties in an anonymous object</param>
         internal static void ApplyConstraints<TEntity>(this IDbCommand cmd, IEntityMapper<TEntity> mapper, object constraints)
         {
+            if (constraints == null)
+                return;
+
             var crudMapper = mapper as ICrudEntityMapper<TEntity>;
+            var dictionary = constraints.ToDictionary();
+            if (dictionary.Count == 0 && (constraints.GetType().IsPrimitive || constraints is string) && crudMapper != null)
+            {
+                var keys = crudMapper.Properties.Where(x => x.Value.IsPrimaryKey).ToList();
+                if (keys.Count != 1)
+                {
+                    throw new MappingException(typeof(TEntity), "Expected to find ONE primary key column.");
+                }
+
+                cmd.AddParameter(keys[0].Value.ColumnName, constraints);
+                return;
+            }
 
             var whereClause = "";
-            foreach (var kvp in constraints.ToDictionary())
+            foreach (var kvp in dictionary)
             {
                 var columnName = kvp.Key;
                 var propertyName = kvp.Key;
@@ -34,7 +50,13 @@ namespace Griffin.Data.Mapper
                 if (crudMapper != null)
                 {
                     if (!crudMapper.Properties.TryGetValue(kvp.Key, out var propertyMapping))
-                        throw new DataException(typeof(TEntity).FullName + " does not have a property named " + kvp.Key + ".");
+                    {
+                        // we just assume that the user specified the column name directly.
+                        whereClause +=
+                            $"{columnName} = {prefix}{propertyName} AND ";
+                        cmd.AddParameter(propertyName, value);
+                        continue;
+                    }
 
                     columnName = propertyMapping.ColumnName;
                     propertyName = propertyMapping.PropertyName;
@@ -52,6 +74,9 @@ namespace Griffin.Data.Mapper
                     $"{columnName} = {prefix}{propertyName} AND ";
                 cmd.AddParameter(propertyName, value);
             }
+
+            if (string.IsNullOrEmpty(whereClause))
+                return;
 
             cmd.CommandText += whereClause.Remove(whereClause.Length - 5, 5);
         }

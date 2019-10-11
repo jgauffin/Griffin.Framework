@@ -79,7 +79,7 @@ namespace Griffin.Data.Mapper
     public class CrudEntityMapper<TEntity> : EntityMapper<TEntity>, ICrudEntityMapper<TEntity>
     {
         private readonly IDictionary<string, IPropertyMapping> _keys = new Dictionary<string, IPropertyMapping>();
-        private ICommandBuilder _builder = null;
+        private ICommandBuilder _builder;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CrudEntityMapper{TEntity}" /> class.
@@ -104,6 +104,9 @@ namespace Griffin.Data.Mapper
         /// <param name="destination">Entity to fill with information</param>
         void IEntityMapper.Map(IDataRecord source, object destination)
         {
+            if (_builder == null)
+                Freeze();
+
             Map(source, (TEntity) destination);
         }
 
@@ -114,16 +117,13 @@ namespace Griffin.Data.Mapper
         ///     <para>Called by the mapping provider when the mapping have been added to it.</para>
         ///     <para>
         ///         The purpose is to allow the mapping implementations to do post process once the mappings have been fully
-        ///         configured. 
+        ///         configured.
         ///     </para>
         /// </remarks>
         public void Freeze()
         {
             _builder = CommandBuilderFactory.Create(this);
-            foreach (var kvp in Properties.Where(x => x.Value.IsPrimaryKey))
-            {
-                _keys.Add(kvp);
-            }
+            foreach (var kvp in Properties.Where(x => x.Value.IsPrimaryKey)) _keys.Add(kvp);
 
             if (_keys.Count != 0)
                 return;
@@ -139,12 +139,13 @@ namespace Griffin.Data.Mapper
         /// <returns>A single item in the array for a single PK column and one entry per column in composite primary key</returns>
         public KeyValuePair<string, object>[] GetKeys(object entity)
         {
+            if (_builder == null)
+                Freeze();
+
             var values = new KeyValuePair<string, object>[_keys.Count];
             var index = 0;
             foreach (var kvp in _keys)
-            {
                 values[index++] = new KeyValuePair<string, object>(kvp.Key, kvp.Value.GetValue(entity));
-            }
             return values;
         }
 
@@ -160,12 +161,17 @@ namespace Griffin.Data.Mapper
         /// </remarks>
         public ICommandBuilder CommandBuilder
         {
-            get { return _builder; }
+            get
+            {
+                if (_builder == null)
+                    Freeze();
+                return _builder;
+            }
         }
 
         private static Action<TEntity, object> CreateSetAccessor(FieldInfo field)
         {
-            var setMethod = new DynamicMethod(field.Name, typeof (void), new[] {typeof (TEntity), typeof (object)});
+            var setMethod = new DynamicMethod(field.Name, typeof(void), new[] {typeof(TEntity), typeof(object)});
             var generator = setMethod.GetILGenerator();
             var local = generator.DeclareLocal(field.DeclaringType);
             generator.Emit(OpCodes.Ldarg_0);
@@ -181,18 +187,15 @@ namespace Griffin.Data.Mapper
                 generator.Emit(OpCodes.Stloc_0, local);
                 generator.Emit(OpCodes.Ldloc_0, local);
             }
+
             generator.Emit(OpCodes.Ldarg_1);
             if (field.FieldType.IsValueType)
-            {
                 generator.Emit(OpCodes.Unbox_Any, field.FieldType);
-            }
             else
-            {
                 generator.Emit(OpCodes.Castclass, field.FieldType);
-            }
             generator.Emit(OpCodes.Stfld, field);
             generator.Emit(OpCodes.Ret);
-            return (Action<TEntity, object>) setMethod.CreateDelegate(typeof (Action<TEntity, object>));
+            return (Action<TEntity, object>) setMethod.CreateDelegate(typeof(Action<TEntity, object>));
         }
     }
 }

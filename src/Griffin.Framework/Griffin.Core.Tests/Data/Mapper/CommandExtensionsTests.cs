@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.Common;
+using System.Data.SqlClient;
 using FluentAssertions;
 using Griffin.AdoNetFakes;
+using Griffin.Core.Tests.Data.Mapper.TestMappings;
 using Griffin.Data;
 using Griffin.Data.Mapper;
 using NSubstitute;
@@ -16,6 +14,43 @@ namespace Griffin.Core.Tests.Data.Mapper
 {
     public class CommandExtensionsTests
     {
+        [Fact]
+        public void ApplyConstraints_should_work_with_a_int_if_there_is_a_primary_key()
+        {
+            var mapper = new OkMapping();
+            var cmd = new SqlCommand();
+
+            cmd.ApplyConstraints(mapper, 1);
+
+            cmd.Parameters[0].As<DbParameter>().Value.Should().Be(1);
+            cmd.Parameters[0].As<DbParameter>().ParameterName.Should().Be("Id");
+        }
+
+        [Fact]
+        public void ApplyConstraints_should_work_with_a_string_if_there_is_a_primary_key()
+        {
+            var mapper = new OkMapping();
+            var cmd = new SqlCommand();
+
+            cmd.ApplyConstraints(mapper,"hey");
+
+            cmd.Parameters[0].As<DbParameter>().Value.Should().Be("hey");
+            cmd.Parameters[0].As<DbParameter>().ParameterName.Should().Be("Id");
+        }
+
+        [Fact]
+        public void ApplyConstraints_should_work_with_a_dynamicObject_if_there_is_a_primary_key()
+        {
+            var mapper = new OkMapping();
+            var cmd = new SqlCommand();
+
+            cmd.ApplyConstraints(mapper, new{firstName="arne"});
+
+            cmd.Parameters[0].As<DbParameter>().Value.Should().Be("arne");
+            cmd.Parameters[0].As<DbParameter>().ParameterName.Should().Be("firstName");
+        }
+
+
         [Fact]
         public void command_without_rows_throw_exception_for_First()
         {
