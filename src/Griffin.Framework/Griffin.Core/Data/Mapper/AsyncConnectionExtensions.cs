@@ -77,7 +77,7 @@ namespace Griffin.Data.Mapper
             {
                 try
                 {
-                    cmd.CommandText = string.Format("DELETE FROM {0} WHERE ", mapper.TableName);
+                    cmd.CommandText = $"DELETE FROM {mapper.TableName} WHERE ";
                     cmd.ApplyConstraints(mapper, constraints);
                     await cmd.ExecuteNonQueryAsync();
                 }

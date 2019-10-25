@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.1.2</Version>
-    <PackageReleaseNotes>Corrected a bug when querying the DB using a single value.</PackageReleaseNotes>
+    <Version>2.1.3</Version>
+    <PackageReleaseNotes>Will now throw a proper exception if there are no primary key in the data mapper.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

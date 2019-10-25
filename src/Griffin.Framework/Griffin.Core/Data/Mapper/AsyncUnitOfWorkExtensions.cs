@@ -18,6 +18,43 @@ namespace Griffin.Data.Mapper
         ///     .
         /// </typeparam>
         /// <param name="unitOfWork">Unit of work to execute command in.</param>
+        /// <param name="mapper">Mapper used to be able to detect table, columns and primary keys.</param>
+        /// <param name="entity">Uses the primary key column(s), as defined in the mapping, to remove the entry.</param>
+        /// <returns>Task to wait on for completion.</returns>
+        /// <example>
+        ///     <code>
+        /// <![CDATA[
+        /// public async Task DeleteUser(int userId)
+        /// {
+        ///     return await _unitOfWork.DeleteAsync(new User { Id = userId });
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static async Task DeleteAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, ICrudEntityMapper<TEntity> mapper, TEntity entity)
+        {
+            using (var cmd = (DbCommand)unitOfWork.CreateCommand())
+            {
+                try
+                {
+                    mapper.CommandBuilder.DeleteCommand(cmd, entity);
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                catch (Exception e)
+                {
+                    throw cmd.CreateDataException(e);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     DELETE a row from the table.
+        /// </summary>
+        /// <typeparam name="TEntity">
+        ///     Type of entity to use, must have an mapper registered in <see cref="EntityMappingProvider" />
+        ///     .
+        /// </typeparam>
+        /// <param name="unitOfWork">Unit of work to execute command in.</param>
         /// <param name="entity">Uses the primary key column(s), as defined in the mapping, to remove the entry.</param>
         /// <returns>Task to wait on for completion.</returns>
         /// <example>
@@ -33,18 +70,7 @@ namespace Griffin.Data.Mapper
         public static async Task DeleteAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
             var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
-            using (var cmd = (DbCommand) unitOfWork.CreateCommand())
-            {
-                try
-                {
-                    mapper.CommandBuilder.DeleteCommand(cmd, entity);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-                catch (Exception e)
-                {
-                    throw cmd.CreateDataException(e);
-                }
-            }
+            await DeleteAsync(unitOfWork, mapper, entity);
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// </remarks>
         public override void TruncateCommand(IDbCommand command)
         {
-            command.CommandText = "TRUNCATE TABLE " + TableName;
+            command.CommandText = $"TRUNCATE TABLE {TableName}";
         }
 
         /// <summary>
@@ -56,8 +56,8 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <param name="pageSize">Items per page.</param>
         public override void Paging(IDbCommand command, int pageNumber, int pageSize)
         {
-            command.CommandText += string.Format(" OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY",
-                (pageNumber - 1) * pageSize, pageSize);
+            var rows = (pageNumber - 1) * pageSize;
+            command.CommandText += $" OFFSET {rows} ROWS FETCH NEXT {pageSize} ROWS ONLY";
         }
     }
 }

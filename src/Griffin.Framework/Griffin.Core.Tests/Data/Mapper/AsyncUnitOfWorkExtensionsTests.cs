@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Data;
@@ -60,6 +57,39 @@ namespace Griffin.Core.Tests.Data.Mapper
             actual[1].Name.Should().Be("Bertil");
         }
 
+        [Fact]
+        public async Task Should_be_able_to_delete_an_entity()
+        {
+            var cmd = Substitute.For<DbCommand>();
+            var uow = Substitute.For<IAdoNetUnitOfWork>();
+            var myEntity = new MyEntity();
+            var ps = Substitute.For<DbParameterCollection>();
+            cmd.Parameters.Returns(ps);
+            cmd.CreateParameter().Returns(Substitute.For<DbParameter>());
+            uow.CreateCommand().Returns(cmd);
+
+            await uow.DeleteAsync(new MyMapper(), myEntity);
+
+            await cmd.Received().ExecuteNonQueryAsync();
+            cmd.CommandText.Should().Be("DELETE FROM [Table2] WHERE Id=@Id");
+        }
+
+        [Fact]
+        public void Should_abort_if_there_is_no_primary_key()
+        {
+            var cmd = Substitute.For<DbCommand>();
+            var uow = Substitute.For<IAdoNetUnitOfWork>();
+            var myEntity = new MyEntity2();
+            var ps = Substitute.For<DbParameterCollection>();
+            cmd.Parameters.Returns(ps);
+            cmd.CreateParameter().Returns(Substitute.For<DbParameter>());
+            uow.CreateCommand().Returns(cmd);
+
+            Func<Task> actual = async ()=> await uow.DeleteAsync(new MyMapper2(), myEntity);
+
+            actual.Should().Throw<MappingException>();
+        }
+
         public ICrudEntityMapper Get<TEntity>()
         {
             var m= new MyMapper();
@@ -79,11 +109,33 @@ namespace Griffin.Core.Tests.Data.Mapper
         {
         }
 
+        public class MyEntity2
+        {
+            public int DomainId { get; set; }
+        }
         public class BasicMapper : EntityMapper<MyEntity>
         {
             
         }
+        public class MyMapper2 : CrudEntityMapper<MyEntity2>
+        {
+            public MyMapper2()
+                : base("[Table2]")
+            {
 
+                //Property(x => x.Id)
+                //    .ColumnName("UserId")
+                //    .ToColumnValue(propertyValue => propertyValue.ToString())
+                //    .ToPropertyValue(colValue => int.Parse(colValue.ToString()))
+                //    .PrimaryKey();
+
+                //// property is considered read only.
+                //Property(x => x.Name)
+                //    .NotForCrud();
+            }
+
+
+        }
         public class MyMapper : CrudEntityMapper<AsyncUnitOfWorkExtensionsTests.MyEntity>
         {
             public MyMapper()

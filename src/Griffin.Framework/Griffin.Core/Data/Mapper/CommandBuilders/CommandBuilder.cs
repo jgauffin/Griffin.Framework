@@ -25,9 +25,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <exception cref="System.ArgumentNullException">mapper</exception>
         public CommandBuilder(ICrudEntityMapper mapper)
         {
-            if (mapper == null) throw new ArgumentNullException("mapper");
-
-            _mapper = mapper;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _tableName = mapper.TableName;
             foreach (var property in mapper.Properties.Values)
             {
@@ -42,18 +40,12 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <summary>
         ///     Gets table that the mapping is for
         /// </summary>
-        public string TableName
-        {
-            get { return _tableName; }
-        }
+        public string TableName => _tableName;
 
         /// <summary>
         ///     Mapper that this builder is for.
         /// </summary>
-        protected ICrudEntityMapper Mapper
-        {
-            get { return _mapper; }
-        }
+        protected ICrudEntityMapper Mapper => _mapper;
 
         /// <summary>
         ///     Use <c>DBNull</c> as value if a primary key is 0.
@@ -63,10 +55,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
         /// <summary>
         ///     Gets prefix to use for data parameters (typically '@' or ':')
         /// </summary>
-        public virtual char ParameterPrefix
-        {
-            get { return '@'; }
-        }
+        public virtual char ParameterPrefix => '@';
 
         /// <summary>
         ///     Generate an insert command, should end with a command that returns the insert identity.
@@ -78,11 +67,13 @@ namespace Griffin.Data.Mapper.CommandBuilders
         ///     or
         ///     entity
         /// </exception>
-        /// <exception cref="System.Data.DataException">No values were added to the query for  + entity</exception>
+        /// <exception cref="MappingException">Could not construct a correct SQL statement.</exception>
         public virtual void InsertCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (entity == null) throw new ArgumentNullException("entity");
+            if (_keys.Count == 0)
+                throw new MappingException(entity.GetType(), "The mapping has no primary keys defined.");
 
             var columns = "";
             var values = "";
@@ -95,8 +86,8 @@ namespace Griffin.Data.Mapper.CommandBuilders
                 if (key.IsAutoIncrement && value.Equals(0))
                     continue;
 
-                columns += string.Format("{0}, ", key.ColumnName);
-                values += string.Format("@{0}, ", key.PropertyName);
+                columns += $"{key.ColumnName}, ";
+                values += $"@{key.PropertyName}, ";
                 command.AddParameter(key.PropertyName, value);
             }
             foreach (var prop in _values)
@@ -105,8 +96,8 @@ namespace Griffin.Data.Mapper.CommandBuilders
                     continue;
 
                 var value = prop.GetValue(entity);
-                columns += string.Format("{0}, ", prop.ColumnName);
-                values += string.Format("@{0}, ", prop.PropertyName);
+                columns += $"{prop.ColumnName}, ";
+                values += $"@{prop.PropertyName}, ";
                 command.AddParameter(prop.PropertyName, value ?? DBNull.Value);
             }
             if (command.Parameters.Count == 0)
@@ -128,14 +119,13 @@ namespace Griffin.Data.Mapper.CommandBuilders
         ///     or
         ///     entity
         /// </exception>
-        /// <exception cref="System.Data.DataException">
-        ///     At least one property (other than primary keys) must be specified.
-        ///     or
-        /// </exception>
+        /// <exception cref="MappingException">Could not construct a correct SQL statement.</exception>
         public void UpdateCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (entity == null) throw new ArgumentNullException("entity");
+            if (_keys.Count == 0)
+                throw new MappingException(entity.GetType(), "The mapping has no primary keys defined.");
 
             var updates = "";
             var where = "";
@@ -145,7 +135,7 @@ namespace Griffin.Data.Mapper.CommandBuilders
                     continue;
 
                 var value = property.GetValue(entity);
-                updates += string.Format("{0}=@{1}, ", property.ColumnName, property.PropertyName);
+                updates += $"{property.ColumnName}=@{property.PropertyName}, ";
                 command.AddParameter(property.PropertyName, value);
             }
             if (command.Parameters.Count == 0)
@@ -155,15 +145,15 @@ namespace Griffin.Data.Mapper.CommandBuilders
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(
-                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
-                            property.PropertyName));
+                    throw new MappingException(entity.GetType(),
+                        $"Entity {entity}' do not contain a value for the key property '{property.PropertyName}'");
                 where += property.ColumnName + "=" + "@" + property.PropertyName + " AND ";
                 command.AddParameter(property.PropertyName, value);
             }
 
             if (updates.Length < 2 || where.Length < 5)
-                throw new DataException(string.Format("Could not construct a proper UPDATE command. Is your mapping for '{0}' correct?\r\n UPDATE clause '{1}'\r\n WHERE clause '{2}'", entity.GetType().FullName, updates, @where));
+                throw new MappingException(entity.GetType(),
+                    $"Could not construct a proper UPDATE command. Is your mapping for '{entity.GetType().FullName}' correct?\r\n UPDATE clause '{updates}'\r\n WHERE clause '{@where}'");
 
             command.CommandText = string.Format("UPDATE {0} SET {1} WHERE {2}",
                 TableName,
@@ -181,20 +171,21 @@ namespace Griffin.Data.Mapper.CommandBuilders
         ///     or
         ///     entity
         /// </exception>
-        /// <exception cref="System.Data.DataException"></exception>
+        /// <exception cref="MappingException">Could not construct a correct SQL statement.</exception>
         public void DeleteCommand(IDbCommand command, object entity)
         {
             if (command == null) throw new ArgumentNullException("command");
             if (entity == null) throw new ArgumentNullException("entity");
+            if (_keys.Count == 0)
+                throw new MappingException(entity.GetType(),  "The mapping has no primary keys defined.");
 
             var where = "";
             foreach (var property in _keys)
             {
                 var value = property.GetValue(entity);
                 if (value == null || value == DBNull.Value)
-                    throw new DataException(
-                        string.Format("Entity {0}' do not contain a value for the key property '{1}'", entity,
-                            property.PropertyName));
+                    throw new MappingException(entity.GetType(),
+                        $"Entity {entity}' do not contain a value for the key property '{property.PropertyName}'");
 
                 where += string.Format("{0}=" + "@{1} AND ", property.ColumnName, property.PropertyName);
                 command.AddParameter(property.PropertyName, value);
