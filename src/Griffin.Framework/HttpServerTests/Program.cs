@@ -5,7 +5,6 @@ using System.Threading;
 using Griffin.Cqs.Net;
 using Griffin.Net;
 using Griffin.Net.Authentication.HashAuthenticator;
-using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.LiteServer.Modules;
 using Griffin.Net.LiteServer.Modules.Authentication;
@@ -20,18 +19,12 @@ namespace HttpServerTests
         {
             var certificate = new X509Certificate2("GriffinNetworkingTemp.pfx", "mamma");
 
-            MessagingServerPipeline<HttpContext> pipeline = new MessagingServerPipeline<HttpContext>();
-            //pipeline.Register(new HashAuthenticationMiddleware(new FakeFetcher()));
-            pipeline.Register(new MustAlwaysAuthenticate());
+            var configuration = new HttpConfiguration {Certificate = certificate};
+            configuration.Pipeline.Register(new MustAlwaysAuthenticate());
+            configuration.Pipeline.Register(new MyHttpMiddleware());
 
-            BufferManager mgr = new BufferManager(5);
-            var config = new MessagingServerConfiguration<HttpContext>
-            {
-                HandlerFactory = x => new HttpHandler(x.Socket, mgr.Dequeue(), pipeline)
-            };
-
-            var server = new MessagingServer<HttpContext>(config);
-            var task = server.RunAsync(IPAddress.Any, 0, CancellationToken.None);
+            var server = new HttpServer(configuration);
+            server.RunAsync(IPAddress.Any, CancellationToken.None);
 
             Console.ReadLine();
         }
