@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 using Griffin.Net.Authentication.Messages;
 using Griffin.Net.Channels;
+using Griffin.Net.Messaging;
 using Griffin.Security;
 
 namespace Griffin.Net.Authentication.HashAuthenticator
@@ -20,20 +22,18 @@ namespace Griffin.Net.Authentication.HashAuthenticator
     ///         <see cref="ConfigureAuthentication" />.
     ///     </para>
     ///     <para>
-    ///         If you are using something else than our own hashing algortihm (<see cref="PasswordHasherRfc2898" />) for
+    ///         If you are using something else than our own hashing algorithm (<see cref="PasswordHasherRfc2898" />) for
     ///         storing passwords you need to set your own
-    ///         algortihm using <see cref="ConfigureAuthentication" />.
+    ///         algorithm using <see cref="ConfigureAuthentication" />.
     ///     </para>
     /// </remarks>
     public class HashClientAuthenticator : IClientAuthenticator
     {
+        private string _clientSalt;
         private NetworkCredential _credentials;
-        private IAuthenticationMessageFactory _authenticationMessageFactory =
-            new AuthenticationMessageFactory(new PasswordHasherRfc2898());
+        private string _passwordHash;
         private IPasswordHasher _passwordHasher = new PasswordHasherRfc2898();
         private int _state;
-        private string _passwordHash;
-        private string _clientSalt;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="HashClientAuthenticator" /> class.
@@ -45,8 +45,7 @@ namespace Griffin.Net.Authentication.HashAuthenticator
         /// </remarks>
         public HashClientAuthenticator(NetworkCredential credential)
         {
-            if (credential == null) throw new ArgumentNullException("credential");
-            Credential = credential;
+            Credential = credential ?? throw new ArgumentNullException("credential");
         }
 
         /// <summary>
@@ -54,22 +53,18 @@ namespace Griffin.Net.Authentication.HashAuthenticator
         /// </summary>
         public NetworkCredential Credential
         {
-            get { return _credentials; }
+            get => _credentials;
             set
             {
-                if (value == null) throw new ArgumentNullException("value");
                 AuthenticationFailed = false;
-                _credentials = value;
+                _credentials = value ?? throw new ArgumentNullException("value");
             }
         }
 
         /// <summary>
         ///     Will always return <c>false</c> as this implementation only works with serialized messages.
         /// </summary>
-        public bool RequiresRawData
-        {
-            get { return false; }
-        }
+        public bool RequiresRawData => false;
 
         /// <summary>
         ///     Wether we have failed to authenticate
@@ -78,25 +73,28 @@ namespace Griffin.Net.Authentication.HashAuthenticator
 
 
         /// <summary>
-        /// authenticate using serialized messages
+        ///     authenticate using serialized messages
         /// </summary>
         /// <param name="channel">channel to authenticate</param>
-        /// <param name="message">Received message, will be <see cref="AuthenticationRequiredException" /> first time and then responses to your authentication messages</param>
+        /// <param name="message">
+        ///     Received message, will be <see cref="AuthenticationRequiredException" /> first time and then
+        ///     responses to your authentication messages
+        /// </param>
         /// <returns>
-        ///   <c>true</c> if authentication process completed.
+        ///     <c>true</c> if authentication process completed.
         /// </returns>
-        public bool Process(ITcpChannel channel, object message)
+        public async Task<bool> ProcessAsync(IMessagingChannel channel, object message)
         {
             if (message is AuthenticationRequiredException)
             {
-                var handshake = _authenticationMessageFactory.CreateHandshake(_credentials.UserName);
-                channel.Send(handshake);
+                var handshake = new AuthenticationHandshake { UserName = _credentials.UserName };
+                await channel.SendAsync(handshake);
                 _state = 1;
                 AuthenticationFailed = false;
                 return false;
             }
 
-            if (message is AuthenticationHandshakeReply)
+            if (message is AuthenticationHandshakeReply handshakeReply)
             {
                 if (_state != 1)
                 {
@@ -105,16 +103,20 @@ namespace Griffin.Net.Authentication.HashAuthenticator
                 }
 
                 _state = 2;
-                var handshakeReply = (AuthenticationHandshakeReply)message;
                 _passwordHash = _passwordHasher.HashPassword(_credentials.Password, handshakeReply.AccountSalt);
                 var token = _passwordHasher.HashPassword(_passwordHash, handshakeReply.SessionSalt);
-                var auth = _authenticationMessageFactory.CreateAuthentication(token);
+                var auth = new Authenticate
+                {
+                    AuthenticationToken = token,
+                    ClientSalt = _passwordHasher.CreateSalt()
+                };
+
                 _clientSalt = auth.ClientSalt;
-                channel.Send(auth);
+                await channel.SendAsync(auth);
                 return false;
             }
 
-            if (message is AuthenticateReply)
+            if (message is AuthenticateReply result)
             {
                 if (_state != 2)
                 {
@@ -122,14 +124,12 @@ namespace Griffin.Net.Authentication.HashAuthenticator
                     return true;
                 }
 
-                var result = (AuthenticateReply)message;
                 AuthenticationFailed = true;
                 if (result.State == AuthenticateReplyState.Success)
                 {
                     var ourToken = _passwordHasher.HashPassword(_passwordHash, _clientSalt);
                     if (!_passwordHasher.Compare(ourToken, result.AuthenticationToken))
                         return true;
-
                 }
                 else
                     return true;
@@ -142,30 +142,14 @@ namespace Griffin.Net.Authentication.HashAuthenticator
         }
 
         /// <summary>
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <param name="buffer"></param>
-        /// <param name="completed"></param>
-        /// <returns></returns>
-        public int Process(ITcpChannel channel, ISocketBuffer buffer, out bool completed)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        ///     Used to configure how passwords are being hashed and which messages should be used when transfering authentication
+        ///     Used to configure how passwords are being hashed and which messages should be used when transferring authentication
         ///     information
         ///     over the network.
         /// </summary>
-        /// <param name="hasher">Password hasher, the dault one is <see cref="PasswordHasherRfc2898" />.</param>
-        /// <param name="messageFactory">Message factory, the default on is <see cref="AuthenticationMessageFactory" />.</param>
-        public void ConfigureAuthentication(IPasswordHasher hasher, IAuthenticationMessageFactory messageFactory)
+        /// <param name="hasher">Password hasher, the default one is <see cref="PasswordHasherRfc2898" />.</param>
+        public void ConfigureAuthentication(IPasswordHasher hasher)
         {
-            if (hasher == null) throw new ArgumentNullException("hasher");
-            if (messageFactory == null) throw new ArgumentNullException("messageFactory");
-            _authenticationMessageFactory = messageFactory;
-            _passwordHasher = hasher;
+            _passwordHasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
         }
-
     }
 }

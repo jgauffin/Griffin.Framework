@@ -1,8 +1,8 @@
-﻿# Channels
+﻿# Communication channels
 
-Channels are the actual transport layer. Here are the classes which are used for communication defined.
+Abstration of bare bone communication. Shuffles bytes over some sort of IO interface.
 
 Interesting classes:
 
-* [TcpChannel](TcpChannel.cs)
-* SecureTcpChannel
+* [TcpCommunicationChannel](TcpCommunicationChannel.cs)
+* [TcpSecureCommunicationChannel](TcpSecureCommunicationChannel.cs)

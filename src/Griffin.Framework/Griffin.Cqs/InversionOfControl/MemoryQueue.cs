@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Net.Configuration;
 using System.Threading.Tasks;
 
-namespace Griffin.Cqs.InversionOfControl
+namespace Griffin.InversionOfControl
 {
     /// <summary>
     ///     Wraps <c><![CDATA[ConcurrentQueue<T>]]></c>

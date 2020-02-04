@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Net;
 using Griffin.Net.Authentication;
-using Griffin.Net.Authentication.Messages;
+using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
-using Griffin.Security;
 
 namespace Griffin.Cqs.Net
 {
@@ -26,21 +25,19 @@ namespace Griffin.Cqs.Net
     public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
     {
         private readonly Timer _cleanuptimer;
-        private readonly ChannelTcpClient _client;
+        private MicroMessageClient _microMessageClient;
         private readonly ConcurrentDictionary<Guid, Waiter> _response = new ConcurrentDictionary<Guid, Waiter>();
         private bool _continueAuthenticate;
         private IPEndPoint _endPoint;
         private object _lastSentItem;
+        BufferManager _bufferManager = new BufferManager(10);
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsClient" /> class.
         /// </summary>
         public CqsClient()
         {
-            _client = new ChannelTcpClient(
-                new MicroMessageEncoder(new DataContractMessageSerializer()),
-                new MicroMessageDecoder(new DataContractMessageSerializer()));
-            _client.Filter = OnMessageReceived;
+            _microMessageClient = new MicroMessageClient(new DataContractMessageSerializer(), _bufferManager);
             _cleanuptimer = new Timer(OnCleanup, 0, 10000, 10000);
         }
 
@@ -50,29 +47,33 @@ namespace Griffin.Cqs.Net
         /// <param name="serializer">Serializer to be used for the transported messages.</param>
         public CqsClient(Func<IMessageSerializer> serializer)
         {
-            _client = new ChannelTcpClient(new MicroMessageEncoder(serializer()),
-                new MicroMessageDecoder(serializer()));
-            _client.Filter = OnMessageReceived;
+            _microMessageClient = new MicroMessageClient(serializer(), _bufferManager);
             _cleanuptimer = new Timer(OnCleanup);
         }
 
         /// <summary>
-        ///     Assign if you want to use secure communication.
+        ///     Initializes a new instance of the <see cref="CqsClient" /> class.
         /// </summary>
-        public ISslStreamBuilder Certificate
+        public CqsClient(ClientSideSslStreamBuilder sslStreamBuilder)
         {
-            get { return _client.Certificate; }
-            set { _client.Certificate = value; }
+            _microMessageClient = new MicroMessageClient(new DataContractMessageSerializer(), sslStreamBuilder);
+            _cleanuptimer = new Timer(OnCleanup, 0, 10000, 10000);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CqsClient" /> class.
+        /// </summary>
+        /// <param name="serializer">Serializer to be used for the transported messages.</param>
+        public CqsClient(Func<IMessageSerializer> serializer, ClientSideSslStreamBuilder streamBuilder)
+        {
+            _microMessageClient = new MicroMessageClient(serializer(), streamBuilder);
+            _cleanuptimer = new Timer(OnCleanup);
         }
 
         /// <summary>
         ///     Set if you want to authenticate against a server.
         /// </summary>
-        public IClientAuthenticator Authenticator
-        {
-            get { return _client.Authenticator; }
-            set { _client.Authenticator = value; }
-        }
+        public IClientAuthenticator Authenticator { get; set; }
 
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace Griffin.Cqs.Net
             _response[query.QueryId] = waiter;
             await SendItem(query);
             await waiter.Task;
-            return ((dynamic) waiter.Task).Result;
+            return ((dynamic)waiter.Task).Result;
         }
 
         /// <summary>
@@ -143,7 +144,7 @@ namespace Griffin.Cqs.Net
             _response[request.RequestId] = waiter;
             await SendItem(request);
             await waiter.Task;
-            return ((dynamic) waiter.Task).Result;
+            return ((dynamic)waiter.Task).Result;
         }
 
         private abstract class Waiter
@@ -154,15 +155,12 @@ namespace Griffin.Cqs.Net
                 WaitedSince = DateTime.UtcNow;
             }
 
-            public Guid Id { get; set; }
+            public Guid Id { get; private set; }
 
-            private DateTime WaitedSince { get; set; }
+            private DateTime WaitedSince { get; }
             public abstract Task Task { get; }
 
-            public bool Expired
-            {
-                get { return DateTime.UtcNow.Subtract(WaitedSince).TotalSeconds > 10; }
-            }
+            public bool Expired => DateTime.UtcNow.Subtract(WaitedSince).TotalSeconds > 10;
 
             public abstract void Trigger(object result);
 
@@ -178,24 +176,21 @@ namespace Griffin.Cqs.Net
             {
             }
 
-            public override Task Task
-            {
-                get { return _completionSource.Task; }
-            }
+            public override Task Task => _completionSource.Task;
 
             public override void Trigger(object result)
             {
                 if (result is Exception)
                 {
-                    if (result is AggregateException)
+                    if (result is AggregateException ae)
                         _completionSource.SetException(new ServerSideException("Server failed to execute.",
-                            ((AggregateException) result).InnerException));
+                            ae.InnerException));
                     else
-                        _completionSource.SetException((Exception) result);
+                        _completionSource.SetException((Exception)result);
                 }
 
                 else
-                    _completionSource.SetResult((T) result);
+                    _completionSource.SetResult((T)result);
             }
 
             public override void SetCancelled()
@@ -205,7 +200,7 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        ///     Start client (will autoconnect if getting disconnected)
+        ///     Start client (will reconnect if getting disconnected)
         /// </summary>
         /// <param name="address">The address for the CQS server.</param>
         /// <param name="port">The port that the CQS server is listening on.</param>
@@ -213,26 +208,76 @@ namespace Griffin.Cqs.Net
         public async Task StartAsync(IPAddress address, int port)
         {
             _endPoint = new IPEndPoint(address, port);
-            await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
-        }
-
-        private int AuthenticateBytes(ITcpChannel channel, ISocketBuffer buffer)
-        {
-            bool completed;
-            var bytesProcessed = Authenticator.Process(channel, buffer, out completed);
-            if (completed)
-                channel.BufferPreProcessor = null;
-            return bytesProcessed;
+            await EnsureConnected();
         }
 
         private async Task EnsureConnected()
         {
-            if (!_client.IsConnected)
+            if (_microMessageClient.IsConnected)
             {
-                if (_endPoint == null)
-                    throw new InvalidOperationException("Call 'Start()' first.");
+                return;
+            }
 
-                await _client.ConnectAsync(_endPoint.Address, _endPoint.Port);
+            if (_endPoint == null)
+                throw new InvalidOperationException("Call 'Start()' first.");
+
+            await _microMessageClient.ConnectAsync(_endPoint.Address, _endPoint.Port);
+
+#pragma warning disable 4014
+            _microMessageClient.ReceiveAsync().ContinueWith(OnResponse);
+#pragma warning restore 4014
+        }
+
+        private void OnResponse(Task<object> obj)
+        {
+            var msg = obj.Result;
+            try
+            {
+                ProcessInboundMessage(obj, msg);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            try
+            {
+                _microMessageClient.ReceiveAsync().ContinueWith(OnResponse);
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void ProcessInboundMessage(Task<object> obj, object msg)
+        {
+            var result = msg as ClientResponse;
+            if (result == null)
+            {
+                if (_response.Count != 1)
+                    throw new InvalidOperationException(
+                        "More than one pending message and we received an unwrapped object: " + obj.Result);
+
+                var key = _response.Keys.First();
+                if (!_response.TryRemove(key, out var waiter))
+                {
+                    //TODO: LOG
+                    return;
+                }
+
+                waiter.Trigger(obj.Result);
+            }
+
+            else
+            {
+                if (!_response.TryRemove(result.Identifier, out var waiter))
+                {
+                    //TODO: LOG
+                    return;
+                }
+
+                waiter.Trigger(result.Body);
             }
         }
 
@@ -243,12 +288,11 @@ namespace Griffin.Cqs.Net
                 var values = _response.Values;
                 foreach (var waiter in values)
                 {
-                    Waiter removed;
-                    if (waiter.Expired)
-                    {
-                        _response.TryRemove(waiter.Id, out removed);
-                        waiter.SetCancelled();
-                    }
+                    if (!waiter.Expired)
+                        continue;
+
+                    _response.TryRemove(waiter.Id, out _);
+                    waiter.SetCancelled();
                 }
             }
             catch (Exception)
@@ -260,70 +304,30 @@ namespace Griffin.Cqs.Net
         /// <summary>
         ///     Always revoke since we do not want incoming messages to be queued up for receive operations.
         /// </summary>
-        /// <param name="channel"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        private ClientFilterResult OnMessageReceived(ITcpChannel channel, object message)
+        private async Task<bool> ReadAuthenticationMessages(object message)
         {
-            if (message is AuthenticationRequiredException || _continueAuthenticate)
+            if (!(message is AuthenticationRequiredException) && !_continueAuthenticate)
             {
-                var authenticator = Authenticator;
-                if (authenticator != null)
-                {
-                    if (!authenticator.AuthenticationFailed)
-                    {
-                        if (authenticator.RequiresRawData)
-                            channel.BufferPreProcessor = AuthenticateBytes;
-                        else
-                        {
-                            _continueAuthenticate = authenticator.Process(channel, message);
-                            if (!_continueAuthenticate)
-                            {
-                                if (_lastSentItem != null)
-                                    channel.Send(_lastSentItem);
-                            }
-                        }
-                    }
-                }
+                return false;
             }
 
-            //currently authentication etc are not wrapped, so we need to do it like this.
-            var result = message as ClientResponse;
-            if (result == null)
-            {
-                Waiter waiter;
-                if (_response.Count != 1)
-                    throw new InvalidOperationException(
-                        "More than one pending message and we received an unwrapped object: " + message);
+            await Authenticator.ProcessAsync(_microMessageClient, message);
+            _continueAuthenticate = await Authenticator.ProcessAsync(_microMessageClient, message);
+            if (_continueAuthenticate) 
+                return _continueAuthenticate;
 
-                var key = _response.Keys.First();
-                if (!_response.TryRemove(key, out waiter))
-                {
-                    //TODO: LOG
-                    return ClientFilterResult.Revoke;
-                }
-                waiter.Trigger(message);
-            }
+            if (_lastSentItem != null)
+                await _microMessageClient.SendAsync(_lastSentItem);
 
-            else
-            {
-                Waiter waiter;
-                if (!_response.TryRemove(result.Identifier, out waiter))
-                {
-                    //TODO: LOG
-                    return ClientFilterResult.Revoke;
-                }
-                waiter.Trigger(result.Body);
-            }
-
-
-            return ClientFilterResult.Revoke;
+            return false;
         }
 
         private Task SendItem(object item)
         {
             _lastSentItem = item;
-            return _client.SendAsync(item);
+            return _microMessageClient.SendAsync(item);
         }
     }
 }

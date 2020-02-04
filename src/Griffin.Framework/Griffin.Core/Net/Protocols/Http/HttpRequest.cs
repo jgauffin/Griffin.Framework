@@ -10,14 +10,12 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public class HttpRequest : HttpMessage, IHttpRequest
+    public class HttpRequest : HttpMessage
     {
         private string _pathAndQuery;
         private string _httpMethod;
         private Uri _uri;
-        private IParameterCollection _queryString = null;
-        private IParameterCollection _form;
-        private IHttpFileCollection _files;
+        private ParameterCollection _queryString = null;
 
         /// <summary>
         /// 
@@ -73,7 +71,7 @@ namespace Griffin.Net.Protocols.Http
         /// <summary>
         ///     Collection of parameters extracted from the requested URI.
         /// </summary>
-        public IParameterCollection QueryString
+        public ParameterCollection QueryString
         {
             get
             {
@@ -107,23 +105,6 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public EndPoint RemoteEndPoint { get; set; }
 
-        /// <summary>
-        /// Submitted form items
-        /// </summary>
-        public IParameterCollection Form
-        {
-            get { return _form ?? (_form = new ParameterCollection()); }
-            set { _form = value; }
-        }
-
-        /// <summary>
-        /// Submitted files
-        /// </summary>
-        public IHttpFileCollection Files
-        {
-            get { return _files ?? (_files = new HttpFileCollection()); }
-            set { _files = value; }
-        }
 
         /// <summary>
         /// Create a response for this request.
@@ -152,18 +133,6 @@ namespace Griffin.Net.Protocols.Http
             return response;
         }
 
-        IHttpResponse IHttpRequest.CreateResponse()
-        {
-            var response = new HttpResponse(200, "OK", HttpVersion);
-            var pipeline = Headers[PipelineIndexKey];
-            if (pipeline != null)
-            {
-                response.Headers[PipelineIndexKey] = pipeline;
-            }
-            return response;
-        }
-
-
         /// <summary>
         /// Invoked every time a HTTP header is modified.
         /// </summary>
@@ -187,15 +156,12 @@ namespace Griffin.Net.Protocols.Http
         /// <summary>
         /// Status line for requests is "HttpMethod PathAndQuery HttpVersion"
         /// </summary>
-        public override string StatusLine
-        {
-            get { return HttpMethod + " " + _pathAndQuery + " " + HttpVersion; }
-        }
+        public override string StatusLine => HttpMethod + " " + _pathAndQuery + " " + HttpVersion;
 
         /// <summary>
         /// Included cookies.
         /// </summary>
-        public IHttpCookieCollection<IHttpCookie> Cookies { get; set; }
+        public HttpCookieCollection<HttpCookie> Cookies { get; set; }
 
         /// <summary>
         /// Returns a string that represents the current object.

@@ -5,10 +5,8 @@ namespace Griffin.Net.Protocols.Http
     /// <summary>
     /// Response cookies also have an expiration and the path that they are valid for.
     /// </summary>
-    public class HttpResponseCookie : HttpCookie, IResponseCookie
+    public class HttpResponseCookie : HttpCookie
     {
-        #region IResponseCookie Members
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResponseCookie" /> class.
         /// </summary>
@@ -36,8 +34,6 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         /// <remarks><c>null</c> means not specified.</remarks>
         public string Path { get; set; }
-
-        #endregion
 
         /// <summary>
         /// Returns a string that represents the current object.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Serializers;
@@ -30,18 +31,10 @@ namespace Griffin.Net.Protocols.MicroMsg
         ///     get the actual header size.
         /// </remarks>
         public const int FixedHeaderLength = MicroMessageDecoder.FixedHeaderLength;
-
-        private readonly IBufferSlice _bufferSlice;
-
+        private readonly IBufferSegment _buffer;
         private readonly MemoryStream _internalStream = new MemoryStream();
         private readonly IMessageSerializer _serializer;
         private Stream _bodyStream;
-        private int _bytesEnqueued;
-        private int _bytesLeftToSend;
-        private int _bytesTransferred;
-        private bool _headerIsSent;
-        private int _headerSize;
-        private object _message;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MicroMessageEncoder" /> class.
@@ -52,10 +45,8 @@ namespace Griffin.Net.Protocols.MicroMsg
         /// </param>
         public MicroMessageEncoder(IMessageSerializer serializer)
         {
-            if (serializer == null) throw new ArgumentNullException("serializer");
-
-            _serializer = serializer;
-            _bufferSlice = new BufferSlice(new byte[65535], 0, 65535);
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _buffer = new StandAloneBuffer(new byte[65535], 0, 65535);
         }
 
         /// <summary>
@@ -65,98 +56,48 @@ namespace Griffin.Net.Protocols.MicroMsg
         ///     Serializer used to serialize the messages that should be sent. You might want to pick a
         ///     serializer which is reasonable fast.
         /// </param>
-        /// <param name="bufferSlice">Used when sending information.</param>
+        /// <param name="buffer">Used when sending information.</param>
         /// <exception cref="ArgumentOutOfRangeException">
         ///     bufferSlice; At least the header should fit in the buffer, and the header
         ///     can be up to 520 bytes in the current version.
         /// </exception>
-        public MicroMessageEncoder(IMessageSerializer serializer, IBufferSlice bufferSlice)
+        public MicroMessageEncoder(IMessageSerializer serializer, IBufferSegment buffer)
         {
-            if (serializer == null) throw new ArgumentNullException("serializer");
-            if (bufferSlice == null) throw new ArgumentNullException("bufferSlice");
-            if (bufferSlice.Capacity < 520)
-                throw new ArgumentOutOfRangeException("bufferSlice", bufferSlice.Capacity,
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if (buffer.Capacity < 520)
+                throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Capacity,
                     "At least the header should fit in the buffer, and the header can be up to 520 bytes in the current version");
 
 
-            _serializer = serializer;
-            _bufferSlice = bufferSlice;
-        }
-
-
-        /// <summary>
-        ///     Are about to send a new message
-        /// </summary>
-        /// <param name="message">Message to send</param>
-        /// <remarks>
-        ///     Can be used to prepare the next message. for instance serialize it etc.
-        /// </remarks>
-        /// <exception cref="NotSupportedException">Message is of a type that the encoder cannot handle.</exception>
-        public void Prepare(object message)
-        {
-            if (message == null) throw new ArgumentNullException("message");
-            _message = message;
-            _headerIsSent = false;
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            _buffer = buffer;
         }
 
         /// <summary>
         ///     Serialize message and sent it add it to the buffer
         /// </summary>
         /// <param name="args">Socket buffer</param>
-        public void Send(ISocketBuffer args)
+        public async Task EncodeAsync(object message, IBinaryChannel channel)
         {
-            if (_bytesTransferred < _bytesEnqueued)
+            WriteHeaderToBuffer(_buffer, message);
+            _buffer.Count = _buffer.Offset;
+            _buffer.Offset = _buffer.StartOffset;
+            if (_bodyStream is MemoryStream ms)
             {
-                //TODO: Is this faster than moving the bytes to the beginning of the buffer and append more bytes?
-                args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset + _bytesTransferred,
-                    _bytesEnqueued - _bytesTransferred);
-                return;
-            }
-
-            if (!_headerIsSent)
-            {
-                var headerLength = CreateHeader();
-                var bytesToWrite = (int) Math.Min(_bufferSlice.Capacity - headerLength, _bodyStream.Length);
-                _bodyStream.Read(_bufferSlice.Buffer, _bufferSlice.Offset + headerLength, bytesToWrite);
-                args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset, bytesToWrite + headerLength);
-                _bytesEnqueued = headerLength + bytesToWrite;
-                _bytesLeftToSend = headerLength + (int) _bodyStream.Length;
+                await channel.SendMoreAsync(_buffer);
+                await channel.SendAsync(new StandAloneBuffer(ms.GetBuffer(), 0, (int)ms.Length));
             }
             else
             {
-                _bytesEnqueued = Math.Min(_bufferSlice.Capacity, _bytesLeftToSend);
-                _bodyStream.Read(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
-                args.SetBuffer(_bufferSlice.Buffer, _bufferSlice.Offset, _bytesEnqueued);
-            }
-        }
-
-        /// <summary>
-        ///     The previous <see cref="IMessageEncoder.Send" /> has just completed.
-        /// </summary>
-        /// <param name="bytesTransferred"></param>
-        /// <remarks>
-        ///     <c>true</c> if the message have been sent successfully; otherwise <c>false</c>.
-        /// </remarks>
-        public bool OnSendCompleted(int bytesTransferred)
-        {
-            // Make sure that the header is sent
-            // required so that the Send() method can switch to the body state.
-            if (!_headerIsSent)
-            {
-                _headerSize -= bytesTransferred;
-                if (_headerSize <= 0)
+                await channel.SendAsync(_buffer);
+                var bytesLeft = (int)_bodyStream.Length;
+                while (bytesLeft > 0)
                 {
-                    _headerIsSent = true;
-                    _headerSize = 0;
+                    _buffer.Count = await _bodyStream.ReadAsync(_buffer.Buffer, _buffer.StartOffset, _buffer.Capacity);
+                    await channel.SendAsync(_buffer);
+                    bytesLeft -= _buffer.Count;
                 }
             }
-
-            _bytesTransferred = bytesTransferred;
-            _bytesLeftToSend -= bytesTransferred;
-            if (_bytesLeftToSend == 0)
-                Clear();
-
-            return _bytesLeftToSend == 0;
         }
 
         /// <summary>
@@ -164,68 +105,60 @@ namespace Griffin.Net.Protocols.MicroMsg
         /// </summary>
         public void Clear()
         {
-            _bytesEnqueued = 0;
-            _bytesTransferred = 0;
-            _bytesLeftToSend = 0;
-
             if (!ReferenceEquals(_bodyStream, _internalStream))
             {
                 //bodyStream is null for channels that connected
                 //but never sent a message.
-                if (_bodyStream != null)
-                    _bodyStream.Dispose();
+                _bodyStream?.Dispose();
                 _bodyStream = null;
             }
             else
                 _internalStream.SetLength(0);
-
-            _headerIsSent = false;
-            _headerSize = 0;
-            _message = null;
         }
 
-        private int CreateHeader()
+        private void WriteHeaderToBuffer(IBufferSegment buffer, object message)
         {
             string contentType;
 
-            if (_message is Stream)
+            if (message is Stream stream)
             {
-                _bodyStream = (Stream) _message;
+                _bodyStream = stream;
                 contentType = "stream";
             }
-            else if (_message is byte[])
+            else if (message is byte[] buffer1)
             {
-                var buffer = (byte[]) _message;
-                _bodyStream = new MemoryStream(buffer);
-                _bodyStream.SetLength(buffer.Length);
+                //TODO: Send it directly using sendMore
+                _bodyStream = new MemoryStream(buffer1);
+                _bodyStream.SetLength(buffer1.Length);
                 contentType = "byte[]";
             }
             else
             {
                 _bodyStream = _internalStream;
-                _serializer.Serialize(_message, _bodyStream, out contentType);
+                _serializer.Serialize(message, _bodyStream, out contentType);
                 if (contentType == null)
-                    contentType = _message.GetType().AssemblyQualifiedName;
+                    contentType = message.GetType().AssemblyQualifiedName;
                 if (contentType.Length > byte.MaxValue)
                     throw new InvalidOperationException(
                         "The AssemblyQualifiedName (type name) may not be larger than 255 characters. Your type: " +
-                        _message.GetType().AssemblyQualifiedName);
+                        message.GetType().AssemblyQualifiedName);
             }
 
-            var sliceOffset = _bufferSlice.Offset;
-            var sliceBuffer = _bufferSlice.Buffer;
             _bodyStream.Position = 0;
-            _headerSize = FixedHeaderLength + contentType.Length;
+            var headerSize = FixedHeaderLength + contentType.Length;
 
-            BitConverter2.GetBytes((ushort) _headerSize, sliceBuffer, sliceOffset);
-            _bufferSlice.Buffer[sliceOffset + 2] = Version;
-            BitConverter2.GetBytes((int) _bodyStream.Length, sliceBuffer, sliceOffset + 2 + 1);
-            BitConverter2.GetBytes((byte) contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4);
-            Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, sliceBuffer, sliceOffset + 2 + 1 + 4 + 1);
+            BitConverter2.GetBytes((ushort)headerSize, buffer.Buffer, buffer.Offset);
+            buffer.Offset += 2;
 
-            // the header length field is not included in _headerSize as it's a header prefix.
-            // hence the +2
-            return _headerSize + 2;
+            _buffer.Buffer[buffer.Offset++] = Version;
+
+            BitConverter2.GetBytes((int)_bodyStream.Length, buffer.Buffer, buffer.Offset);
+            buffer.Offset += 4;
+
+            _buffer.Buffer[buffer.Offset++] = (byte)contentType.Length;
+
+            var len = Encoding.UTF8.GetBytes(contentType, 0, contentType.Length, buffer.Buffer, buffer.Offset);
+            buffer.Offset += len;
         }
     }
 }

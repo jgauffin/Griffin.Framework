@@ -16,9 +16,9 @@ namespace Griffin.Core.Tests.Net.Channels
         {
             var certificate = CertificateHelper.Create();
             var clientServer = ClientServerHelper.Create();
-            var buffer = new BufferSlice(new byte[65535], 0, 65535);
-            var serverChannel = new TcpChannel(buffer, new FakeEncoder(), new FakeDecoder());
-            var clientChannel = new TcpChannel(buffer, new FakeEncoder(), new FakeDecoder());
+            var buffer = new StandAloneBuffer(new byte[65535], 0, 65535);
+            var serverChannel = new TcpChannel();
+            var clientChannel = new TcpChannel();
 
 
             var sut = new ServerSideSslStreamBuilder(certificate);
@@ -40,8 +40,8 @@ namespace Griffin.Core.Tests.Net.Channels
         {
             var certificate = CertificateHelper.Create();
             var clientServer = ClientServerHelper.Create();
-            var buffer = new BufferSlice(new byte[65535], 0, 65535);
-            var serverChannel = new TcpChannel(buffer, new FakeEncoder(), new FakeDecoder());
+            var buffer = new StandAloneBuffer(new byte[65535], 0, 65535);
+            var serverChannel = new TcpChannel();
 
 
             var sut = new ServerSideSslStreamBuilder(certificate);
@@ -57,8 +57,7 @@ namespace Griffin.Core.Tests.Net.Channels
         {
             var certificate = CertificateHelper.Create();
             var clientServer = ClientServerHelper.Create();
-            var buffer = new BufferSlice(new byte[65535], 0, 65535);
-            var serverChannel = new TcpChannel(buffer, new FakeEncoder(), new FakeDecoder());
+            var serverChannel = new TcpChannel();
 
 
             var sut = new ServerSideSslStreamBuilder(certificate);

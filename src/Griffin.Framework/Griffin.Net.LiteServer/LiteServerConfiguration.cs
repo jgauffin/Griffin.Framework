@@ -1,5 +1,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
+using Griffin.Net.Protocols;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
 
@@ -17,7 +18,6 @@ namespace Griffin.Net.LiteServer
         {
             EncoderFactory = () => new MicroMessageEncoder(new DataContractMessageSerializer());
             DecoderFactory = () => new MicroMessageDecoder(new DataContractMessageSerializer());
-            Modules = new ModulePipeBuilder();
         }
 
         /// <summary>
@@ -34,11 +34,6 @@ namespace Griffin.Net.LiteServer
         ///     To be able to decode <c>byte[]</c> into wrapper objects (like a HTTP request)
         /// </summary>
         public Func<IMessageDecoder> DecoderFactory { get; set; }
-
-        /// <summary>
-        ///     All modules that should be executed for every incoming message
-        /// </summary>
-        public ModulePipeBuilder Modules { get; private set; }
 
         /// <summary>
         ///     If we want to have secure communication.

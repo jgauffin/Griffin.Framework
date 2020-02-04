@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Griffin.Net.Channels
 {
     /// <summary>
-    /// Uses a concurrent dictionary to store all items.
+    ///     Uses a concurrent dictionary to store all items.
     /// </summary>
     public class ChannelData : IChannelData
     {
         private readonly ConcurrentDictionary<string, object> _items = new ConcurrentDictionary<string, object>();
 
+        public void Set<T>(T data)
+        {
+            _items[typeof(T).FullName] = data;
+        }
+
         /// <summary>
-        /// Get or add a value
+        ///     Get or add a value
         /// </summary>
         /// <param name="key">key to get</param>
         /// <param name="addCallback">Should return value to add if the key is not found</param>
@@ -26,7 +27,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Try updating a value
+        ///     Try updating a value
         /// </summary>
         /// <param name="key">Key for the value to update</param>
         /// <param name="newValue">Value to set</param>
@@ -38,7 +39,7 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Get or set data
+        ///     Get or set data
         /// </summary>
         /// <param name="key">Identifier (note that everyone with access to the channel can access the data, use careful naming)</param>
         /// <returns>Data if found; otherwise <c>null</c>.</returns>
@@ -49,14 +50,23 @@ namespace Griffin.Net.Channels
                 object item;
                 return _items.TryGetValue(key, out item) ? item : null;
             }
-            set
+            set => _items[key] = value;
+        }
+
+        public bool TryGet<T>(out T data)
+        {
+            if (_items.TryGetValue(typeof(T).FullName, out var value))
             {
-                _items[key] = value;
+                data = (T) value;
+                return true;
             }
+
+            data = default;
+            return false;
         }
 
         /// <summary>
-        /// Remove all existing data.
+        ///     Remove all existing data.
         /// </summary>
         public void Clear()
         {

@@ -13,9 +13,9 @@ namespace Griffin.Net.Protocols.Http
     ///         any unnecessary steps.
     ///     </para>
     /// </remarks>
-    public class HttpResponse : HttpMessage, IHttpResponse
+    public class HttpResponse : HttpMessage
     {
-        private IHttpCookieCollection<IResponseCookie> _cookies;
+        private HttpCookieCollection<HttpResponseCookie> _cookies;
         private string _reasonPhrase;
 
         /// <summary>
@@ -30,6 +30,8 @@ namespace Griffin.Net.Protocols.Http
             if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
             StatusCode = statusCode;
             ReasonPhrase = reasonPhrase;
+            Headers["Server"] = "griffinframework.net";
+            Headers["Date"] = DateTime.UtcNow.ToString("R");
         }
 
         /// <summary>
@@ -46,22 +48,16 @@ namespace Griffin.Net.Protocols.Http
             ReasonPhrase = reasonPhrase;
             Headers["Server"] = "griffinframework.net";
             Headers["Date"] = DateTime.UtcNow.ToString("R");
-            Headers["Content-Type"] = "text/html";
         }
 
         /// <summary>
         ///     Cookies to send to the server side
         /// </summary>
-        public IHttpCookieCollection<IResponseCookie> Cookies
+        public HttpCookieCollection<HttpResponseCookie> Cookies
         {
-            get { return _cookies ?? (_cookies = new HttpCookieCollection<IResponseCookie>()); }
-            set { _cookies = value; }
+            get => _cookies ?? (_cookies = new HttpCookieCollection<HttpResponseCookie>());
+            set => _cookies = value;
         }
-
-        /// <summary>
-        ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
-        /// </summary>
-        public int StatusCode { get; set; }
 
 
         /// <summary>
@@ -69,7 +65,7 @@ namespace Griffin.Net.Protocols.Http
         /// </summary>
         public string ReasonPhrase
         {
-            get { return _reasonPhrase; }
+            get => _reasonPhrase;
             set
             {
                 if (value == null)
@@ -80,11 +76,13 @@ namespace Griffin.Net.Protocols.Http
         }
 
         /// <summary>
+        ///     HTTP status code. You typically choose one of <see cref="System.Net.HttpStatusCode" />.
+        /// </summary>
+        public int StatusCode { get; set; }
+
+        /// <summary>
         ///     Status line for HTTP responses is "HttpVersion StatusCode ReasonPhrase"
         /// </summary>
-        public override string StatusLine
-        {
-            get { return HttpVersion + " " + StatusCode + " " + ReasonPhrase; }
-        }
+        public override string StatusLine => HttpVersion + " " + StatusCode + " " + ReasonPhrase;
     }
 }

@@ -1,197 +1,203 @@
-﻿using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Griffin.Net.Channels;
-using Griffin.Net.LiteServer.Modules;
-using Griffin.Net.Protocols;
+﻿//using System;
+//using System.Net;
+//using System.Threading;
+//using System.Threading.Tasks;
+//using Griffin.Net.Channels;
+//using Griffin.Net.LiteServer.Modules;
+//using Griffin.Net.Protocols;
 
-namespace Griffin.Net.LiteServer
-{
-    /// <summary>
-    ///     Lightweight server.
-    /// </summary>
-    public class LiteServer
-    {
-        private readonly ChannelTcpListener _listener;
-        private readonly IServerModule[] _modules;
+//namespace Griffin.Net.LiteServer
+//{
+//    /// <summary>
+//    ///     Lightweight server.
+//    /// </summary>
+//    public class LiteServer
+//    {
+//        private readonly MessagingServer<> _listener;
+//        private readonly IServerModule[] _modules;
+//        CancellationTokenSource _stopToken = new CancellationTokenSource();
+//        private Task _runTask;
 
+//        /// <summary>
+//        ///     Initializes a new instance of the <see cref="LiteServer" /> class.
+//        /// </summary>
+//        public LiteServer(LiteServerConfiguration configuration)
+//        {
+//            if (configuration == null) throw new ArgumentNullException("configuration");
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LiteServer" /> class.
-        /// </summary>
-        public LiteServer(LiteServerConfiguration configuration)
-        {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-
-            _modules = configuration.Modules.Build();
-            var config = new ChannelTcpListenerConfiguration(configuration.DecoderFactory, configuration.EncoderFactory);
-            _listener = new ChannelTcpListener(config);
-            if (configuration.Certificate != null)
-                _listener.ChannelFactory =
-                    new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(configuration.Certificate));
-
-            _listener.MessageReceived = OnClientMessage;
-            _listener.ClientConnected += OnClientConnect;
-            _listener.ClientDisconnected += OnClientDisconnect;
-        }
-
-        /// <summary>
-        ///     Port that we got assigned (or specified)
-        /// </summary>
-        public int LocalPort
-        {
-            get { return _listener.LocalPort; }
-        }
+//            _modules = configuration.Modules.Build();
+//            var config = new ChannelTcpListenerConfiguration(configuration.DecoderFactory, configuration.EncoderFactory);
+//            _listener = new MessagingServer<>(config);
+//            if (configuration.Certificate != null)
+//                _listener.ChannelFactory =
+//                    new SecureTcpChannelFactory(new ServerSideSslStreamBuilder(configuration.Certificate));
 
 
-        public void Start(IPAddress address, int port)
-        {
-            _listener.Start(address, port);
-        }
+//            _listener.MessageReceived = OnClientMessage;
+//            _listener.ClientConnected += OnClientConnect;
+//            _listener.ClientDisconnected += OnClientDisconnect;
+//        }
 
-        private async Task EndRequestAsync(IClientContext context)
-        {
-            for (var i = 0; i < _modules.Length; i++)
-            {
-                await _modules[i].EndRequest(context);
-            }
-        }
-
-        private async Task ExecuteConnectModules(ITcpChannel channel, IClientContext context)
-        {
-            var result = ModuleResult.Continue;
-
-            for (var i = 0; i < _modules.Length; i++)
-            {
-                var connectMod = _modules[i] as IConnectionEvents;
-                if (connectMod == null)
-                    continue;
-
-                try
-                {
-                    result = await connectMod.OnClientConnected(context);
-                }
-                catch (Exception exception)
-                {
-                    context.Error = exception;
-                    result = ModuleResult.SendResponse;
-                }
-
-                if (result != ModuleResult.Continue)
-                    break;
-            }
-
-            switch (result)
-            {
-                case ModuleResult.Disconnect:
-                    channel.Close();
-                    break;
-                case ModuleResult.SendResponse:
-                    channel.Send(context.ResponseMessage);
-                    break;
-            }
-        }
-
-        private async Task ExecuteDisconnectModules(IClientContext context)
-        {
-            for (var i = 0; i < _modules.Length; i++)
-            {
-                var connectMod = _modules[i] as IConnectionEvents;
-                if (connectMod == null)
-                    continue;
-
-                try
-                {
-                    await connectMod.OnClientDisconnect(context);
-                }
-                catch (Exception exception)
-                {
-                    if (ModuleFailed != null)
-                        ModuleFailed(connectMod, new ThreadExceptionEventArgs(exception));
-                }
-            }
-        }
-
-        private async Task ExecuteModules(ITcpChannel channel, ClientContext context)
-        {
-            var result = ModuleResult.Continue;
-
-            for (var i = 0; i < _modules.Length; i++)
-            {
-                try
-                {
-                    await _modules[i].BeginRequestAsync(context);
-                }
-                catch (Exception exception)
-                {
-                    context.Error = exception;
-                    result = ModuleResult.SendResponse;
-                }
-            }
+//        /// <summary>
+//        ///     Port that we got assigned (or specified)
+//        /// </summary>
+//        public int LocalPort => _listener.LocalPort;
 
 
-            if (result == ModuleResult.Continue)
-            {
-                for (var i = 0; i < _modules.Length; i++)
-                {
-                    try
-                    {
-                        result = await _modules[i].ProcessAsync(context);
-                    }
-                    catch (Exception exception)
-                    {
-                        context.Error = exception;
-                        result = ModuleResult.SendResponse;
-                    }
+//        public async Task Start(IPAddress address, int port)
+//        {
+//            _runTask = _listener.RunAsync(address, port, _stopToken.Token);
+//            await _runTask;
+//        }
 
-                    if (result != ModuleResult.Continue)
-                        break;
-                }
-            }
+//        private async Task EndRequestAsync(IClientContext context)
+//        {
+//            for (var i = 0; i < _modules.Length; i++)
+//            {
+//                await _modules[i].EndRequest(context);
+//            }
+//        }
+
+//        private async Task ExecuteConnectModules(IBinaryChannel channel, IClientContext context)
+//        {
+//            var result = ModuleResult.Continue;
+
+//            for (var i = 0; i < _modules.Length; i++)
+//            {
+//                var connectMod = _modules[i] as IConnectionEvents;
+//                if (connectMod == null)
+//                    continue;
+
+//                try
+//                {
+//                    result = await connectMod.OnClientConnected(context);
+//                }
+//                catch (Exception exception)
+//                {
+//                    context.Error = exception;
+//                    result = ModuleResult.SendResponse;
+//                }
+
+//                if (result != ModuleResult.Continue)
+//                    break;
+//            }
+
+//            switch (result)
+//            {
+//                case ModuleResult.Disconnect:
+//                    channel.Close();
+//                    break;
+//                case ModuleResult.SendResponse:
+//                    channel.Send(context.ResponseMessage);
+//                    break;
+//            }
+//        }
+
+//        private async Task ExecuteDisconnectModules(IClientContext context)
+//        {
+//            for (var i = 0; i < _modules.Length; i++)
+//            {
+//                var connectMod = _modules[i] as IConnectionEvents;
+//                if (connectMod == null)
+//                    continue;
+
+//                try
+//                {
+//                    await connectMod.OnClientDisconnect(context);
+//                }
+//                catch (Exception exception)
+//                {
+//                    if (ModuleFailed != null)
+//                        ModuleFailed(connectMod, new ThreadExceptionEventArgs(exception));
+//                }
+//            }
+//        }
+
+//        public async Task StopAsync()
+//        {
+//            _stopToken.Cancel();
+//            await _runTask;
+//        }
+
+//        private async Task ExecuteModules(ITcpChannel channel, ClientContext context)
+//        {
+//            var result = ModuleResult.Continue;
+
+//            for (var i = 0; i < _modules.Length; i++)
+//            {
+//                try
+//                {
+//                    await _modules[i].BeginRequestAsync(context);
+//                }
+//                catch (Exception exception)
+//                {
+//                    context.Error = exception;
+//                    result = ModuleResult.SendResponse;
+//                }
+//            }
 
 
-            try
-            {
-                await EndRequestAsync(context);
-            }
-            catch (Exception exception)
-            {
-                if (context.ResponseMessage == null)
-                    context.ResponseMessage = exception;
-                result = ModuleResult.Disconnect;
-            }
+//            if (result == ModuleResult.Continue)
+//            {
+//                for (var i = 0; i < _modules.Length; i++)
+//                {
+//                    try
+//                    {
+//                        result = await _modules[i].ProcessAsync(context);
+//                    }
+//                    catch (Exception exception)
+//                    {
+//                        context.Error = exception;
+//                        result = ModuleResult.SendResponse;
+//                    }
 
-            if (context.ResponseMessage != null)
-                channel.Send(context.ResponseMessage);
+//                    if (result != ModuleResult.Continue)
+//                        break;
+//                }
+//            }
 
-            if (result == ModuleResult.Disconnect)
-            {
-                channel.Close();
-            }
-        }
 
-        private void OnClientConnect(object sender, ClientConnectedEventArgs e)
-        {
-            var context = new ClientContext(e.Channel, null);
-            ExecuteConnectModules(e.Channel, context).Wait();
-        }
+//            try
+//            {
+//                await EndRequestAsync(context);
+//            }
+//            catch (Exception exception)
+//            {
+//                if (context.ResponseMessage == null)
+//                    context.ResponseMessage = exception;
+//                result = ModuleResult.Disconnect;
+//            }
 
-        private void OnClientDisconnect(object sender, ClientDisconnectedEventArgs e)
-        {
-            var context = new ClientContext(e.Channel, null);
-            ExecuteDisconnectModules(context).Wait();
-        }
+//            if (context.ResponseMessage != null)
+//                channel.Send(context.ResponseMessage);
 
-        private void OnClientMessage(ITcpChannel channel, object message)
-        {
-            var context = new ClientContext(channel, message);
-            ExecuteModules(channel, context).Wait();
-        }
+//            if (result == ModuleResult.Disconnect)
+//            {
+//                channel.Close();
+//            }
+//        }
 
-        /// <summary>
-        /// One of our background threads got an unhandled exception
-        /// </summary>
-        public event EventHandler<ThreadExceptionEventArgs> ModuleFailed;
-    }
-}
+//        private void OnClientConnect(object sender, ClientConnectedEventArgs e)
+//        {
+//            var context = new ClientContext(e.Channel, null);
+//            ExecuteConnectModules(e.Channel, context).Wait();
+//        }
+
+//        private void OnClientDisconnect(object sender, ClientDisconnectedEventArgs e)
+//        {
+//            var context = new ClientContext(e.Channel, null);
+//            ExecuteDisconnectModules(context).Wait();
+//        }
+
+//        private void OnClientMessage(ITcpChannel channel, object message)
+//        {
+//            var context = new ClientContext(channel, message);
+//            ExecuteModules(channel, context).Wait();
+//        }
+
+//        /// <summary>
+//        /// One of our background threads got an unhandled exception
+//        /// </summary>
+//        public event EventHandler<ThreadExceptionEventArgs> ModuleFailed;
+//    }
+//}

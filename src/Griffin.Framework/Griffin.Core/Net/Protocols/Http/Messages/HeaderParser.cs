@@ -2,6 +2,8 @@
 using System.Text;
 using Griffin.Net.Channels;
 using System.Reflection;
+using System.Threading.Tasks;
+using Griffin.Net.Buffers;
 
 namespace Griffin.Net.Protocols.Http.Messages
 {
@@ -27,16 +29,13 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// <summary>
         /// Returns the current state that the parser is processing.
         /// </summary>
-        public string State
-        {
-            get { return _parserMethod.GetMethodInfo().Name; }
-        }
+        public string State => _parserMethod.GetMethodInfo().Name;
 
         /// <summary>
         ///     Will try to parse everything in the buffer
         /// </summary>
-        /// <param name="buffer">Buffer to read from.</param>
-        /// <param name="offset">Where to start parsing in the buffer.</param>
+        /// <param name="buffer">Buffer to read from, offset = where to start read, count = amount of bytes initially read into the buffer.</param>
+        /// <param name="channel">Used to fill the buffer if data is missing</param>
         /// <returns>offset where the parser ended.</returns>
         /// <remarks>
         ///     <para>
@@ -44,33 +43,43 @@ namespace Griffin.Net.Protocols.Http.Messages
         ///         indicate that there might be body bytes left in the buffer. You have to handle them by yourself.
         ///     </para>
         /// </remarks>
-        public int Parse(ISocketBuffer buffer, int offset)
+        public async Task Parse(IBufferSegment buffer, IInboundBinaryChannel channel)
         {
-            int theByte;
-            while ((theByte = Read(buffer, ref offset)) != -1)
+            await EnsureData(buffer, channel);
+
+            while (true)
             {
-                var ch = (char)theByte;
+                var ch = (char)Read(buffer);
                 _parserMethod(ch);
                 if (_isCompleted)
-                    break;
-            }
+                    return;
 
-            _isCompleted = false;
-            return offset;
+                await EnsureData(buffer, channel);
+            }
         }
-        private int Read(ISocketBuffer buffer, ref int offset)
+
+        private static async Task EnsureData(IBufferSegment buffer, IInboundBinaryChannel channel)
         {
-            if (_lookAhead != -1)
+            if (buffer.BytesLeft() > 0)
             {
-                var tmp = _lookAhead;
-                _lookAhead = -1;
-                return tmp;
+                return;
             }
 
-            if (offset - buffer.BaseOffset >= buffer.BytesTransferred)
-                return -1;
+            buffer.Count = 0;
+            buffer.Offset = 0;
+            await channel.ReceiveAsync(buffer);
+            if (buffer.Count == 0)
+                throw new ParseException("Channel got disconnected");
+        }
 
-            return buffer.Buffer[offset++];
+        private int Read(IBufferSegment buffer)
+        {
+            if (_lookAhead == -1) 
+                return buffer.Buffer[buffer.Offset++];
+
+            var tmp = _lookAhead;
+            _lookAhead = -1;
+            return tmp;
         }
 
         private void FirstLine(char ch)
@@ -174,26 +183,14 @@ namespace Griffin.Net.Protocols.Http.Messages
 
             if (ch == '\n')
             {
-                //Header completed
-                TriggerHeaderCompleted();
+                Reset();
+                _isCompleted = true;
                 return;
             }
 
 
             _lookAhead = ch;
         }
-
-        private void TriggerHeaderCompleted()
-        {
-            _isCompleted = true;
-            Completed();
-            Reset();
-        }
-
-        /// <summary>
-        /// The header part of the request/response has been parsed successfully. The remaining bytes is for the body
-        /// </summary>
-        public Action Completed = delegate { };
 
         private bool IsHorizontalWhitespace(char ch)
         {

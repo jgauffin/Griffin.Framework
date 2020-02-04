@@ -8,7 +8,7 @@ namespace Griffin.Net.Protocols.Http.Messages
     ///     Collection of HTTP headers
     /// </summary>
     /// <remarks>The values are not encoded, you must encode them when serializing the message.</remarks>
-    public class HeaderCollection : IHeaderCollection
+    public class HeaderCollection : IEnumerable<KeyValuePair<string, string>>
     {
         private readonly Action<string, string> _headerSetCallback;
         private readonly Dictionary<string, string> _items = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

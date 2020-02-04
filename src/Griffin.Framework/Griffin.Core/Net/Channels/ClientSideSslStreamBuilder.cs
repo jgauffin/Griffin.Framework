@@ -8,12 +8,11 @@ using System.Security.Cryptography.X509Certificates;
 namespace Griffin.Net.Channels
 {
     /// <summary>
-    /// Builder used to create SslStreams for client side applications.
+    ///     Builder used to create SslStreams for client side applications.
     /// </summary>
     public class ClientSideSslStreamBuilder : ISslStreamBuilder
     {
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="commonName">the domain name of the server that you are connecting to</param>
         public ClientSideSslStreamBuilder(string commonName)
@@ -23,27 +22,41 @@ namespace Griffin.Net.Channels
         }
 
         /// <summary>
-        /// Typically the domain name of the server that you are connecting to.
-        /// </summary>
-        public string CommonName { get; private set; }
-
-        /// <summary>
-        /// Leave empty to use the server certificate
+        ///     Leave empty to use the server certificate
         /// </summary>
         public X509Certificate Certificate { get; set; }
 
         /// <summary>
-        /// Allowed SSL protocols
+        ///     Typically the domain name of the server that you are connecting to.
+        /// </summary>
+        public string CommonName { get; }
+
+        /// <summary>
+        ///     Allowed SSL protocols
         /// </summary>
         public SslProtocols Protocols { get; set; }
 
+
+        public SslStream Build(IBinaryChannel channel, Socket socket)
+        {
+            return Build(socket);
+        }
+
         /// <summary>
-        /// Build a new SSL steam.
+        ///     Used to validate the certificate that the server have provided.
         /// </summary>
-        /// <param name="channel">Channel which will use the stream</param>
-        /// <param name="socket">Socket to wrap</param>
-        /// <returns>Stream which is ready to be used (must have been validated)</returns>
-        public SslStream Build(ITcpChannel channel, Socket socket)
+        /// <param name="sender">Server.</param>
+        /// <param name="certificate">The certificate.</param>
+        /// <param name="chain">The chain.</param>
+        /// <param name="sslpolicyerrors">The sslpolicyerrors.</param>
+        /// <returns><c>true</c> if the certificate will be allowed, otherwise <c>false</c>.</returns>
+        protected virtual bool OnRemoteCertifiateValidation(object sender, X509Certificate certificate, X509Chain chain,
+            SslPolicyErrors sslpolicyerrors)
+        {
+            return Certificate != null && certificate == null || Certificate == null && certificate != null;
+        }
+
+        private SslStream Build(Socket socket)
         {
             var ns = new NetworkStream(socket);
             var stream = new SslStream(ns, true, OnRemoteCertifiateValidation);
@@ -51,10 +64,7 @@ namespace Griffin.Net.Channels
             try
             {
                 X509CertificateCollection certificates = null;
-                if (Certificate != null)
-                {
-                    certificates = new X509CertificateCollection(new[] { Certificate });
-                }
+                if (Certificate != null) certificates = new X509CertificateCollection(new[] {Certificate});
 
                 stream.AuthenticateAsClient(CommonName, certificates, Protocols, false);
             }
@@ -72,19 +82,6 @@ namespace Griffin.Net.Channels
             }
 
             return stream;
-        }
-
-        /// <summary>
-        /// Used to validate the certificate that the server have provided.
-        /// </summary>
-        /// <param name="sender">Server.</param>
-        /// <param name="certificate">The certificate.</param>
-        /// <param name="chain">The chain.</param>
-        /// <param name="sslpolicyerrors">The sslpolicyerrors.</param>
-        /// <returns><c>true</c> if the certificate will be allowed, otherwise <c>false</c>.</returns>
-        protected virtual bool OnRemoteCertifiateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslpolicyerrors)
-        {
-            return (Certificate != null && certificate == null) || (Certificate == null && certificate != null);
         }
     }
 }

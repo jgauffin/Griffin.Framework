@@ -53,7 +53,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// <summary>
         ///     All parameters after the semi colon (if any).
         /// </summary>
-        public IParameterCollection Parameters
+        public ParameterCollection Parameters
         {
             get { return _parameters; }
         }

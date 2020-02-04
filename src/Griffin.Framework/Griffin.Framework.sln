@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26724.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core", "Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Core", "Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite", "Griffin.Data.Sqlite\Griffin.Data.Sqlite.csproj", "{EB3DF7D9-06FA-44D7-8052-5DDAC1CDAB01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Tests", "Griffin.Core.Tests\Griffin.Core.Tests.csproj", "{CBFF69B2-8340-412B-96E1-330131663F98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Core.Tests", "Griffin.Core.Tests\Griffin.Core.Tests.csproj", "{CBFF69B2-8340-412B-96E1-330131663F98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Sqlite.IntegrationTests", "Griffin.Data.Sqlite.IntegrationTests\Griffin.Data.Sqlite.IntegrationTests.csproj", "{069652A2-F059-4E8B-8161-B22262F8CC24}"
 EndProject
@@ -50,8 +50,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCqs.Contracts", "..\..\samples\Cqs\Webdemo\HttpCqs.Contracts\HttpCqs.Contracts.csproj", "{706683DF-9DE6-4BE6-A3F7-463E487737D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Microsoft.Extensions.DependencyInjection", "Griffin.Core.Microsoft.Extensions.DependencyInjection\Griffin.Core.Microsoft.Extensions.DependencyInjection.csproj", "{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.NetStandard2.0", "Griffin.Core.NetStandard2.0\Griffin.Core.NetStandard2.0.csproj", "{78FAB4C2-8A83-40BC-A008-E812E0EBC047}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,10 +125,6 @@ Global
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78FAB4C2-8A83-40BC-A008-E812E0EBC047}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78FAB4C2-8A83-40BC-A008-E812E0EBC047}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78FAB4C2-8A83-40BC-A008-E812E0EBC047}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78FAB4C2-8A83-40BC-A008-E812E0EBC047}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

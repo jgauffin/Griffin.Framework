@@ -1,416 +1,228 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Griffin.Net.Buffers;
-using Griffin.Net.Protocols;
 
 namespace Griffin.Net.Channels
 {
-    /// <summary>
-    /// Used to secure the transport.
-    /// </summary>
-    /// <remarks>
-    /// 
-    /// </remarks>
-    public class SecureTcpChannel : ITcpChannel
+    public class SecureTcpChannel : IBinaryChannel
     {
-        private static readonly object CloseMessage = new object();
-        private readonly SemaphoreSlim _closeEvent = new SemaphoreSlim(0, 1);
-        private readonly IMessageDecoder _decoder;
-        private readonly ISslStreamBuilder _sslStreamBuilder;
-        private readonly IMessageEncoder _encoder;
-        private readonly IMessageQueue _outboundMessages = new MessageQueue();
-        private object _currentOutboundMessage;
-        private DisconnectHandler _disconnectAction;
-        private MessageHandler _messageReceived;
-        private SocketBuffer _readBuffer;
-        private MessageHandler _sendCompleteAction;
+        private readonly List<IPooledObject> _pooledWriteBuffers = new List<IPooledObject>();
+        private readonly List<IBufferSegment> _queuedOutboundPackets = new List<IBufferSegment>();
+        private SslStream _ioStream;
         private Socket _socket;
-        private SslStream _stream;
-        private SocketBuffer _writeBuffer;
-        private BufferPreProcessorHandler _bufferPreProcessor;
+        private readonly ISslStreamBuilder _sslStreamBuilder;
+        private volatile ChannelState _state;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="readBuffer"></param>
-        /// <param name="encoder"></param>
-        /// <param name="decoder"></param>
-        /// <param name="sslStreamBuilder">Used to wrap the socket with a SSL stream</param>
-        public SecureTcpChannel(IBufferSlice readBuffer, IMessageEncoder encoder, IMessageDecoder decoder, ISslStreamBuilder sslStreamBuilder)
+        public SecureTcpChannel(ISslStreamBuilder sslStreamBuilder)
         {
-            if (readBuffer == null) throw new ArgumentNullException("readBuffer");
-            if (encoder == null) throw new ArgumentNullException("encoder");
-            if (decoder == null) throw new ArgumentNullException("decoder");
-            if (sslStreamBuilder == null) throw new ArgumentNullException("sslStreamBuilder");
-
-            _encoder = encoder;
-            _decoder = decoder;
-            _sslStreamBuilder = sslStreamBuilder;
-            _decoder.MessageReceived = OnMessageReceived;
-
-            _sendCompleteAction = (channel, message) => { };
-            _disconnectAction = (channel, exception) => { };
-            ChannelFailure = (channel, error) => HandleDisconnect(SocketError.ProtocolNotSupported);
-
+            _sslStreamBuilder = sslStreamBuilder ?? throw new ArgumentNullException(nameof(sslStreamBuilder));
+            MaxBytesPerWriteOperation = 65535;
+            ChannelData = new ChannelData();
             RemoteEndpoint = EmptyEndpoint.Instance;
-
-            _readBuffer = new SocketBuffer(readBuffer);
-            _writeBuffer = new SocketBuffer();
-            ChannelId = GuidFactory.Create().ToString();
-            Data = new ChannelData();
         }
 
         /// <summary>
-        ///     Channel got disconnected
         /// </summary>
-        public DisconnectHandler Disconnected
-        {
-            get { return _disconnectAction; }
-
-            set
-            {
-                if (value == null)
-                    _disconnectAction = (x, e) => { };
-                else
-                    _disconnectAction = value;
-            }
-        }
+        internal ChannelState State => _state;
 
         /// <summary>
-        ///     Channel received a new message
-        /// </summary>
-        public MessageHandler MessageReceived
-        {
-            get { return _messageReceived; }
-            set
-            {
-                if (value == null)
-                    throw new ArgumentException("You must have a MessageReceived delegate");
-
-
-                _messageReceived = value;
-            }
-        }
-
-        /// <summary>
-        ///     Channel has sent a message
-        /// </summary>
-        public MessageHandler MessageSent
-        {
-            get { return _sendCompleteAction; }
-
-            set
-            {
-                if (value == null)
-                {
-                    _sendCompleteAction = (x, y) => { };
-                    return;
-                }
-
-                _sendCompleteAction = value;
-            }
-        }
-
-        /// <summary>
-        /// Invoked if the decoder fails to handle an incoming message
+        ///     Address to the end point that we should connect to (or address to the EP if this is a server side channel).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// The handler MUST close the connection once a reply has been sent.
-        /// </para>
+        ///     <para>Typically a <see cref="IPEndPoint" /> or <see cref="DnsEndPoint" />.</para>
         /// </remarks>
-        public ChannelFailureHandler ChannelFailure { get; set; }
-
-        /// <summary>
-        /// Checks if the channel is connected.
-        /// </summary>
-        public bool IsConnected { get { return _socket.Connected; }}
-
-        /// <summary>
-        ///     Gets address of the connected end point.
-        /// </summary>
         public EndPoint RemoteEndpoint { get; private set; }
 
         /// <summary>
-        /// Identity of this channel
-        /// </summary>
-        /// <remarks>
-        /// Must be unique within a server.
-        /// </remarks>
-        public string ChannelId { get; private set; }
-
-        /// <summary>
-        ///     Assign a socket to this channel
-        /// </summary>
-        /// <param name="socket">Connected socket</param>
-        /// <remarks>
-        ///     the channel will start receive new messages as soon as you've called assign.
-        /// </remarks>
-        public void Assign(Socket socket)
-        {
-            if (socket == null) throw new ArgumentNullException("socket");
-            if (MessageReceived == null)
-                throw new InvalidOperationException("Must handle the MessageReceived callback before invoking this method.");
-
-            _socket = socket;
-            RemoteEndpoint = socket.RemoteEndPoint;
-            _stream = _sslStreamBuilder.Build(this, socket);
-            ReadAsync();
-        }
-
-        /// <summary>
-        ///     Send a new message
-        /// </summary>
-        /// <param name="message">Message to send</param>
-        /// <remarks>
-        ///     <para>
-        ///         Outbound messages are enqueued and sent in order.
-        ///     </para>
-        ///     <para>
-        ///         You may enqueue <c>byte[]</c> arrays or <see cref="Stream" />  objects. They will not be serialized but
-        ///         MicroMessage framed directly.
-        ///     </para>
-        /// </remarks>
-        public void Send(object message)
-        {
-            lock (_outboundMessages)
-            {
-                if (_currentOutboundMessage != null)
-                {
-                    _outboundMessages.Enqueue(message);
-                    return;
-                }
-
-                _currentOutboundMessage = message;
-            }
-
-            SendCurrent();
-        }
-
-        /// <summary>
-        /// Can be used to store information in the channel so that you can access it for later requests.
-        /// </summary>
-        /// <remarks>
-        /// <para>All data is lost when the channel is closed.</para>
-        /// </remarks>
-        public IChannelData Data { get; private set; }
-
-
-        /// <summary>
-        /// Pre processes incoming bytes before they are passed to the message builder.
-        /// </summary>
-        /// <remarks>
-        /// Can be used if you for instance use a custom authentication mechanism which needs to process incoming
-        /// bytes.
-        /// </remarks>
-        public BufferPreProcessorHandler BufferPreProcessor
-        {
-            get { return _bufferPreProcessor; }
-            set { _bufferPreProcessor = value; }
-        }
-
-        /// <summary>
-        /// Queue used to store messages that are going to be sent to the remote end point.
-        /// </summary>
-        /// <remarks>
-        /// <para>We use a queue so that the caller can fire and forget. We send all messages in order as soon as possible.</para>
-        /// </remarks>
-        public IMessageQueue OutboundMessageQueue { get; set; }
-
-        /// <summary>
-        /// Close channel, wait for all messages to be sent.
-        /// </summary>
-        public void Close()
-        {
-            Send(CloseMessage);
-            _closeEvent.Wait(5000);
-        }
-
-        /// <summary>
-        ///     Signal channel to close.
+        ///     Indicates if the channel is open or not.
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Will wait for all data to be sent before closing.
+        ///         The reliability of this flag varies depending on the communication technology. The connection
+        ///         might be down due to network failures etc. hence it tells what the channel sees as the current truth,
+        ///         but that can change with the next IO operation which would challenge that truth.
         ///     </para>
         /// </remarks>
+        public bool IsOpen => State == ChannelState.Open;
+
+        /// <summary>
+        ///     You can use channel data to store connection specific information (compare it to a HTTP session).
+        /// </summary>
+        public IChannelData ChannelData { get; }
+
+        /// <summary>
+        ///     Channel data is an dictionary which means a lookup every time. This token can be used as an alternative.
+        /// </summary>
+        public object UserToken { get; set; }
+
+        public bool IsConnected => _socket?.Connected == true;
+
+        /// <summary>
+        ///     Amount of bytes which can be included in a send operation.
+        /// </summary>
+        public int MaxBytesPerWriteOperation { get; set; }
+
+        /// <summary>
+        ///     Channel have been closed (by either side).
+        /// </summary>
+        public event EventHandler ChannelClosed;
+
         public Task CloseAsync()
         {
-            Send(CloseMessage);
-            var t = _closeEvent.WaitAsync(5000);
-
-            // release again so that we can take reuse it internally
-            t.ContinueWith(x => _closeEvent.Release());
-
-            return t;
+            _ioStream.Close();
+            _socket.Close();
+            _ioStream = null;
+            _socket = null;
+            return Task.FromResult<object>(null);
         }
 
         /// <summary>
-        ///     Cleanup everything so that the channel can be reused.
+        ///     Assign a socket to this channel.
         /// </summary>
-        public void Cleanup()
+        /// <param name="socket">A connected socket.</param>
+        /// <exception cref="InvalidOperationException">
+        ///     This channel already have an connected socket. Cleanup before assigning a
+        ///     new one.
+        /// </exception>
+        public void Assign(Socket socket)
         {
-            _encoder.Clear();
-            _decoder.Clear();
-            _currentOutboundMessage = null;
-            _socket = null;
-            _stream = null;
+            if (_socket?.Connected == true)
+                throw new InvalidOperationException(
+                    "This channel already have an connected socket. Cleanup before assigning a new one.");
 
-            if (Data != null)
-                Data.Clear();
+            _socket = socket;
+            _ioStream = _sslStreamBuilder.Build(this, _socket);
+        }
 
+        public async Task OpenAsync()
+        {
+            if (RemoteEndpoint == EmptyEndpoint.Instance)
+                throw new InvalidOperationException("No remote endpoint have been specified.");
+
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var awaitable = new SocketAwaitable(new SocketAsyncEventArgs());
+            await awaitable.ConnectAsync(_socket, RemoteEndpoint);
+            RemoteEndpoint = _socket.RemoteEndPoint;
+            _ioStream = _sslStreamBuilder.Build(this, _socket);
+        }
+
+        public async Task OpenAsync(EndPoint endpoint)
+        {
+            RemoteEndpoint = endpoint;
+            await OpenAsync();
+        }
+
+        void IBinaryChannel.Reset()
+        {
+            Reset();
+        }
+
+        public async Task SendAsync(byte[] buffer, int offset, int count)
+        {
+            if (!_queuedOutboundPackets.Any())
+            {
+                await _ioStream.WriteAsync(buffer, offset, count);
+                return;
+            }
+
+            _queuedOutboundPackets.Add(new StandAloneBuffer(buffer, offset, count));
+            await SendAllQueuedBuffers();
+        }
+
+        public async Task SendAsync(IEnumerable<IBufferSegment> buffers)
+        {
+            await SendAllQueuedBuffers();
+
+            foreach (var packet in buffers) await _ioStream.WriteAsync(packet.Buffer, packet.Offset, packet.Count);
+        }
+
+        public async Task SendAsync(IBufferSegment buffer)
+        {
+            await SendAllQueuedBuffers();
+            await _ioStream.WriteAsync(buffer.Buffer, buffer.Offset, buffer.Count);
+        }
+
+        public async Task SendMoreAsync(byte[] buffer, int offset, int count)
+        {
+            _queuedOutboundPackets.Add(new StandAloneBuffer(buffer, offset, count));
+            if (_queuedOutboundPackets.Sum(x => x.Count) < MaxBytesPerWriteOperation)
+                return;
+
+            await SendAllQueuedBuffers();
+        }
+
+        public async Task SendMoreAsync(IBufferSegment segment)
+        {
+            _queuedOutboundPackets.Add(segment);
+
+            if (segment is IPooledObject p)
+                _pooledWriteBuffers.Add(p);
+
+            if (_queuedOutboundPackets.Sum(x => x.Count) < MaxBytesPerWriteOperation)
+                return;
+
+            await SendAllQueuedBuffers();
+        }
+
+        /// <summary>
+        ///     Receive bytes from the remote endpoint.
+        /// </summary>
+        /// <param name="readBuffer">Buffer to fill with data.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     <para>
+        ///         This method will receive from the current offset and up to the amount of bytes that are left from the current
+        ///         offset to the end of the buffer.
+        ///         Once the read completes, it will increase the <c>Count</c> with the number of received bytes.
+        ///     </para>
+        /// </remarks>
+        public async Task<int> ReceiveAsync(IBufferSegment readBuffer)
+        {
+            if (_ioStream == null)
+                throw new InvalidOperationException("Assign a socket first.");
+
+            var usedCount = readBuffer.Offset - readBuffer.StartOffset;
+            var read = await _ioStream.ReadAsync(readBuffer.Buffer, readBuffer.Offset, readBuffer.Capacity - usedCount);
+            readBuffer.Count += read;
+            return read;
+        }
+
+        //public async Task SendMoreAsync(byte[] buffer, int offset, int count, bool deliverIfChannelIsFree)
+        //{
+        //    _queuedOutboundPackets.Add(new SendPacketsElement(buffer, offset, count));
+        //    if (_queuedOutboundPackets.Sum(x => x.Count) < MaxBytesPerWriteOperation || _socket.IsWritePending)
+        //        return;
+
+        //    await SendAllQueuedBuffers();
+        //}
+
+
+        private void Reset()
+        {
             RemoteEndpoint = EmptyEndpoint.Instance;
+            _state = ChannelState.Closed;
+            _socket = null;
+            _ioStream.Close();
+            _queuedOutboundPackets.Clear();
+            foreach (var writeBuffer in _pooledWriteBuffers) writeBuffer.ReturnToPool();
 
-            object msg;
-            while (_outboundMessages.TryDequeue(out msg))
-            {
-            }
+            _pooledWriteBuffers.Clear();
         }
 
-
-        private void HandleDisconnect(SocketError socketError)
+        private async Task SendAllQueuedBuffers()
         {
-            _disconnectAction(this, new SocketException((int) socketError));
-            Cleanup();
-        }
+            foreach (var packet in _queuedOutboundPackets)
+                await _ioStream.WriteAsync(packet.Buffer, packet.Offset, packet.Count);
 
-        private void HandleDisconnect(Exception exception)
-        {
-            _disconnectAction(this, exception);
-            Cleanup();
-        }
+            _queuedOutboundPackets.Clear();
 
-
-        private void OnMessageReceived(object obj)
-        {
-            MessageReceived(this, obj);
-        }
-
-        private void OnReadCompleted(IAsyncResult ar)
-        {
-            var readBytes = 0;
-            try
-            {
-                readBytes = _stream.EndRead(ar);
-            }
-            catch (Exception ex)
-            {
-                HandleDisconnect(ex);
-            }
-
-            if (readBytes == 0)
-            {
-                HandleDisconnect(SocketError.ConnectionReset);
-                return;
-            }
-
-            _readBuffer.BytesTransferred = readBytes;
-            _readBuffer.Offset = _readBuffer.BaseOffset;
-            _readBuffer.Count = readBytes;
-            if (_bufferPreProcessor != null)
-            {
-                var read = _bufferPreProcessor(this, _readBuffer);
-                _readBuffer.Count -= read;
-                _readBuffer.Offset += read;
-            }
-
-            try
-            {
-                if (_readBuffer.Count > 0)
-                    _decoder.ProcessReadBytes(_readBuffer);
-            }
-            catch (Exception exception)
-            {
-                ChannelFailure(this, exception);
-                return;
-            }
-
-            ReadAsync();
-        }
-
-        private void OnSendCompleted(IAsyncResult ar)
-        {
-            try
-            {
-                _stream.EndWrite(ar);
-            }
-            catch (Exception)
-            {
-                // ignore errors, let the receiving end take care of that.
-                return;
-            }
-
-            var isComplete = _encoder.OnSendCompleted(_writeBuffer.Count);
-            if (!isComplete)
-            {
-                _encoder.Send(_writeBuffer);
-                _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);
-                return;
-            }
-
-            var msg = _currentOutboundMessage;
-
-            lock (_outboundMessages)
-            {
-                if (!_outboundMessages.TryDequeue(out _currentOutboundMessage))
-                {
-                    _currentOutboundMessage = null;
-                    _sendCompleteAction(this, msg);
-                    return;
-                }
-            }
-
-            _sendCompleteAction(this, msg);
-            SendCurrent();
-        }
-
-        private void ReadAsync()
-        {
-            try
-            {
-                _stream.BeginRead(_readBuffer.Buffer, _readBuffer.Offset, _readBuffer.Capacity, OnReadCompleted, null);
-            }
-            catch (Exception e)
-            {
-                HandleDisconnect(e);
-            }
-        }
-
-        private void SendCurrent()
-        {
-            // Allows us to send everything before closing the connection.
-            if (_currentOutboundMessage == CloseMessage)
-            {
-                try
-                {
-                    _socket.Shutdown(SocketShutdown.Both);
-                }
-                catch (Exception e)
-                {
-                    HandleDisconnect(e);
-                }
-                _currentOutboundMessage = null;
-                _closeEvent.Release();
-                return;
-            }
-
-
-            _encoder.Prepare(_currentOutboundMessage);
-            _encoder.Send(_writeBuffer);
-            try
-            {
-                _stream.BeginWrite(_writeBuffer.Buffer, _writeBuffer.Offset, _writeBuffer.Count, OnSendCompleted, null);
-            }
-            catch (Exception e)
-            {
-                HandleDisconnect(e);
-            }
+            foreach (var writeBuffer in _pooledWriteBuffers) writeBuffer.ReturnToPool();
+            _pooledWriteBuffers.Clear();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Griffin.Net.Channels
         /// <param name="channel">Channel which will use the stream</param>
         /// <param name="socket">Socket to wrap</param>
         /// <returns>Stream which is ready to be used (must have been validated)</returns>
-        public SslStream Build(ITcpChannel channel, Socket socket)
+        public SslStream Build(IBinaryChannel channel, Socket socket)
         {
             var ns = new NetworkStream(socket);
             var stream = new SslStream(ns, true, OnRemoteCertifiateValidation);

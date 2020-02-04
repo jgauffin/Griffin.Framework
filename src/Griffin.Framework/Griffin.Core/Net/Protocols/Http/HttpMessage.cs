@@ -9,7 +9,7 @@ namespace Griffin.Net.Protocols.Http
     /// <summary>
     /// Base class for HTTP requests and responses.
     /// </summary>
-    public abstract class HttpMessage : IHttpMessage
+    public abstract class HttpMessage
     {
         /// <summary>
         ///     Used to be able to send responses in the same order as the request came in (if the web browser supports request
@@ -82,10 +82,10 @@ namespace Griffin.Net.Protocols.Http
         /// <remarks>
         /// Missing headers will return <c>null</c> as value
         /// </remarks>
-        public IHeaderCollection Headers
-        {
-            get { return _headers; }
-        }
+        public HeaderCollection Headers => _headers;
+
+
+        public HttpContent Content { get; set; }
 
         /// <summary>
         ///     Body in the HTTP message

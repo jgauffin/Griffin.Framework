@@ -1,9 +1,12 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Net.Buffers;
+using Griffin.Net.Channels;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
+using NSubstitute;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
@@ -14,87 +17,79 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
     public class CodecTests
     {
         [Fact]
-        public void codec_a_string_message()
+        public async Task codec_a_string_message()
         {
-            object receivedMessage = null;
-            var encoderSlice = new BufferSlice(new byte[65535], 0, 65535);
+            var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, encoderSlice);
-            var decoder = new MicroMessageDecoder(serializer) {MessageReceived = o => receivedMessage = o};
+            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var decoder = new MicroMessageDecoder(serializer);
             var expected = "Hello world";
-            var encoderArgs = new SocketBufferFake();
-            
-            encoder.Prepare(expected);
-            encoder.Send(encoderArgs);
-            encoderArgs.BytesTransferred = encoderArgs.Count;
-            decoder.ProcessReadBytes(encoderArgs);
+            var channel = Substitute.For<IBinaryChannel>();
 
-            receivedMessage.Should().Be(expected);
+            await encoder.EncodeAsync(expected, channel);
+            buffer.Offset = 0;
+            var actual = await decoder.DecodeAsync(channel, buffer);
+
+            actual.Should().Be(expected);
         }
 
         [Fact]
-        public void codec_a_stream()
+        public async Task codec_a_stream()
         {
-            object receivedMessage = null;
-            var encoderSlice = new BufferSlice(new byte[65535], 0, 65535);
+            var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, encoderSlice);
-            var decoder = new MicroMessageDecoder(serializer) {MessageReceived = o => receivedMessage = o};
+            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var decoder = new MicroMessageDecoder(serializer);
             var expected = "Hello world";
             var stream = new MemoryStream(Encoding.ASCII.GetBytes(expected));
             stream.SetLength(expected.Length);
-            var encoderArgs = new SocketBufferFake();
+            var channel = Substitute.For<IBinaryChannel>();
 
-            encoder.Prepare(stream);
-            encoder.Send(encoderArgs);
-            encoderArgs.BytesTransferred = encoderArgs.Count;
-            decoder.ProcessReadBytes(encoderArgs);
+            await encoder.EncodeAsync(expected, channel);
+            buffer.Offset = 0;
+            var actual = await decoder.DecodeAsync(channel, buffer);
 
-            var reader = new StreamReader((Stream) receivedMessage);
+            var reader = new StreamReader((Stream) actual);
             var msg = reader.ReadToEnd();
             msg.Should().Be(expected);
         }
 
         [Fact]
-        public void codec_a_byte_buffer()
+        public async Task codec_a_byte_buffer()
         {
-            object receivedMessage = null;
-            var encoderSlice = new BufferSlice(new byte[65535], 0, 65535);
+            var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, encoderSlice);
-            var decoder = new MicroMessageDecoder(serializer) { MessageReceived = o => receivedMessage = o };
+            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var decoder = new MicroMessageDecoder(serializer);
             var expected = new byte[] {1, 2, 3, 4, 5, 6, 7};
-            var encoderArgs = new SocketBufferFake();
+            var channel = Substitute.For<IBinaryChannel>();
 
-            encoder.Prepare(expected);
-            encoder.Send(encoderArgs);
-            encoderArgs.BytesTransferred = encoderArgs.Count;
-            decoder.ProcessReadBytes(encoderArgs);
+            await encoder.EncodeAsync(expected, channel);
+            buffer.Offset = 0;
+            var actual = await decoder.DecodeAsync(channel, buffer);
 
-            var ms = (MemoryStream) receivedMessage;
+            var ms = (MemoryStream) actual;
             var buf = ms.GetBuffer();
             expected.Should().BeSubsetOf(buf);
             ms.Length.Should().Be(expected.Length);
         }
 
         [Fact]
-        public void codec_a_custom_type()
+        public async Task codec_a_custom_type()
         {
-            object receivedMessage = null;
-            var encoderSlice = new BufferSlice(new byte[65535], 0, 65535);
+            var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, encoderSlice);
-            var decoder = new MicroMessageDecoder(serializer) { MessageReceived = o => receivedMessage = o };
+            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var decoder = new MicroMessageDecoder(serializer);
             var expected = new CustomType {Name = "Arne"};
-            var encoderArgs = new SocketBufferFake();
+            var channel = Substitute.For<IBinaryChannel>();
 
-            encoder.Prepare(expected);
-            encoder.Send(encoderArgs);
-            encoderArgs.BytesTransferred = encoderArgs.Count;
-            decoder.ProcessReadBytes(encoderArgs);
+            await encoder.EncodeAsync(expected, channel);
+            buffer.Offset = 0;
+            var actual = await decoder.DecodeAsync(channel, buffer);
 
-            receivedMessage.Should().BeOfType<CustomType>();
-            receivedMessage.As<CustomType>().Name.Should().Be(expected.Name);
+            actual.Should().BeOfType<CustomType>();
+            actual.As<CustomType>().Name.Should().Be(expected.Name);
         }
 
 

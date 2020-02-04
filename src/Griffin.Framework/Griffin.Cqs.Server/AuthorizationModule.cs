@@ -12,7 +12,7 @@ namespace Griffin.Cqs.Server
     ///     Checks the <see cref="AuthorizeAttribute" /> on the current message to see if the logged in user have permission to
     ///     execute the message.
     /// </summary>
-    public class AuthorizationModule : IServerModule
+    public class AuthorizationModule : CqsMiddleware
     {
         public async Task BeginRequestAsync(IClientContext context)
         {
@@ -55,6 +55,10 @@ namespace Griffin.Cqs.Server
                 }
             }
             return ModuleResult.Continue;
+        }
+
+        public AuthorizationModule(CqsMessageProcessor messageProcessor) : base(messageProcessor)
+        {
         }
     }
 }

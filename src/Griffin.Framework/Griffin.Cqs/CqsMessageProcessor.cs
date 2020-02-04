@@ -6,26 +6,22 @@ using Griffin.Cqs.Net;
 
 namespace Griffin.Cqs
 {
-   /// <summary>
-    /// Used to execute CQS messages server side.
+    /// <summary>
+    ///     Used to execute CQS messages server side.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// You MUST configure the BUS properties for this class to work as expected.
-    /// </para>
+    ///     <para>
+    ///         You MUST configure the BUS properties for this class to work as expected.
+    ///     </para>
     /// </remarks>
     public class CqsMessageProcessor
     {
         private readonly MethodInfo _commandMethod;
         private readonly MethodInfo _queryMethod;
         private readonly MethodInfo _requestMethod;
-        private ICommandBus _commandBus;
-        private IEventBus _eventBus;
-        private IQueryBus _queryBus;
-        private IRequestReplyBus _requestReplyBus;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CqsMessageProcessor"/> class.
+        ///     Initializes a new instance of the <see cref="CqsMessageProcessor" /> class.
         /// </summary>
         public CqsMessageProcessor()
         {
@@ -35,45 +31,29 @@ namespace Griffin.Cqs
         }
 
         /// <summary>
-        /// Command bus implementation to use for inbound commands.
+        ///     Command bus implementation to use for inbound commands.
         /// </summary>
-        public ICommandBus CommandBus
-        {
-            get { return _commandBus; }
-            set { _commandBus = value; }
-        }
+        public ICommandBus CommandBus { get; set; }
 
 
         /// <summary>
-        /// Query bus implementation to use for inbound queries.
+        ///     Event bus implementation to use for inbound application events.
         /// </summary>
-        public IQueryBus QueryBus
-        {
-            get { return _queryBus; }
-            set { _queryBus = value; }
-        }
+        public IEventBus EventBus { get; set; }
 
 
         /// <summary>
-        /// Event bus implementation to use for inbound application events.
+        ///     Query bus implementation to use for inbound queries.
         /// </summary>
-        public IEventBus EventBus
-        {
-            get { return _eventBus; }
-            set { _eventBus = value; }
-        }
+        public IQueryBus QueryBus { get; set; }
 
 
         /// <summary>
-        /// Request/reply bus implementation to use for inbound requests.
+        ///     Request/reply bus implementation to use for inbound requests.
         /// </summary>
-        public IRequestReplyBus RequestReplyBus
-        {
-            get { return _requestReplyBus; }
-            set { _requestReplyBus = value; }
-        }
+        public IRequestReplyBus RequestReplyBus { get; set; }
 
-      
+
         /// <summary>
         ///     ProcessAsync message
         /// </summary>
@@ -83,15 +63,15 @@ namespace Griffin.Cqs
         {
             if (message is IQuery)
             {
-                var dto = (IQuery)message;
+                var dto = (IQuery) message;
                 var type = message.GetType();
                 var replyType = type.BaseType.GetGenericArguments()[0];
                 var method = _queryMethod.MakeGenericMethod(type, replyType);
                 try
                 {
-                    var task = (Task)method.Invoke(this, new[] { message });
+                    var task = (Task) method.Invoke(this, new[] {message});
                     await task;
-                    return new ClientResponse(dto.QueryId, ((dynamic)task).Result);
+                    return new ClientResponse(dto.QueryId, ((dynamic) task).Result);
                 }
                 catch (TargetInvocationException exception)
                 {
@@ -101,12 +81,12 @@ namespace Griffin.Cqs
 
             if (message is Command)
             {
-                var dto = (Command)message;
+                var dto = (Command) message;
                 var type = message.GetType();
                 var method = _commandMethod.MakeGenericMethod(type);
                 try
                 {
-                    var task = (Task)method.Invoke(this, new[] { message });
+                    var task = (Task) method.Invoke(this, new[] {message});
                     await task;
                     return new ClientResponse(dto.CommandId, null);
                 }
@@ -114,34 +94,32 @@ namespace Griffin.Cqs
                 {
                     return new ClientResponse(dto.CommandId, exception.InnerException);
                 }
-
             }
 
             if (message is IRequest)
             {
-                var dto = (IRequest)message;
+                var dto = (IRequest) message;
                 var type = message.GetType();
                 var replyType = type.BaseType.GetGenericArguments()[0];
                 var method = _requestMethod.MakeGenericMethod(type, replyType);
                 try
                 {
-                    var task = (Task)method.Invoke(this, new[] { message });
+                    var task = (Task) method.Invoke(this, new[] {message});
                     await task;
-                    return new ClientResponse(dto.RequestId, ((dynamic)task).Result);
+                    return new ClientResponse(dto.RequestId, ((dynamic) task).Result);
                 }
                 catch (TargetInvocationException exception)
                 {
                     return new ClientResponse(dto.RequestId, exception.InnerException);
                 }
-
             }
 
             if (message is ApplicationEvent)
             {
-                var dto = (ApplicationEvent)message;
+                var dto = (ApplicationEvent) message;
                 try
                 {
-                    var task = _eventBus.PublishAsync(dto);
+                    var task = EventBus.PublishAsync(dto);
                     await task;
                     return new ClientResponse(dto.EventId, null);
                 }
@@ -157,17 +135,17 @@ namespace Griffin.Cqs
 
         private Task ExecuteCommand<T>(T command) where T : Command
         {
-            return _commandBus.ExecuteAsync(command);
+            return CommandBus.ExecuteAsync(command);
         }
 
         private Task ExecuteQuery<T, TResult>(T query) where T : Query<TResult>
         {
-            return _queryBus.QueryAsync(query);
+            return QueryBus.QueryAsync(query);
         }
 
         private Task ExecuteRequest<T, TResult>(T query) where T : Request<TResult>
         {
-            return _requestReplyBus.ExecuteAsync(query);
+            return RequestReplyBus.ExecuteAsync(query);
         }
     }
 }

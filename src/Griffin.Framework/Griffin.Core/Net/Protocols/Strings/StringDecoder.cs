@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
+using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.Protocols.Strings
 {
     /// <summary>
-    /// Decodes messages that are represented as strings.
+    /// Decodes messages that are represented as strings (4 bytes length and the rest is the string)
     /// </summary>
     public class StringDecoder : IMessageDecoder
     {
         private byte[] _buffer = new byte[65535];
-        private int _bytesLeftForCurrentMsg = -1;
         private Encoding _encoding;
-        private Action<object> _messageReceived;
-        private int _msgLength;
-        private int _offsetInOurBuffer;
-        private bool _readHeader = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringDecoder"/> class.
         /// </summary>
         public StringDecoder()
         {
-            _bytesLeftForCurrentMsg = 4;
-            _readHeader = true;
-            _messageReceived = o => { };
             _encoding = Encoding.UTF8;
         }
 
@@ -33,7 +27,7 @@ namespace Griffin.Net.Protocols.Strings
         /// </summary>
         public Encoding Encoding
         {
-            get { return _encoding; }
+            get => _encoding;
             set
             {
                 if (value == null)
@@ -48,36 +42,43 @@ namespace Griffin.Net.Protocols.Strings
         /// </summary>
         /// <param name="buffer">Buffer</param>
         /// <remarks></remarks>
-        public void ProcessReadBytes(ISocketBuffer buffer)
+        public async Task<object> DecodeAsync(IInboundBinaryChannel channel, IBufferSegment buffer)
         {
-            var offsetInSocketBuffer = buffer.Offset;
-            var bytesLeftInSocketBuffer = buffer.BytesTransferred;
-
-            while (bytesLeftInSocketBuffer > 0)
+            while (buffer.BytesLeft() < 5)
             {
-                var len = Math.Min(bytesLeftInSocketBuffer, _bytesLeftForCurrentMsg);
-                Buffer.BlockCopy(buffer.Buffer, offsetInSocketBuffer, _buffer, _offsetInOurBuffer, buffer.BytesTransferred);
-                offsetInSocketBuffer += len;
-                bytesLeftInSocketBuffer -= len;
-                _bytesLeftForCurrentMsg -= len;
-                _offsetInOurBuffer += len;
-
-                if (_bytesLeftForCurrentMsg != 0)
-                    continue;
-
-                if (_readHeader)
-                {
-                    _offsetInOurBuffer = 0;
-                    _msgLength = _bytesLeftForCurrentMsg = BitConverter.ToInt32(_buffer, 0);
-                    _readHeader = false;
-                }
-                else
-                {
-                    _readHeader = true;
-                    _bytesLeftForCurrentMsg = 4;
-                    MessageReceived(Encoding.GetString(_buffer, 0, _msgLength));
-                }
+                await buffer.ReceiveMore(channel);
             }
+
+            var len = BitConverter.ToInt32(buffer.Buffer, buffer.Offset);
+            buffer.Offset += 4;
+
+            var bytesRemaining = buffer.Count - (buffer.Offset - buffer.StartOffset);
+            if (bytesRemaining >= len)
+            {
+                var result= Encoding.GetString(buffer.Buffer, buffer.Offset, len);
+                buffer.Offset += len;
+                return result;
+            }
+
+            if (_buffer.Length < len)
+                _buffer = new byte[len];
+
+            var bytesLeft = len;
+            while (true)
+            {
+                var toCopy = Math.Min(buffer.BytesLeft(), bytesLeft);
+                Buffer.BlockCopy(buffer.Buffer, buffer.Offset, _buffer, len-bytesLeft, toCopy);
+                bytesLeft -= toCopy;
+
+                if (bytesLeft > 0)
+                    break;
+
+                buffer.Offset = 0;
+                buffer.Count = 0;
+                await channel.ReceiveAsync(buffer);
+            }
+
+            return Encoding.GetString(_buffer, 0, len);
         }
 
         /// <summary>
@@ -85,26 +86,7 @@ namespace Griffin.Net.Protocols.Strings
         /// </summary>
         public void Clear()
         {
-            _offsetInOurBuffer = -1;
-            _bytesLeftForCurrentMsg = -1;
         }
 
-        /// <summary>
-        ///     A message has been received.
-        /// </summary>
-        /// <remarks>
-        ///     Do note that streams are being reused by the decoder, so don't try to close it.
-        /// </remarks>
-        public Action<object> MessageReceived
-        {
-            get { return _messageReceived; }
-            set
-            {
-                if (value == null)
-                    value = o => { };
-
-                _messageReceived = value;
-            }
-        }
     }
 }

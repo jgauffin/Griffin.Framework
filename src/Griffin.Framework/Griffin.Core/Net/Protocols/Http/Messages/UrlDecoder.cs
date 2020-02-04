@@ -20,7 +20,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// <param name="parameters">Parameter collection to fill</param>
         /// <returns>A collection</returns>
         /// <exception cref="ArgumentNullException"><c>reader</c> is <c>null</c>.</exception>
-        public void Parse(TextReader reader, IParameterCollection parameters)
+        public void Parse(TextReader reader, ParameterCollection parameters)
         {
             if (reader == null)
                 throw new ArgumentNullException("reader");

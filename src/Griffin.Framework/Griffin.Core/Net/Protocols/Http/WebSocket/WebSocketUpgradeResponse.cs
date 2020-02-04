@@ -3,20 +3,21 @@
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
     /// <summary>
-    /// Used to confirm that we can switch to WEBSOCKETs from regular HTTP Requests.
+    /// Different types of Websocket responses.
     /// </summary>
-    public class WebSocketUpgradeResponse : HttpResponse
+    public class WebSocketResponses
     {
         /// <summary>
-        /// Create a new instance of <see cref="WebSocketUpgradeResponse"/>
+        ///     Used to confirm that we can switch to WEBSOCKETs from regular HTTP Requests.
         /// </summary>
         /// <param name="webSocketKey">Key from the HTTP request.</param>
-        public WebSocketUpgradeResponse(string webSocketKey)
-            : base(HttpStatusCode.SwitchingProtocols, "Switching Protocols", "HTTP/1.1")
+        public static HttpResponse Upgrade(string webSocketKey)
         {
-            Headers["Upgrade"] = "websocket";
-            Headers["Connection"] = "Upgrade";
-            Headers["Sec-WebSocket-Accept"] = WebSocketUtils.HashWebSocketKey(webSocketKey);
+            var response = new HttpResponse(HttpStatusCode.SwitchingProtocols, "Switching Protocols", "HTTP/1.1");
+            response.Headers["Upgrade"] = "websocket";
+            response.Headers["Connection"] = "Upgrade";
+            response.Headers["Sec-WebSocket-Accept"] = WebSocketUtils.HashWebSocketKey(webSocketKey);
+            return response;
         }
     }
 }

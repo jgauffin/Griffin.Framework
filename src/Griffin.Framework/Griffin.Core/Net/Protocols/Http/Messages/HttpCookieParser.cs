@@ -9,7 +9,7 @@ namespace Griffin.Net.Protocols.Http.Messages
     public class HttpCookieParser
     {
         private string _headerValue;
-        private HttpCookieCollection<IHttpCookie> _cookies;
+        private HttpCookieCollection<HttpCookie> _cookies;
         private int _index;
         private string _cookieName = "";
         private Action _parserMethod;
@@ -160,7 +160,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// Parse cookie string
         /// </summary>
         /// <returns>A generated cookie collection.</returns>
-        public IHttpCookieCollection<IHttpCookie> Parse(string value)
+        public HttpCookieCollection<HttpCookie> Parse(string value)
         {
             if (value == null) throw new ArgumentNullException("value");
 
@@ -168,7 +168,7 @@ namespace Griffin.Net.Protocols.Http.Messages
             _cookieValue = "";
             _cookieName = "";
             _headerValue = value;
-            _cookies = new HttpCookieCollection<IHttpCookie>();
+            _cookies = new HttpCookieCollection<HttpCookie>();
             _parserMethod = Name_Before;
 
             while (!IsEOF)

@@ -10,14 +10,14 @@ namespace Griffin.Net.LiteServer.Modules
     /// </summary>
     public class ClientContext : IClientContext
     {
-        private ITcpChannel _channel;
+        private IBinaryChannel _channel;
 
-        public ClientContext(ITcpChannel channel, object message)
+        public ClientContext(IBinaryChannel channel, object message)
         {
             if (channel == null) throw new ArgumentNullException("channel");
             _channel = channel;
             RequestMessage = message;
-            ChannelData = Channel.Data;
+            ChannelData = Channel.ChannelData;
             RemoteEndPoint = channel.RemoteEndpoint;
             RequestData = new DictionaryContextData();
         }
@@ -57,9 +57,6 @@ namespace Griffin.Net.LiteServer.Modules
         /// </summary>
         public Exception Error { get; set; }
 
-        internal ITcpChannel Channel
-        {
-            get { return _channel; }
-        }
+        internal IBinaryChannel Channel => _channel;
     }
 }

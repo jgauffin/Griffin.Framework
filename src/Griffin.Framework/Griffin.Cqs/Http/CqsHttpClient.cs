@@ -155,6 +155,11 @@ namespace Griffin.Cqs.Http
             return (TReply) await DoRequestAsync("REQUEST", "POST", _webApiUri + _requestUri, request);
         }
 
+        /// <summary>
+        /// Timeout per request/response. Default is 30 seconds.
+        /// </summary>
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
+
         private async Task<object> DeserializeBody(HttpWebResponse response)
         {
             var responseTypeName = response.Headers["X-Cqs-Object-Type"];
@@ -197,17 +202,16 @@ namespace Griffin.Cqs.Http
                 stream.Write(jsonBuffer, 0, jsonBuffer.Length);
                 stream.Close();
 
-                if (RequestDecorator != null)
-                    RequestDecorator(request);
+                RequestDecorator?.Invoke(request);
 
+                request.Timeout = (int)Timeout.TotalSeconds;
                 response = (HttpWebResponse) await request.GetResponseAsync();
                 return await DeserializeBody(response);
             }
             catch (Exception exception)
             {
                 innerException = exception;
-                var webEx = exception as WebException;
-                if (webEx != null)
+                if (exception is WebException webEx)
                 {
                     response = (HttpWebResponse) webEx.Response;
                     if (response != null)
@@ -224,14 +228,15 @@ namespace Griffin.Cqs.Http
                 }
 
                 if (response == null)
-                    throw new WebException(uri + " failed to process " + cqsObject.GetType().Name + " " + json + "\r\n" + errorDescription,
+                    throw new WebException(
+                        $"'{uri}ä failed to process {cqsObject.GetType().Name} {json}\r\n{errorDescription}",
                         exception);
             }
 
             var ex = (Exception) await DeserializeBody(response);
             if (ex == null)
             {
-                throw new Exception("Failed to handle " + json + "\r\n" + errorDescription, innerException);
+                throw new Exception($"Failed to handle {json}\r\n{errorDescription}", innerException);
             }
 
             throw ex;

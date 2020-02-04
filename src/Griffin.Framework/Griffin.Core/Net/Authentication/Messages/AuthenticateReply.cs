@@ -10,7 +10,7 @@ namespace Griffin.Net.Authentication.Messages
     public class AuthenticateReply : IAuthenticateReply
     {
         /// <summary>
-        /// Returns wether the user may login or not
+        /// Returns whether the user may login or not
         /// </summary>
         [DataMember(Order = 1)]
         public AuthenticateReplyState State { get; set; }

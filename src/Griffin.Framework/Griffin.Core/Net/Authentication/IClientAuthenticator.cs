@@ -1,4 +1,7 @@
-﻿using Griffin.Net.Channels;
+﻿using System.Threading.Tasks;
+using Griffin.Net.Buffers;
+using Griffin.Net.Channels;
+using Griffin.Net.Messaging;
 
 namespace Griffin.Net.Authentication
 {
@@ -23,15 +26,6 @@ namespace Griffin.Net.Authentication
         /// <param name="channel">channel to authenticate</param>
         /// <param name="message">Received message, will be <see cref="AuthenticationRequiredException"/> first time and then responses to your authentication messages</param>
         /// <returns><c>true</c> if authentication process completed.</returns>
-        bool Process(ITcpChannel channel, object message);
-
-        /// <summary>
-        ///     Process raw bytes.
-        /// </summary>
-        /// <param name="channel">Channel that the bytes came from</param>
-        /// <param name="buffer">Buffer to process</param>
-        /// <param name="completed">Authentication process have completed, we either failed or succeeded</param>
-        /// <returns>Number of bytes processed from the buffer.</returns>
-        int Process(ITcpChannel channel, ISocketBuffer buffer, out bool completed);
+        Task<bool> ProcessAsync(IMessagingChannel channel, object message);
     }
 }

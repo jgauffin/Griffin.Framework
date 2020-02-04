@@ -1,4 +1,6 @@
-﻿namespace Griffin.Net.Authentication.Messages
+﻿using System.Collections.Generic;
+
+namespace Griffin.Net.Authentication.Messages
 {
     /// <summary>
     /// Step one during the authentication steps.

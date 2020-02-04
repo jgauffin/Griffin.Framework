@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthorizationModule.cs" />
-    <Compile Include="CqsModule.cs" />
+    <Compile Include="CqsMiddleware.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

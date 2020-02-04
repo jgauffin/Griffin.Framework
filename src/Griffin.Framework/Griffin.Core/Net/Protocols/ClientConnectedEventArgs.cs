@@ -5,7 +5,7 @@ using Griffin.Net.Channels;
 namespace Griffin.Net.Protocols
 {
     /// <summary>
-    ///     Used by <see cref="ChannelTcpListener.ClientConnected" />.
+    ///     Used by <see cref="MessagingServer{TContext}.ClientConnected" />.
     /// </summary>
     public class ClientConnectedEventArgs : EventArgs
     {
@@ -13,10 +13,9 @@ namespace Griffin.Net.Protocols
         ///     Initializes a new instance of the <see cref="ClientConnectedEventArgs" /> class.
         /// </summary>
         /// <param name="channel">The channel.</param>
-        public ClientConnectedEventArgs(ITcpChannel channel)
+        public ClientConnectedEventArgs(IBinaryChannel channel)
         {
-            if (channel == null) throw new ArgumentNullException("channel");
-            Channel = channel;
+            Channel = channel ?? throw new ArgumentNullException(nameof(channel));
             MayConnect = true;
             SendResponse = true;
         }
@@ -24,7 +23,7 @@ namespace Griffin.Net.Protocols
         /// <summary>
         ///     Channel for the connected client
         /// </summary>
-        public ITcpChannel Channel { get; private set; }
+        public IBinaryChannel Channel { get; }
 
         /// <summary>
         ///     Response (if the client may not connect)
@@ -58,8 +57,7 @@ namespace Griffin.Net.Protocols
         /// <param name="response">Stream with encoded message (which can be sent as-is).</param>
         public void CancelConnection(Stream response)
         {
-            if (response == null) throw new ArgumentNullException("response");
-            Response = response;
+            Response = response ?? throw new ArgumentNullException(nameof(response));
             MayConnect = false;
         }
     }

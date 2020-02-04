@@ -45,7 +45,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
                 {"Id", new FakePropertyMapping("Id", "id"){Value = "Hello",IsPrimaryKey = true}}
             });
             var command = new AdoNetFakes.FakeCommand();
-            var entity = new {Id = "Hello"};
+            var entity = new { Id = "Hello" };
 
 
             var sut = new CommandBuilder(mapper);
@@ -70,7 +70,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
 
 
             var sut = new CommandBuilder(mapper);
-            Action actual =  () => sut.InsertCommand(command, entity);
+            Action actual = () => sut.InsertCommand(command, entity);
 
             actual.Should().Throw<DataException>();
         }
@@ -103,7 +103,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             mapper.TableName.Returns("Users");
             mapper.Properties.Returns(new Dictionary<string, IPropertyMapping>
             {
-                {"Id", new FakePropertyMapping("Id", "id") {CanRead = true} }
+                {"Id", new FakePropertyMapping("Id", "id") {CanRead = true,IsPrimaryKey = true} }
             });
             var command = new AdoNetFakes.FakeCommand();
             var entity = new { Id = "Hello" };
@@ -329,7 +329,7 @@ namespace Griffin.Core.Tests.Data.Mapper.CommandBuilders
             var sut = new CommandBuilder(mapper);
             Action actual = () => sut.DeleteCommand(command, entity);
 
-            actual.Should().Throw<DataException>();
+            actual.Should().Throw<MappingException>();
         }
 
 

@@ -8,6 +8,13 @@ namespace Griffin.Net.Channels
     public interface IChannelData
     {
         /// <summary>
+        /// Assign data using the type name.
+        /// </summary>
+        /// <typeparam name="T">Type used to store data</typeparam>
+        /// <param name="data">Data</param>
+        void Set<T>(T data);
+
+        /// <summary>
         /// Get or add a value
         /// </summary>
         /// <param name="key">key to get</param>
@@ -29,6 +36,8 @@ namespace Griffin.Net.Channels
         /// <param name="key">Identifier (note that everyone with access to the channel can access the data, use careful naming)</param>
         /// <returns>Data if found; otherwise <c>null</c>.</returns>
         object this[string key] { get; set; }
+
+        bool TryGet<T>(out T data);
 
         /// <summary>
         /// Remove all existing data.

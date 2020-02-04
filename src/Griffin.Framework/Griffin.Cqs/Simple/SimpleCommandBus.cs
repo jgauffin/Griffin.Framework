@@ -25,6 +25,17 @@ namespace Griffin.Cqs.Simple
     {
         private readonly Dictionary<Type, Func<Command, Task>> _commandHandlers =
             new Dictionary<Type, Func<Command, Task>>();
+        private CqsObjectMapper _objectMapper;
+
+        public SimpleCommandBus(CqsObjectMapper objectMapper)
+        {
+            _objectMapper = objectMapper;
+        }
+
+        public SimpleCommandBus()
+        {
+
+        }
 
         /// <summary>
         ///     Request that a command should be executed.
@@ -57,10 +68,13 @@ namespace Griffin.Cqs.Simple
         /// <param name="assembly">Assembly to scan for command handlers (implementing <see cref="ICommandHandler{TCommand}" />).</param>
         public void Register(Assembly assembly)
         {
+            _objectMapper?.ScanAssembly(assembly);
+
             var handlers = assembly.GetTypes().Where(IsCommandHandler);
             foreach (var handlerType2 in handlers)
             {
                 var handlerType = handlerType2;
+
                 var constructor = handlerType.GetConstructor(new Type[0]);
                 var factory = constructor.CreateFactory();
                 var handlerMethod = handlerType.GetMethod("ExecuteAsync");
@@ -107,6 +121,8 @@ namespace Griffin.Cqs.Simple
             var factory = constructor.CreateFactory();
             var handlerMethod = handlerType.GetMethod("ExecuteAsync", new[] {typeof (TCommand)});
             var deleg = handlerMethod.ToFastDelegate();
+
+
             Func<Command, Task> action = cmd =>
             {
                 var handler = factory(handlerType);
@@ -124,7 +140,9 @@ namespace Griffin.Cqs.Simple
             };
 
             var intfc = handlerType.GetInterface("ICommandHandler`1");
-            _commandHandlers[intfc.GetGenericArguments()[0]] = action;
+            var messageType = intfc.GetGenericArguments()[0];
+            _commandHandlers[messageType] = action;
+            _objectMapper?.Map(messageType);
         }
 
         /// <summary>

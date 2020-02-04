@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HttpServerTests</RootNamespace>
     <AssemblyName>HttpServerTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -52,6 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FakeFetcher.cs" />
+    <Compile Include="FakeUser.cs" />
+    <Compile Include="HelloWorld.cs" />
+    <Compile Include="HttpStatusCodeResult.cs" />
+    <Compile Include="MustAlwaysAuthenticate.cs" />
+    <Compile Include="MyHttpMiddleware.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleAccountService.cs" />

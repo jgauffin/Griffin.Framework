@@ -44,17 +44,15 @@
   <ItemGroup>
     <Compile Include="LiteServer.cs" />
     <Compile Include="LiteServerConfiguration.cs" />
-    <Compile Include="ModulePipeBuilder.cs" />
-    <Compile Include="Modules\Authentication\HashAuthenticationModule.cs" />
-    <Compile Include="Modules\Authentication\GenericPrincipalFactory.cs" />
-    <Compile Include="Modules\Authentication\IPrincipalFactory.cs" />
-    <Compile Include="Modules\Authentication\IUserFetcher.cs" />
+    <Compile Include="Modules\Authentication\HashAuthenticationMiddleware.cs" />
+    <Compile Include="Modules\Authentication\MicroMessageContext.cs" />
+    <Compile Include="Modules\Authentication\MicroMessageMiddleware.cs" />
     <Compile Include="Modules\ClientContext.cs" />
     <Compile Include="Modules\DictionaryContextData.cs" />
     <Compile Include="Modules\IClientContext.cs" />
     <Compile Include="Modules\IConnectionEvents.cs" />
     <Compile Include="Modules\IContextData.cs" />
-    <Compile Include="Modules\IServerModule.cs" />
+    <Compile Include="Modules\MicroMessageHandler.cs" />
     <Compile Include="Modules\ModuleResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

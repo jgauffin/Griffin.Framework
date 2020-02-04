@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Griffin.Net.Protocols.Http.External;
 
 namespace Griffin.Net.Protocols.Http
@@ -13,8 +11,7 @@ namespace Griffin.Net.Protocols.Http
     {
         private readonly ConcurrentPriorityQueue<int, object> _queue =
             new ConcurrentPriorityQueue<int, object>();
-
-        private int _lastIndex = 0;
+        private int _lastIndex;
 
         /// <summary>
         ///     Enqueue a message
@@ -27,8 +24,7 @@ namespace Griffin.Net.Protocols.Http
         /// </remarks>
         public void Enqueue(object message)
         {
-            var response = message as IHttpMessage;
-            if (response == null)
+            if (!(message is HttpMessage response))
             {
                 _queue.Enqueue(++_lastIndex, message);
                 return;
@@ -36,15 +32,12 @@ namespace Griffin.Net.Protocols.Http
 
             var header = response.Headers[HttpMessage.PipelineIndexKey];
             if (header == null)
-                throw new InvalidOperationException("PipelinedMessageQueue requires the header '" +
-                                                        HttpMessage.PipelineIndexKey +
-                                                        "' to support HTTP pipelinging.");
+                throw new InvalidOperationException(
+                    $"PipelinedMessageQueue requires the header '{HttpMessage.PipelineIndexKey}' to support HTTP pipelining.");
 
-            var value = 0;
-            if (!int.TryParse(header, out value))
-                throw new InvalidOperationException("PipelinedMessageQueue require the header '" +
-                                                    HttpMessage.PipelineIndexKey +
-                                                    "' and that it contains a numerical value.");
+            if (!int.TryParse(header, out var value))
+                throw new InvalidOperationException(
+                    $"PipelinedMessageQueue require the header '{HttpMessage.PipelineIndexKey}' and that it contains a numerical value.");
 
             _lastIndex = value;
             _queue.Enqueue(value, response);
@@ -57,8 +50,7 @@ namespace Griffin.Net.Protocols.Http
         /// <returns><c>true</c> if there was a message to send.</returns>
         public bool TryDequeue(out object msg)
         {
-            KeyValuePair<int, object> kvp;
-            if (!_queue.TryDequeue(out kvp))
+            if (!_queue.TryDequeue(out var kvp))
             {
                 msg = null;
                 return false;

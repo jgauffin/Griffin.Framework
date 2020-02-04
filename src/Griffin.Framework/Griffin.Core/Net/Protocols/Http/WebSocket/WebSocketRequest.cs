@@ -6,11 +6,10 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     /// </summary>
     public class WebSocketRequest : WebSocketMessage
     {
-
-        private readonly IHttpRequest _handshake;
+        private readonly HttpRequest _handshake;
         private readonly WebSocketFrame _frame;
 
-        internal WebSocketRequest(IHttpRequest handshake, WebSocketFrame frame)
+        internal WebSocketRequest(HttpRequest handshake, WebSocketFrame frame)
             : base(frame.Opcode, frame.Payload)
         {
             _handshake = handshake;
@@ -20,7 +19,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// <summary>
         /// Cookies of the handshake request
         /// </summary>
-        public IHttpRequest Handshake
+        public HttpRequest Handshake
         {
             get
             {

@@ -7,7 +7,7 @@ namespace Griffin.Net.Protocols.Http
     /// </summary>
     /// <remarks>Typically a request cookie, since response cookies need more information.</remarks>
     /// <seealso cref="HttpResponseCookie"/>
-    public class HttpCookie : IHttpCookie
+    public class HttpCookie
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpCookie" /> class.
@@ -16,11 +16,8 @@ namespace Griffin.Net.Protocols.Http
         /// <param name="value">The value.</param>
         public HttpCookie(string name, string value)
         {
-            if (name == null) throw new ArgumentNullException("name");
-            if (value == null) throw new ArgumentNullException("value");
-
-            Name = name;
-            Value = value;
+            Name = name ?? throw new ArgumentNullException("name");
+            Value = value ?? throw new ArgumentNullException("value");
         }
 
         #region IHttpCookie Members

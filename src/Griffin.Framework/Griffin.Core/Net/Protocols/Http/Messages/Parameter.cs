@@ -7,7 +7,7 @@ namespace Griffin.Net.Protocols.Http.Messages
     /// <summary>
     ///     A parameter in a HTTP header field.
     /// </summary>
-    public class Parameter : IParameter
+    public class Parameter : IEnumerable<string>
     {
         private readonly List<string> _values = new List<string>();
 
@@ -23,21 +23,15 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </exception>
         public Parameter(string name, string value)
         {
-            if (name == null) throw new ArgumentNullException("name");
-            if (value == null) throw new ArgumentNullException("value");
-            Name = name;
+            if (value == null) throw new ArgumentNullException(nameof(value));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             _values.Add(value);
         }
 
         /// <summary>
         ///     Gets a list of all values.
         /// </summary>
-        public IEnumerable<string> Values
-        {
-            get { return _values; }
-        }
-
-        #region IParameter Members
+        public IEnumerable<string> Values => _values;
 
         /// <summary>
         ///     Gets *last* value.
@@ -46,33 +40,24 @@ namespace Griffin.Net.Protocols.Http.Messages
         ///     Parameters can have multiple values. This property will always get the last value in the list.
         /// </remarks>
         /// <value>String if any value exist; otherwise <c>null</c>.</value>
-        public string Value
-        {
-            get { return _values.Count == 0 ? null : _values[_values.Count - 1]; }
-        }
+        public string Value => _values.Count == 0 ? null : _values[_values.Count - 1];
 
         /// <summary>
         ///     Gets or sets name.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         ///     Get one of the values.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public string this[int index]
-        {
-            get { return _values[index]; }
-        }
+        public string this[int index] => _values[index];
 
         /// <summary>
         ///     Get number of values
         /// </summary>
-        public int Count
-        {
-            get { return _values.Count; }
-        }
+        public int Count => _values.Count;
 
         /// <summary>
         ///     Returns an enumerator that iterates through the collection.
@@ -95,8 +80,6 @@ namespace Griffin.Net.Protocols.Http.Messages
             if (value == null) throw new ArgumentNullException("value");
             _values.Add(value);
         }
-
-        #endregion
 
         /// <summary>
         ///     Returns an enumerator that iterates through a collection.

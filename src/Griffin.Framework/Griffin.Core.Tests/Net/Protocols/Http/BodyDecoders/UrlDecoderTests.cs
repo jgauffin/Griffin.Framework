@@ -66,7 +66,7 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
             var decoder = new UrlFormattedMessageSerializer();
             var result = decoder.Deserialize(contentType, body);
 
-            Assert.Equal("world", ((FormAndFilesResult) result).Form["hello"]);
+            Assert.Equal("world", ((FormAndFilesContent) result).Form["hello"]);
         }
 
         [Fact]
@@ -79,9 +79,9 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
             var decoder = new UrlFormattedMessageSerializer();
             var result = decoder.Deserialize(contentType, body);
 
-            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test1"]);
-            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test2"]);
-            Assert.Equal("hello world", ((FormAndFilesResult)result).Form["test3"]);
+            Assert.Equal("hello world", ((FormAndFilesContent)result).Form["test1"]);
+            Assert.Equal("hello world", ((FormAndFilesContent)result).Form["test2"]);
+            Assert.Equal("hello world", ((FormAndFilesContent)result).Form["test3"]);
         }
     }
 }

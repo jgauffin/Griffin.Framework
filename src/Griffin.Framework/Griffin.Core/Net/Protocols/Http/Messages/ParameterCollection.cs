@@ -14,34 +14,24 @@ namespace Griffin.Net.Protocols.Http.Messages
     ///         <code>TheHeaderValue;and=some,parameters=true</code>
     ///     </para>
     /// </remarks>
-    public class ParameterCollection : IParameterCollection
+    public class ParameterCollection : IEnumerable<Parameter>
     {
-        private readonly Dictionary<string, IParameter> _items =
-            new Dictionary<string, IParameter>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Parameter> _items =
+            new Dictionary<string, Parameter>(StringComparer.OrdinalIgnoreCase);
 
         #region IParameterCollection Members
 
         /// <summary>
         ///     Gets number of parameters.
         /// </summary>
-        public int Count
-        {
-            get { return _items.Count; }
-        }
+        public int Count => _items.Count;
 
         /// <summary>
         ///     Gets last value of an parameter.
         /// </summary>
         /// <param name="name">Parameter name</param>
         /// <returns>String if found; otherwise <c>null</c>.</returns>
-        public string this[string name]
-        {
-            get
-            {
-                IParameter parameter;
-                return _items.TryGetValue(name, out parameter) ? parameter.Last() : null;
-            }
-        }
+        public string this[string name] => _items.TryGetValue(name, out var parameter) ? parameter.Last() : null;
 
         /// <summary>
         ///     Returns an enumerator that iterates through the collection.
@@ -50,7 +40,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         ///     A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<IParameter> GetEnumerator()
+        public IEnumerator<Parameter> GetEnumerator()
         {
             return _items.Values.GetEnumerator();
         }
@@ -126,9 +116,8 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// <param name="value">Value</param>
         public void Add(string name, string value)
         {
-            if (name == null) throw new ArgumentNullException("name");
-            IParameter parameter;
-            if (!_items.TryGetValue(name, out parameter))
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (!_items.TryGetValue(name, out var parameter))
             {
                 parameter = new Parameter(name, value);
                 _items.Add(name, parameter);
@@ -153,10 +142,9 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IParameter Get(string name)
+        public Parameter Get(string name)
         {
-            IParameter value;
-            return _items.TryGetValue(name, out value) ? value : null;
+            return _items.TryGetValue(name, out var value) ? value : null;
         }
 
         #endregion
@@ -188,7 +176,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </returns>
         public override string ToString()
         {
-            return string.Join(",", _items.Values.Select(x => string.Format("{0}={1}", x.Name, x.Value)));
+            return string.Join(",", _items.Values.Select(x => $"{x.Name}={x.Value}"));
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Griffin.Net.Protocols.Http.Serializers
 
             try
             {
-                var result = new FormAndFilesResult()
+                var result = new FormAndFilesContent()
                 {
                     Form = new ParameterCollection()
                 };

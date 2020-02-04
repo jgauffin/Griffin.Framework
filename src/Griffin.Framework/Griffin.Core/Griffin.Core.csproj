@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net451;netstandard2.0;net461</TargetFrameworks>
-    <PackageId>Griffin.Framework</PackageId>
+    <TargetFrameworks>net452;netstandard2.0;net461</TargetFrameworks>
+    <PackageId>Griffin.Framework.Cqs</PackageId>
     <Authors>jgauffin</Authors>
-    <Description>Business application library - get rid of a lot of boilerplate code.</Description>
+    <Description>Command/Query library allowing inter process communication.</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>© Copyright 2019 1TCompany AB. All rights reserved.</Copyright>
     <PackageTags>logger exceptions data-mapper dependency-injection tcp sockets</PackageTags>

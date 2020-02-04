@@ -25,6 +25,17 @@ namespace Griffin.Cqs.Simple
     {
         private readonly Dictionary<Type, Func<IQuery, Task>> _handlers =
             new Dictionary<Type, Func<IQuery, Task>>();
+        private CqsObjectMapper _objectMapper;
+
+        public SimpleQueryBus(CqsObjectMapper objectMapper)
+        {
+            _objectMapper = objectMapper;
+        }
+
+        public SimpleQueryBus()
+        {
+
+        }
 
         /// <summary>
         ///     Request that a query should be executed.
@@ -52,6 +63,8 @@ namespace Griffin.Cqs.Simple
         /// <param name="assembly">Assembly to scan for handlers (implementing <see cref="IQueryHandler{TQuery,TResult}" />).</param>
         public void Register(Assembly assembly)
         {
+            _objectMapper?.ScanAssembly(assembly);
+
             var handlers = assembly.GetTypes().Where(IsQueryHandler);
             foreach (var handlerType2 in handlers)
             {
@@ -123,7 +136,9 @@ namespace Griffin.Cqs.Simple
             };
 
             var intfc = handlerType.GetInterface("IQueryHandler`2");
-            _handlers[intfc.GetGenericArguments()[0]] = action;
+            var messageType = intfc.GetGenericArguments()[0];
+            _handlers[messageType] = action;
+            _objectMapper.Map(messageType);
         }
 
         /// <summary>

@@ -63,7 +63,7 @@ namespace Griffin.Net.Protocols.Http.Serializers
             if (!contentType.StartsWith(MimeType, StringComparison.OrdinalIgnoreCase))
                 return null;
 
-            var result = new FormAndFilesResult()
+            var result = new FormAndFilesContent()
             {
                 Form = new ParameterCollection(),
                 Files = new HttpFileCollection()

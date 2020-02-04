@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Griffin.Net.Protocols.Http.Serializers;
@@ -14,14 +15,15 @@ namespace Griffin.Net.Protocols.Serializers
     ///     The default implementation constructor uses <see cref="UrlFormattedMessageSerializer" /> and
     ///     <see cref="MultipartSerializer" />
     /// </remarks>
-    public class CompositeIMessageSerializer : IMessageSerializer
+    public class CompositeMessageSerializer : IMessageSerializer
     {
-        private readonly Dictionary<string, IMessageSerializer> _decoders = new Dictionary<string, IMessageSerializer>();
+        private readonly Dictionary<string, IMessageSerializer>
+            _decoders = new Dictionary<string, IMessageSerializer>();
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CompositeIMessageSerializer" /> class.
+        ///     Initializes a new instance of the <see cref="CompositeMessageSerializer" /> class.
         /// </summary>
-        public CompositeIMessageSerializer()
+        public CompositeMessageSerializer()
         {
             _decoders.Add(UrlFormattedMessageSerializer.MimeType, new UrlFormattedMessageSerializer());
             _decoders.Add(MultipartSerializer.MimeType, new MultipartSerializer());
@@ -52,7 +54,7 @@ namespace Griffin.Net.Protocols.Serializers
         /// <summary>
         ///     Content types that this serializer supports.
         /// </summary>
-        public string[] SupportedContentTypes { get; private set; }
+        public string[] SupportedContentTypes => _decoders.Keys.ToArray();
 
         /// <summary>
         ///     Deserialize the content from the stream.
@@ -66,10 +68,9 @@ namespace Griffin.Net.Protocols.Serializers
         /// <exception cref="SerializationException">Deserialization failed</exception>
         public object Deserialize(string contentType, Stream source)
         {
-            IMessageSerializer decoder;
             var contentTypeTrimmed = GetContentTypeWithoutCharset(contentType);
 
-            return _decoders.TryGetValue(contentTypeTrimmed, out decoder)
+            return _decoders.TryGetValue(contentTypeTrimmed, out var decoder)
                 ? decoder.Deserialize(contentType, source)
                 : null;
         }
@@ -81,24 +82,27 @@ namespace Griffin.Net.Protocols.Serializers
         /// <param name="decoder">The decoder implementation. Must be thread safe.</param>
         public void Add(string mimeType, IMessageSerializer decoder)
         {
-            if (mimeType == null) throw new ArgumentNullException("mimeType");
-            if (decoder == null) throw new ArgumentNullException("decoder");
-            _decoders[mimeType] = decoder;
+            if (mimeType == null) throw new ArgumentNullException(nameof(mimeType));
+            _decoders[mimeType] = decoder ?? throw new ArgumentNullException(nameof(decoder));
+        }
+
+        /// <summary>
+        ///     Remove all serializers = allow all content types.
+        /// </summary>
+        public void Clear()
+        {
+            _decoders.Clear();
         }
 
         private string GetContentTypeWithoutCharset(string contentType)
         {
-            if (!String.IsNullOrEmpty(contentType))
-            {
-                var pos = contentType.IndexOf(";");
+            if (string.IsNullOrEmpty(contentType))
+                return contentType;
 
-                if (pos > 0)
-                {
-                    return contentType.Substring(0, pos).Trim();
-                }
-            }
-
-            return contentType;
+            var pos = contentType.IndexOf(";", StringComparison.Ordinal);
+            return pos > 0
+                ? contentType.Substring(0, pos).Trim()
+                : contentType;
         }
     }
 }

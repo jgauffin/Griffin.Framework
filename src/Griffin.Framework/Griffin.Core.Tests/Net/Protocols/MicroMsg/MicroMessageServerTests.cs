@@ -1,7 +1,4 @@
-﻿using Griffin.Net;
-using Griffin.Net.Protocols;
-using Griffin.Net.Protocols.MicroMsg;
-using Xunit;
+﻿using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
 {
@@ -10,7 +7,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         [Fact]
         public void Test()
         {
-            var sut = new MicroMessageTcpListener();
+            
         }
     }
 }

@@ -18,11 +18,11 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.BodyDecoders
             var decoder = new MultipartSerializer();
             var result = decoder.Deserialize(contentType, body);
 
-            Assert.Equal("world", ((FormAndFilesResult)result).Form["hello"]);
-            Assert.Equal("file", ((FormAndFilesResult)result).Files["file"].Name);
-            Assert.Equal("file.txt", ((FormAndFilesResult)result).Files["file"].OriginalFileName);
-            Assert.Equal("text/plain", ((FormAndFilesResult)result).Files["file"].ContentType);
-            Assert.Equal("hello world", File.ReadAllText(((FormAndFilesResult)result).Files["file"].TempFileName));
+            Assert.Equal("world", ((FormAndFilesContent)result).Form["hello"]);
+            Assert.Equal("file", ((FormAndFilesContent)result).Files["file"].Name);
+            Assert.Equal("file.txt", ((FormAndFilesContent)result).Files["file"].OriginalFileName);
+            Assert.Equal("text/plain", ((FormAndFilesContent)result).Files["file"].ContentType);
+            Assert.Equal("hello world", File.ReadAllText(((FormAndFilesContent)result).Files["file"].TempFileName));
         }
     }
 }

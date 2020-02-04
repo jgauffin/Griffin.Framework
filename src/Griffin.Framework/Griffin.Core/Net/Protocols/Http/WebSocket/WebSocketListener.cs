@@ -1,129 +1,89 @@
-﻿using System;
-using System.Net;
+﻿using System.Threading.Tasks;
+using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
+using Griffin.Net.Protocols.Http.Results;
 
 namespace Griffin.Net.Protocols.Http.WebSocket
 {
     /// <summary>
     ///     A HttpListener that automatically transitions all incoming requests to WebSocket protocol.
     /// </summary>
-    public class WebSocketListener : HttpListener
+    public class WebSocketHandler : HttpHandler
     {
-        private MessageHandler _webSocketMessageReceived;
+        private readonly IBinaryChannel _channel;
+        private readonly IBufferSegment _receiveBuffer;
+        private readonly WebSocketDecoder _decoder = new WebSocketDecoder();
+        private readonly WebSocketEncoder _encoder = new WebSocketEncoder();
+        private bool _isUpgraded;
+        private MessagingServerPipeline<WebsocketContext> _pipeline;
 
-        /// <summary>
-        ///     Create a new instance of <see cref="WebSocketListener" />.
-        /// </summary>
-        /// <param name="configuration">Custom server configuration</param>
-        public WebSocketListener(ChannelTcpListenerConfiguration configuration)
-            : base(configuration)
+        public WebSocketHandler(IBinaryChannel channel, IBufferSegment receiveBuffer,
+            MessagingServerPipeline<HttpContext> httpPipeline,
+            MessagingServerPipeline<WebsocketContext> websocketPipeline) : base(channel, receiveBuffer, httpPipeline)
         {
+            _channel = channel;
+            _receiveBuffer = receiveBuffer;
+            _pipeline = websocketPipeline;
         }
 
-        /// <summary>
-        ///     Create a new instance of  <see cref="WebSocketListener" />.
-        /// </summary>
-        public WebSocketListener()
+        public override async Task ProcessAsync(MessagingServerPipeline<HttpContext> pipline)
         {
-            var config = new ChannelTcpListenerConfiguration(
-                () => new WebSocketDecoder(),
-                () => new WebSocketEncoder());
-
-            Configure(config);
-        }
-
-        /// <summary>
-        ///     WebSocket message received handler
-        /// </summary>
-        public MessageHandler WebSocketMessageReceived
-        {
-            get { return _webSocketMessageReceived; }
-            set { _webSocketMessageReceived = value ?? delegate { }; }
-        }
-
-        /// <summary>
-        ///     A websocket client have connected (websocket handshake request is complete)
-        /// </summary>
-        public event EventHandler<WebSocketClientConnectEventArgs> WebSocketClientConnect = delegate { };
-
-        /// <summary>
-        ///     A websocket client have connected (websocket handshake response is complete)
-        /// </summary>
-        public event EventHandler<WebSocketClientConnectedEventArgs> WebSocketClientConnected = delegate { };
-
-        /// <summary>
-        ///     A websocket client have disconnected
-        /// </summary>
-        public event EventHandler<ClientDisconnectedEventArgs> WebSocketClientDisconnected = delegate { };
-
-        /// <summary>
-        /// Handles the upgrade
-        /// </summary>
-        /// <param name="source">Channel that we've received a request from</param>
-        /// <param name="msg">Message received.</param>
-        protected override void OnMessage(ITcpChannel source, object msg)
-        {
-            var httpMessage = msg as IHttpMessage;
-            if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
+            if (!_isUpgraded)
             {
-                if (httpMessage is IHttpRequest) // server mode
-                {
-                    var args = new WebSocketClientConnectEventArgs(source, (IHttpRequest) httpMessage);
-                    WebSocketClientConnect(this, args);
-
-                    if (args.MayConnect)
-                    {
-                        var webSocketKey = httpMessage.Headers["Sec-WebSocket-Key"];
-
-                        // TODO: why not provide the response in the WebSocketClientConnectEventArgs event?
-                        var response = new WebSocketUpgradeResponse(webSocketKey);
-
-                        source.Send(response);
-
-                        WebSocketClientConnected(this,
-                            new WebSocketClientConnectedEventArgs(source, (IHttpRequest) httpMessage, response));
-                    }
-                    else if (args.SendResponse)
-                    {
-                        var response = new HttpResponse(HttpStatusCode.NotImplemented, "Not Implemented", "HTTP/1.1");
-                        if (args.Response != null)
-                            response.Body = args.Response;
-
-                        source.Send(response);
-                    }
-                    return;
-                }
-
-                if (httpMessage is IHttpResponse) // client mode
-                {
-                    WebSocketClientConnected(this,
-                        new WebSocketClientConnectedEventArgs(source, null, (IHttpResponse) httpMessage));
-                }
-            }
-
-            var webSocketMessage = msg as IWebSocketMessage;
-            if (webSocketMessage != null)
-            {
-                // standard message responses handled by listener
-                switch (webSocketMessage.Opcode)
-                {
-                    case WebSocketOpcode.Ping:
-                        source.Send(new WebSocketMessage(WebSocketOpcode.Pong, webSocketMessage.Payload));
-                        return;
-                    case WebSocketOpcode.Close:
-                        source.Send(new WebSocketMessage(WebSocketOpcode.Close));
-                        source.Close();
-
-                        WebSocketClientDisconnected(this,
-                            new ClientDisconnectedEventArgs(source, new Exception("WebSocket closed")));
-                        return;
-                }
-
-                _webSocketMessageReceived(source, webSocketMessage);
+                await base.ProcessAsync(pipline);
                 return;
             }
 
-            base.OnMessage(source, msg);
+
+            var webSocketMessage = (WebSocketMessage) await _decoder.DecodeAsync(_channel, _receiveBuffer);
+
+            // standard message responses handled by listener
+            switch (webSocketMessage.OpCode)
+            {
+                case WebSocketOpcode.Ping:
+                    await SendAsync(new WebSocketMessage(WebSocketOpcode.Pong, webSocketMessage.Payload));
+                    return;
+                case WebSocketOpcode.Close:
+                    await SendAsync(new WebSocketMessage(WebSocketOpcode.Close));
+                    Close();
+                    return;
+            }
+
+            var context = new WebsocketContext(_channel.ChannelData, (WebSocketRequest) webSocketMessage, SendAsync);
+            await _pipeline.Execute(context);
+        }
+
+        protected override Task ExecutePipelineAsync(HttpContext context)
+        {
+            var httpMessage = context.Request as HttpMessage;
+            if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
+            {
+                ProcessUpgrade(context, httpMessage);
+                return Task.FromResult<object>(null);
+            }
+
+            return base.ExecutePipelineAsync(context);
+        }
+
+        private void Close()
+        {
+        }
+
+        private static void ProcessUpgrade(HttpContext context, HttpMessage httpMessage)
+        {
+            if (httpMessage is HttpRequest) // server mode
+            {
+                var webSocketKey = httpMessage.Headers["Sec-WebSocket-Key"];
+
+                // TODO: why not provide the response in the WebSocketClientConnectEventArgs event?
+                var response = WebSocketResponses.Upgrade(webSocketKey);
+                context.Result = new HttpResponseResult(response);
+            }
+        }
+
+        private async Task SendAsync(WebSocketMessage message)
+        {
+            await _encoder.EncodeAsync(message, _channel);
         }
     }
 }

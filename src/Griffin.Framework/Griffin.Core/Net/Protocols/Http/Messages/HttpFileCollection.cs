@@ -8,9 +8,9 @@ namespace Griffin.Net.Protocols.Http.Messages
     /// <summary>
     /// Collection of files in a HTTP request.
     /// </summary>
-    public class HttpFileCollection : IHttpFileCollection
+    public class HttpFileCollection : IEnumerable<HttpFile>
     {
-        private readonly List<IHttpFile> _files = new List<IHttpFile>();
+        private readonly List<HttpFile> _files = new List<HttpFile>();
 
         #region IHttpFileCollection Members
 
@@ -19,7 +19,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </summary>
         /// <param name="name">Name in form</param>
         /// <returns>File if found; otherwise <c>null</c>.</returns>
-        public IHttpFile this[string name]
+        public HttpFile this[string name]
         {
             get
             {
@@ -51,7 +51,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// Add a new file.
         /// </summary>
         /// <param name="file">File to add.</param>
-        public void Add(IHttpFile file)
+        public void Add(HttpFile file)
         {
             if (file == null) throw new ArgumentNullException("file");
             _files.Add(file);
@@ -72,7 +72,7 @@ namespace Griffin.Net.Protocols.Http.Messages
 		  ///     A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.
 		  /// </returns>
 		  /// <filterpriority>1</filterpriority>
-		  public IEnumerator<IHttpFile> GetEnumerator()
+		  public IEnumerator<HttpFile> GetEnumerator()
 		  {
 			  return _files.GetEnumerator();
 		  }

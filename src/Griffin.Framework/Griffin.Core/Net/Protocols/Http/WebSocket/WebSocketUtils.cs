@@ -40,7 +40,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// </summary>
         /// <param name="httpMessage">message to check</param>
         /// <returns>true if message is a valid WebSocket upgrade request</returns>
-        public static bool IsWebSocketUpgrade(IHttpMessage httpMessage)
+        public static bool IsWebSocketUpgrade(HttpMessage httpMessage)
         {
             return httpMessage != null &&
                 (httpMessage.Headers["Connection"] ?? string.Empty).IndexOf("upgrade", StringComparison.OrdinalIgnoreCase) != -1 &&
