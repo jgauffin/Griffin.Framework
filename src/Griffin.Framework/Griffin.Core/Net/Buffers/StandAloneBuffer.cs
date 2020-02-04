@@ -39,6 +39,7 @@ namespace Griffin.Net.Buffers
             StartOffset = 0;
             Offset = offset;
             Buffer = buffer;
+            Count = count;
         }
 
         /// <summary>

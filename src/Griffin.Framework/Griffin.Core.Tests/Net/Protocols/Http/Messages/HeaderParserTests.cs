@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.Http.Messages;
@@ -14,14 +16,16 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.Messages
         [Fact]
         public async Task Parse()
         {
+            var headers = new Dictionary<string, string>();
             var buffer = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nSERVER: LOCALHOST\r\n\r\n");
-            var slice = new StandAloneBuffer(buffer, 0, buffer.Length);
+            var readBuffer = new StandAloneBuffer(buffer, 0, buffer.Length);
             var channel = Substitute.For<IBinaryChannel>();
 
             var parser = new HeaderParser();
-            parser.HeaderParsed += (name, value) => Console.WriteLine(name + ": " + value);
-            await parser.Parse(slice, channel);
+            parser.HeaderParsed += (name, value) => headers[name] = value;
+            await parser.Parse(readBuffer, channel);
 
+            headers.Should().Contain("SERVER", "LOCALHOST");
         }
 
         [Fact]
@@ -43,15 +47,16 @@ Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
 Cookie: ASP.NET_SessionId=5vkr4tfivb1ybu1sm4u4kahy; GriffinLanguageSwitcher=sv-se; __RequestVerificationToken=LiTSJATsiqh8zlcft_3gZwvY8HpcCUkirm307njxIZLdsJSYyqaV2st1tunH8sMvMwsVrj3W4dDoV8ECZRhU4s6DhTvd2F-WFkgApDBB-CA1; .ASPXAUTH=BF8BE1C246428B10B49AE867BEDF9748DB3842285BC1AF1EC44AD80281C4AE084B75F0AE13EAF1BE7F71DD26D0CE69634E83C4846625DC7E4D976CA1845914E2CC7A7CF2C522EA5586623D9B73B0AE433337FC59CF6AF665DC135491E78978EF
 
 hello=world";
-            string actual = "";
+            var headers = new Dictionary<string, string>();
             var buffer = Encoding.UTF8.GetBytes(HttpPost);
             var slice = new StandAloneBuffer(buffer, 0, buffer.Length);
             var channel = Substitute.For<IBinaryChannel>();
             var parser = new HeaderParser();
-            parser.HeaderParsed += (name, value) => actual = value;
+            parser.HeaderParsed += (name, value) => headers[name] = value;
             await parser.Parse(slice, channel);
 
-            Assert.Equal("ASP.NET_SessionId=5vkr4tfivb1ybu1sm4u4kahy; GriffinLanguageSwitcher=sv-se; __RequestVerificationToken=LiTSJATsiqh8zlcft_3gZwvY8HpcCUkirm307njxIZLdsJSYyqaV2st1tunH8sMvMwsVrj3W4dDoV8ECZRhU4s6DhTvd2F-WFkgApDBB-CA1; .ASPXAUTH=BF8BE1C246428B10B49AE867BEDF9748DB3842285BC1AF1EC44AD80281C4AE084B75F0AE13EAF1BE7F71DD26D0CE69634E83C4846625DC7E4D976CA1845914E2CC7A7CF2C522EA5586623D9B73B0AE433337FC59CF6AF665DC135491E78978EF", actual);
+
+            headers["Cookie"].Should().Be("ASP.NET_SessionId=5vkr4tfivb1ybu1sm4u4kahy; GriffinLanguageSwitcher=sv-se; __RequestVerificationToken=LiTSJATsiqh8zlcft_3gZwvY8HpcCUkirm307njxIZLdsJSYyqaV2st1tunH8sMvMwsVrj3W4dDoV8ECZRhU4s6DhTvd2F-WFkgApDBB-CA1; .ASPXAUTH=BF8BE1C246428B10B49AE867BEDF9748DB3842285BC1AF1EC44AD80281C4AE084B75F0AE13EAF1BE7F71DD26D0CE69634E83C4846625DC7E4D976CA1845914E2CC7A7CF2C522EA5586623D9B73B0AE433337FC59CF6AF665DC135491E78978EF");
             Assert.Equal('h', (char)slice.Buffer[slice.Offset]);
         }
 

@@ -19,17 +19,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// </summary>
         public const int FragmentLength = 65535; // 1016;
 
-        private WebSocketFin _fin;
-        private WebSocketRsv _rsv1;
-        private WebSocketRsv _rsv2;
-        private WebSocketRsv _rsv3;
-        private WebSocketOpcode _opcode;
-        private WebSocketMask _mask;
-        private byte _payloadLength;
-        private byte[] _extPayloadLength;
-        private byte[] _maskingKey;
-        private Stream _payload;
-
         public WebSocketFrame(
             WebSocketFin fin,
             WebSocketRsv rsv1,
@@ -46,16 +35,16 @@ namespace Griffin.Net.Protocols.Http.WebSocket
             if (mask == WebSocketMask.Mask && (maskingKey == null || maskingKey.Length != 4))
                 throw new ArgumentOutOfRangeException("maskingKey", "must by 4 bytes long");
 
-            _fin = fin;
-            _rsv1 = rsv1;
-            _rsv2 = rsv2;
-            _rsv3 = rsv3;
-            _opcode = opcode;
-            _mask = mask;
-            _maskingKey = maskingKey;
-            _payloadLength = payloadLength;
-            _extPayloadLength = extPayloadLength;
-            _payload = payload;
+            Fin = fin;
+            Rsv1 = rsv1;
+            Rsv2 = rsv2;
+            Rsv3 = rsv3;
+            Opcode = opcode;
+            Mask = mask;
+            MaskingKey = maskingKey;
+            PayloadLength = payloadLength;
+            ExtPayloadLength = extPayloadLength;
+            Payload = payload;
         }
 
         public WebSocketFrame(
@@ -75,18 +64,18 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                 var len = payload.Length;
                 if (len < 126)
                 {
-                    _payloadLength = (byte)len;
-                    _extPayloadLength = new byte[0];
+                    PayloadLength = (byte)len;
+                    ExtPayloadLength = new byte[0];
                 }
                 else if (len < 0x010000)
                 {
-                    _payloadLength = (byte)126;
-                    _extPayloadLength = WebSocketUtils.GetBigEndianBytes((ushort)len);
+                    PayloadLength = (byte)126;
+                    ExtPayloadLength = WebSocketUtils.GetBigEndianBytes((ushort)len);
                 }
                 else
                 {
-                    _payloadLength = (byte)127;
-                    _extPayloadLength = WebSocketUtils.GetBigEndianBytes((ulong)len);
+                    PayloadLength = (byte)127;
+                    ExtPayloadLength = WebSocketUtils.GetBigEndianBytes((ulong)len);
                 }
             }
         }
@@ -105,112 +94,52 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// <summary>
         /// Final frame or not
         /// </summary>
-        public WebSocketFin Fin
-        {
-            get
-            {
-                return _fin;
-            }
-        }
+        public WebSocketFin Fin { get; }
 
         /// <summary>
         /// Extension switch one
         /// </summary>
-        public WebSocketRsv Rsv1
-        {
-            get
-            {
-                return _rsv1;
-            }
-        }
+        public WebSocketRsv Rsv1 { get; }
 
         /// <summary>
         /// Extension switch two
         /// </summary>
-        public WebSocketRsv Rsv2
-        {
-            get
-            {
-                return _rsv2;
-            }
-        }
+        public WebSocketRsv Rsv2 { get; }
 
         /// <summary>
         /// Extension switch three
         /// </summary>
-        public WebSocketRsv Rsv3
-        {
-            get
-            {
-                return _rsv3;
-            }
-        }
+        public WebSocketRsv Rsv3 { get; }
 
         /// <summary>
         /// Type of frame
         /// </summary>
-        public WebSocketOpcode Opcode
-        {
-            get
-            {
-                return _opcode;
-            }
-        }
+        public WebSocketOpcode Opcode { get; }
 
         /// <summary>
         /// Is frame masked
         /// </summary>
-        public WebSocketMask Mask
-        {
-            get
-            {
-                return _mask;
-            }
-        }
+        public WebSocketMask Mask { get; private set; }
 
         /// <summary>
         /// Masking key
         /// </summary>
-        public byte[] MaskingKey
-        {
-            get
-            {
-                return _maskingKey;
-            }
-        }
+        public byte[] MaskingKey { get; private set; }
 
         /// <summary>
         /// Payload of the frame
         /// </summary>
-        public Stream Payload
-        {
-            get
-            {
-                return _payload;
-            }
-        }
+        public Stream Payload { get; private set; }
 
         /// <summary>
         /// Payload length
         /// </summary>
-        public byte PayloadLength
-        {
-            get
-            {
-                return _payloadLength;
-            }
-        }
+        public byte PayloadLength { get; }
 
         /// <summary>
         /// Extended payload length
         /// </summary>
-        public byte[] ExtPayloadLength
-        {
-            get
-            {
-                return _extPayloadLength;
-            }
-        }
+        public byte[] ExtPayloadLength { get; }
 
         /// <summary>
         /// Applies the current masking key on the payload
@@ -220,7 +149,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
             if (Mask == WebSocketMask.Unmask)
                 return;
 
-            _mask = WebSocketMask.Unmask;
+            Mask = WebSocketMask.Unmask;
             if (Payload != null)
             {
                 using (Payload)
@@ -232,10 +161,10 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                         unmasked.WriteByte((byte)(Payload.ReadByte() ^ MaskingKey[i % 4]));
                     }
                     unmasked.Position = 0;
-                    _payload = unmasked;
+                    Payload = unmasked;
                 }
             }
-            _maskingKey = new byte[0];
+            MaskingKey = new byte[0];
         }
 
     }

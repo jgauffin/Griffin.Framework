@@ -19,13 +19,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         /// <summary>
         /// Cookies of the handshake request
         /// </summary>
-        public HttpRequest Handshake
-        {
-            get
-            {
-                return _handshake;
-            }
-        }
-
+        public HttpRequest Handshake => _handshake;
     }
 }

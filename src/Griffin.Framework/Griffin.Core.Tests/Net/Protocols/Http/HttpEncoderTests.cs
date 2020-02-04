@@ -68,8 +68,8 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         public async Task response_with_body()
         {
             var frame = new HttpResponse(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
-            frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
+            frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.Body = new MemoryStream(Encoding.ASCII.GetBytes("hello queue a"));
             var expected = string.Format("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nDate: {0}\r\nContent-Type: text/plain\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a",
                 DateTime.UtcNow.ToString("R"));
@@ -87,9 +87,9 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         public async Task response_with_body_encoding()
         {
             var frame = new HttpResponse(HttpStatusCode.NotFound, "Failed to find it dude", "HTTP/1.1");
-            frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.ContentType = "text/plain";
             frame.ContentCharset = Encoding.UTF8;
+            frame.AddHeader("X-Requested-With", "XHttpRequest");
             frame.Body = new MemoryStream(Encoding.UTF8.GetBytes("hello queue a"));
             var expected = string.Format("HTTP/1.1 404 Failed to find it dude\r\nServer: griffinframework.net\r\nDate: {0}\r\nContent-Type: text/plain;charset=utf-8\r\nX-Requested-With: XHttpRequest\r\nContent-Length: 13\r\n\r\nhello queue a",
                 DateTime.UtcNow.ToString("R"));

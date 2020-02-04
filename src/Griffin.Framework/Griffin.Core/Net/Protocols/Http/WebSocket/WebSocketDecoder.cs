@@ -16,9 +16,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         private readonly HttpMessageDecoder _httpMessageDecoder;
         private int _frameContentBytesLeft = 0;
         private HttpMessage _handshake;
-        private WebSocketFrame _frame;
-        private IList<WebSocketFrame> _frames;
-        private Action<object> _messageReceived;
         private bool _isWebSocket;
 
         /// <summary>
@@ -28,8 +25,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         {
             _httpMessageDecoder = new HttpMessageDecoder();
             _isWebSocket = false;
-            _messageReceived = delegate { };
-            _frames = new List<WebSocketFrame>();
         }
 
         /// <summary>
@@ -40,8 +35,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         {
             _httpMessageDecoder = new HttpMessageDecoder(messageSerializer);
             _isWebSocket = false;
-            _messageReceived = delegate { };
-            _frames = new List<WebSocketFrame>();
         }
 
         /// <summary>
@@ -62,93 +55,103 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                 return msg;
             }
 
+            List<WebSocketFrame> frames = null;
             while (true)
             {
-                if (_frame == null)
+                if (buffer.BytesLeft() < 5)
                 {
-                    var first = buffer.Buffer[buffer.Offset++];
-                    var second = buffer.Buffer[buffer.Offset++];
+                    await buffer.ReceiveMore(channel);
+                }
 
-                    var fin = (first & 0x80) == 0x80 ? WebSocketFin.Final : WebSocketFin.More;
-                    var rsv1 = (first & 0x40) == 0x40 ? WebSocketRsv.On : WebSocketRsv.Off;
-                    var rsv2 = (first & 0x20) == 0x20 ? WebSocketRsv.On : WebSocketRsv.Off;
-                    var rsv3 = (first & 0x10) == 0x10 ? WebSocketRsv.On : WebSocketRsv.Off;
-                    var opcode = (WebSocketOpcode)(first & 0x0f);
-                    var mask = (second & 0x80) == 0x80 ? WebSocketMask.Mask : WebSocketMask.Unmask;
-                    var payloadLen = (byte)(second & 0x7f);
+                var first = buffer.Buffer[buffer.Offset++];
+                var second = buffer.Buffer[buffer.Offset++];
 
-                    // TODO:
-                    // check if valid headers
-                    // control frame && payloadLen > 125
-                    // control frame && more
-                    // not data && compressed
+                var fin = (first & 0x80) == 0x80 ? WebSocketFin.Final : WebSocketFin.More;
+                var rsv1 = (first & 0x40) == 0x40 ? WebSocketRsv.On : WebSocketRsv.Off;
+                var rsv2 = (first & 0x20) == 0x20 ? WebSocketRsv.On : WebSocketRsv.Off;
+                var rsv3 = (first & 0x10) == 0x10 ? WebSocketRsv.On : WebSocketRsv.Off;
+                var opcode = (WebSocketOpcode) (first & 0x0f);
+                var mask = (second & 0x80) == 0x80 ? WebSocketMask.Mask : WebSocketMask.Unmask;
+                var payloadLen = (byte) (second & 0x7f);
 
-                    var size = payloadLen < 126
-                        ? 0
-                        : payloadLen == 126
-                            ? 2
-                            : 8;
+                // TODO:
+                // check if valid headers
+                // control frame && payloadLen > 125
+                // control frame && more
+                // not data && compressed
 
-                    var extPayloadLen = new byte[size];
-                    for (var i = 0; i < size; i++)
+                var size = payloadLen < 126
+                    ? 0
+                    : payloadLen == 126
+                        ? 2
+                        : 8;
+
+                if (buffer.BytesLeft() < size)
+                {
+                    await buffer.ReceiveMore(channel);
+                }
+
+                var extPayloadLen = new byte[size];
+                for (var i = 0; i < size; i++)
+                {
+                    extPayloadLen[i] = buffer.Buffer[buffer.Offset++];
+                }
+
+                var maskingKey = new byte[0];
+                if (mask == WebSocketMask.Mask)
+                {
+                    maskingKey = new[]
                     {
-                        extPayloadLen[i] = buffer.Buffer[buffer.Offset++];
-                    }
+                        buffer.Buffer[buffer.Offset++],
+                        buffer.Buffer[buffer.Offset++],
+                        buffer.Buffer[buffer.Offset++],
+                        buffer.Buffer[buffer.Offset++],
+                    };
+                }
 
-                    var maskingKey = new byte[0];
-                    if (mask == WebSocketMask.Mask)
-                    {
-                        maskingKey = new[] {
-                            buffer.Buffer[buffer.Offset++],
-                            buffer.Buffer[buffer.Offset++],
-                            buffer.Buffer[buffer.Offset++],
-                            buffer.Buffer[buffer.Offset++],
-                        };
-                    }
+                ulong len = payloadLen < 126
+                    ? payloadLen
+                    : payloadLen == 126
+                        ? WebSocketUtils.ToBigEndianUInt16(extPayloadLen)
+                        : WebSocketUtils.ToBigEndianUInt64(extPayloadLen);
 
-                    ulong len = payloadLen < 126
-                        ? payloadLen
-                        : payloadLen == 126
-                            ? WebSocketUtils.ToBigEndianUInt16(extPayloadLen)
-                            : WebSocketUtils.ToBigEndianUInt64(extPayloadLen);
+                _frameContentBytesLeft = (int) len;
+                if (buffer.BytesLeft() < _frameContentBytesLeft)
+                {
+                    await buffer.ReceiveMore(channel);
+                }
 
-                    _frameContentBytesLeft = (int)len;
+                var frame = new WebSocketFrame(fin, rsv1, rsv2, rsv3, opcode, mask, maskingKey, payloadLen, extPayloadLen,
+                    new MemoryStream(_frameContentBytesLeft));
 
-                    _frame = new WebSocketFrame(fin, rsv1, rsv2, rsv3, opcode, mask, maskingKey, payloadLen, extPayloadLen, new MemoryStream(_frameContentBytesLeft));
-
-                    if (_frame.Fin == WebSocketFin.More || _frame.Opcode == WebSocketOpcode.Continuation)
-                    {
-                        _frames.Add(_frame);
-                    }
+                if (frame.Fin == WebSocketFin.More || frame.Opcode == WebSocketOpcode.Continuation)
+                {
+                    frames = new List<WebSocketFrame> {frame};
                 }
 
                 if (_frameContentBytesLeft > 0)
                 {
                     var bytesToWrite = Math.Min(_frameContentBytesLeft, buffer.BytesLeft());
-                    _frame.Payload.Write(buffer.Buffer, buffer.Offset, bytesToWrite);
+                    frame.Payload.Write(buffer.Buffer, buffer.Offset, bytesToWrite);
                     _frameContentBytesLeft -= bytesToWrite;
                     buffer.Offset += bytesToWrite;
                 }
 
-                if (_frameContentBytesLeft == 0)
-                {
-                    _frame.Payload.Position = 0;
+                if (_frameContentBytesLeft != 0) 
+                    continue;
 
-                    if (_frame.Fin == WebSocketFin.Final)
-                    {
-                        if (_frame.Opcode == WebSocketOpcode.Continuation)
-                        {
-                            TriggerMessageReceived(_frames);
-                            _frames = new List<WebSocketFrame>();
-                        }
-                        else
-                        {
-                            TriggerMessageReceived(new[] { _frame });
-                        }
-                    }
-                    _frame = null;
+                frame.Payload.Position = 0;
+
+                if (frame.Fin != WebSocketFin.Final) 
+                    continue;
+
+                if (frame.Opcode == WebSocketOpcode.Continuation)
+                {
+                    var mergedFrame = MergeMessages(frames);
+                    return CreateMessage(mergedFrame);
                 }
 
+                return CreateMessage(frame);
             }
         }
 
@@ -159,38 +162,43 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         {
             _httpMessageDecoder.Clear();
             _handshake = null;
-            _frame = null;
-            _frames = new List<WebSocketFrame>();
             _frameContentBytesLeft = 0;
             _isWebSocket = false;
         }
 
-        private void TriggerMessageReceived(IEnumerable<WebSocketFrame> frames)
+        private WebSocketFrame MergeMessages(IReadOnlyList<WebSocketFrame> frames)
         {
-            WebSocketFrame first = null;
-            // combine payloads into the first frame
-            foreach (WebSocketFrame frame in frames)
+            if (frames.Count < 2)
+                throw new InvalidOperationException("Merge two or more frames.");
+
+            var first = frames[0];
+            foreach (var frame in frames)
             {
                 frame.Unmask();
-
-                if (first == null)
-                {
-                    first = frame;
-                    continue;
-                }
-
                 first.Payload.Position = first.Payload.Length;
                 frame.Payload.CopyTo(first.Payload);
             }
             first.Payload.Position = 0;
 
-            if (_handshake is HttpRequest) // server mode
+            return first;
+        }
+
+        private WebSocketMessage CreateMessage(WebSocketFrame frame)
+        {
+            if (frame == null) throw new ArgumentNullException(nameof(frame));
+
+            switch (_handshake)
             {
-                _messageReceived(new WebSocketRequest((HttpRequest)_handshake, first));
-            }
-            else if (_handshake is HttpResponse) // client mode
-            {
-                _messageReceived(new WebSocketResponse(first));
+                // server mode
+                case HttpRequest request:
+                    return new WebSocketRequest(request, frame);
+
+                // client mode
+                case HttpResponse _:
+                    return new WebSocketResponse(frame);
+
+                default:
+                    throw new InvalidOperationException("Unknown handshake.");
             }
         }
 

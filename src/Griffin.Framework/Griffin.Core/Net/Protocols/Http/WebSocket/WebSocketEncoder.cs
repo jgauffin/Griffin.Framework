@@ -12,7 +12,6 @@ namespace Griffin.Net.Protocols.Http.WebSocket
     public class WebSocketEncoder : IMessageEncoder
     {
         private readonly HttpMessageEncoder _httpMessageEncoder;
-        private IBufferSegment _buffer;
         private HttpMessage _handshake;
 
         /// <summary>
@@ -21,16 +20,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
         public WebSocketEncoder()
         {
             _httpMessageEncoder = new HttpMessageEncoder();
-            _buffer = new StandAloneBuffer(65535);
         }
-
-        public WebSocketEncoder(IBufferSegment buffer)
-        {
-            _httpMessageEncoder = new HttpMessageEncoder();
-            _buffer = buffer;
-        }
-
-
 
         /// <summary>
         ///     Buffer structure used for socket send operations.
@@ -90,14 +80,19 @@ namespace Griffin.Net.Protocols.Http.WebSocket
             }
         }
 
-        public Task EncodeAsync(object message, IBinaryChannel channel)
+        public async Task EncodeAsync(object message, IBinaryChannel channel)
         {
             try
             {
-                var httpMessage = message as HttpMessage;
-                if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
+                if (message is HttpMessage httpMessage)
                 {
-                    _handshake = httpMessage;
+                    if (WebSocketUtils.IsWebSocketUpgrade(httpMessage))
+                    {
+                        _handshake = httpMessage;
+                    }
+
+                    await _httpMessageEncoder.EncodeAsync(httpMessage, channel);
+                    return;
                 }
             }
             catch (Exception e)
@@ -105,7 +100,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
                 throw new InvalidOperationException("This encoder only supports messages deriving from 'HttpMessage' or 'WebSocketMessage'", e);
             }
 
-            return EncodeAsync(message, channel);
+            await SendAsync((WebSocketMessage)message, channel);
         }
 
         /// <summary>

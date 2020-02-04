@@ -57,9 +57,8 @@ upgrade: websocket
 
             var decoder = new WebSocketDecoder();
             await sendWebSocketUpgradeRequest(decoder, channel);
-            var actual = (WebSocketFrame)await decoder.DecodeAsync(channel, buffer);
+            var actual = (WebSocketRequest)await decoder.DecodeAsync(channel, buffer);
 
-            actual.Opcode.Should().Be(WebSocketOpcode.Binary);
             actual.Payload.Length.Should().Be(3);
             actual.Payload.ReadByte().Should().Be(1);
             actual.Payload.ReadByte().Should().Be(2);
@@ -75,9 +74,9 @@ upgrade: websocket
 
             var decoder = new WebSocketDecoder();
             await sendWebSocketUpgradeRequest(decoder, channel);
-            var actual = (WebSocketFrame)await decoder.DecodeAsync(channel, buffer);
+            var actual = (WebSocketMessage)await decoder.DecodeAsync(channel, buffer);
 
-            actual.Opcode.Should().Be(WebSocketOpcode.Text);
+            actual.OpCode.Should().Be(WebSocketOpcode.Text);
             actual.Payload.Length.Should().Be(3);
             actual.Payload.ReadByte().Should().Be((int)'a');
             actual.Payload.ReadByte().Should().Be((int)'b');
@@ -93,9 +92,9 @@ upgrade: websocket
 
             var decoder = new WebSocketDecoder();
             await sendWebSocketUpgradeRequest(decoder, channel);
-            var actual = (WebSocketFrame)await decoder.DecodeAsync(channel, buffer);
+            var actual = (WebSocketMessage)await decoder.DecodeAsync(channel, buffer);
 
-            actual.Opcode.Should().Be(WebSocketOpcode.Close);
+            actual.OpCode.Should().Be(WebSocketOpcode.Close);
             actual.Payload.Length.Should().Be(0);
         }
 
@@ -108,9 +107,9 @@ upgrade: websocket
 
             var decoder = new WebSocketDecoder();
             await sendWebSocketUpgradeRequest(decoder, channel);
-            var actual = (WebSocketFrame)await decoder.DecodeAsync(channel, buffer);
+            var actual = (WebSocketMessage)await decoder.DecodeAsync(channel, buffer);
 
-            actual.Opcode.Should().Be(WebSocketOpcode.Ping);
+            actual.OpCode.Should().Be(WebSocketOpcode.Ping);
             actual.Payload.Length.Should().Be(0);
         }
 
@@ -123,9 +122,9 @@ upgrade: websocket
 
             var decoder = new WebSocketDecoder();
             await sendWebSocketUpgradeRequest(decoder, channel);
-            var actual = (WebSocketFrame)await decoder.DecodeAsync(channel, buffer);
+            var actual = (WebSocketMessage)await decoder.DecodeAsync(channel, buffer);
 
-            actual.Opcode.Should().Be(WebSocketOpcode.Pong);
+            actual.OpCode.Should().Be(WebSocketOpcode.Pong);
             actual.Payload.Length.Should().Be(0);
         }
 

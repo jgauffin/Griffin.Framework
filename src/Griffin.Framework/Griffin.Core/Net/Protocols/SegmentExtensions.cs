@@ -55,8 +55,9 @@ namespace Griffin.Net.Protocols
             var savedOffset = buffer.Offset;
             if (buffer.UnallocatedBytes() < 1000)
             {
+                var diff = buffer.Offset - buffer.StartOffset;
                 Buffer.BlockCopy(buffer.Buffer, buffer.Offset, buffer.Buffer, buffer.StartOffset, buffer.BytesLeft());
-                savedOffset = buffer.StartOffset + buffer.BytesLeft();
+                savedOffset = buffer.StartOffset + diff;
             }
 
             var existingLen = buffer.BytesLeft();
