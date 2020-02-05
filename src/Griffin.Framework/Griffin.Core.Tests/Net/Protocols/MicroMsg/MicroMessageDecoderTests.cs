@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.Protocols.MicroMsg;
-using Griffin.Net.Protocols.Serializers;
 using NSubstitute;
 using Xunit;
 
@@ -31,9 +28,9 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             Encoding.ASCII.GetBytes(type, 0, type.Length, buffer.Buffer, HeaderLengthSize + MicroMessageEncoder.FixedHeaderLength); // type name
             Encoding.ASCII.GetBytes(body, 0, body.Length, buffer.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength); //body
             var returnSizes = new[]{
-                sizeof(short) + MicroMessageDecoder.FixedHeaderLength,
-                type.Length - 31,
-                31,
+                HeaderLengthSize + MicroMessageDecoder.FixedHeaderLength,
+                type.Length - 15,
+                15,
                 body.Length
             };
             GeneratePartialReceives(channel, returnSizes);
@@ -48,16 +45,11 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         private static void GeneratePartialReceives(IBinaryChannel channel, int[] returnSizes)
         {
             int index = 0;
-            int offset = 0;
             channel.WhenForAnyArgs(x => x.ReceiveAsync(null))
-                .Do(x =>
-                {
-                    if (index > 0)
-                        offset = returnSizes[index - 1];
-                    x.Arg<IBufferSegment>().Offset = offset;
-                    x.Arg<IBufferSegment>().Count = returnSizes[index];
-                });
-            channel.ReceiveAsync(Arg.Any<IBufferSegment>()).Returns(returnSizes[index++]);
+                    .Do(x =>
+                    {
+                        x.Arg<IBufferSegment>().Count += returnSizes[index++];
+                    });
         }
 
         [Fact]
@@ -76,12 +68,12 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             Encoding.ASCII.GetBytes(body, 0, body.Length, buffer.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength);
             var returnSizes = new[]{
                 MicroMessageDecoder.FixedHeaderLength - 1,
-                body.Length + type.Length + 1 + HeaderLengthSize
-            };
+                1 + body.Length + type.Length + HeaderLengthSize
+            };//body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize
             GeneratePartialReceives(channel, returnSizes);
 
             var sut = new MicroMessageDecoder(serializer);
-            var actual=await sut.DecodeAsync(channel, buffer);
+            var actual = await sut.DecodeAsync(channel, buffer);
 
 
             actual.Should().NotBeNull();
@@ -103,11 +95,12 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             Encoding.ASCII.GetBytes(type, 0, type.Length, buffer.Buffer, HeaderLengthSize + MicroMessageEncoder.FixedHeaderLength);
             Encoding.ASCII.GetBytes(body, 0, body.Length, buffer.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength);
             var returnSizes = new[]{
-                body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize            };
+                body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize
+            };
             GeneratePartialReceives(channel, returnSizes);
 
             var sut = new MicroMessageDecoder(serializer);
-            var actual=await sut.DecodeAsync(channel, buffer);
+            var actual = await sut.DecodeAsync(channel, buffer);
 
             actual.Should().NotBeNull();
             actual.Should().Be("Hello world");
@@ -136,6 +129,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             var sut = new MicroMessageDecoder(serializer);
             var actual = await sut.DecodeAsync(channel, buffer);
             sut.Clear();
+            buffer.Offset = 0;
             var actual2 = await sut.DecodeAsync(channel, buffer);
 
             actual2.Should().NotBeNull();
@@ -184,8 +178,9 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             Encoding.ASCII.GetBytes(type, 0, type.Length, buffer.Buffer, HeaderLengthSize + MicroMessageEncoder.FixedHeaderLength);
             Encoding.ASCII.GetBytes(body, 0, body.Length, buffer.Buffer, HeaderLengthSize + type.Length + MicroMessageEncoder.FixedHeaderLength);
             var returnSizes = new[]{
-                body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength - 5 + HeaderLengthSize
-            };
+                body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength - 5 + HeaderLengthSize,
+                5
+            };//body.Length + type.Length + MicroMessageEncoder.FixedHeaderLength + HeaderLengthSize
             GeneratePartialReceives(channel, returnSizes);
 
             var sut = new MicroMessageDecoder(serializer);
@@ -222,6 +217,7 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
                 62
             };
             var serializer = new StringSerializer();
+
             var buffer = new StandAloneBuffer(buf, 0, buf.Length);
             var returnSizes = new[]{
                 buf.Length
@@ -232,8 +228,8 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
             var msg1 = (string)await sut.DecodeAsync(channel, buffer);
             var msg2 = (string)await sut.DecodeAsync(channel, buffer);
 
-            msg1.Should().StartWith("Hello world");
-            msg2.Should().StartWith("Hello world");
+            msg1.Should().StartWith(@"<string xmlns=""http://schemas.microsoft.com/2003/10/Serialization/"">Hello world</string>");
+            msg2.Should().StartWith(@"<string xmlns=""http://schemas.microsoft.com/2003/10/Serialization/"">Hello world</string>");
         }
     }
 }

@@ -33,13 +33,13 @@ namespace Griffin.Net.Protocols.MicroMsg
         public const byte Version = 1;
 
         /// <summary>
-        ///     Size of the fixed header: version (1), content length (4), type name length (1) = 8
+        ///     Size of the fixed header: version (1), content length (4), type name length (1) = 6
         /// </summary>
         /// <remarks>
         ///     The header size field is not included in the actual header count as it always have to be read to
         ///     get the actual header size.
         /// </remarks>
-        public const int FixedHeaderLength = sizeof(ushort) + sizeof(byte) + sizeof(int) + sizeof(byte);
+        public const int FixedHeaderLength = sizeof(byte) + sizeof(int) + sizeof(byte);
 
         private readonly Stream _contentStream = new MemoryStream();
 
@@ -138,7 +138,8 @@ namespace Griffin.Net.Protocols.MicroMsg
 
             var safeguard = byteCount;
             var before = buffer.Count;
-            while (buffer.BytesLeft() < byteCount && safeguard-- > 0) await channel.ReceiveAsync(buffer);
+            while (buffer.BytesLeft() < byteCount && safeguard-- > 0) 
+                await channel.ReceiveAsync(buffer);
             if (safeguard == 0 && before == buffer.Count)
                 throw new DecoderFailureException("Failed to receive required bytes (did several attempts).");
         }
@@ -175,9 +176,12 @@ namespace Griffin.Net.Protocols.MicroMsg
             _protocolVersion = buffer.Buffer[buffer.Offset];
             _contentLength = BitConverter.ToInt32(buffer.Buffer, buffer.Offset + 1);
             _typeLength = buffer.Buffer[buffer.Offset + 5];
-            _contentName = Encoding.ASCII.GetString(buffer.Buffer, buffer.Offset + 6, _typeLength);
+            buffer.Offset += 6;
 
-            buffer.Offset += 6 + _typeLength;
+            await EnsureBytes(channel, buffer, FixedHeaderLength);
+            _contentName = Encoding.ASCII.GetString(buffer.Buffer, buffer.Offset + 6, _typeLength);
+            buffer.Offset += _typeLength;
+
             _stateMethod = ProcessContent;
             _contentStream.Position = 0;
             _contentStream.SetLength(0);

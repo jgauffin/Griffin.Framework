@@ -24,7 +24,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         public const byte Version = MicroMessageDecoder.Version;
 
         /// <summary>
-        ///     Size of the fixed header: version (1), content length (4), type name length (1) = 8
+        ///     Size of the fixed header: version (1), content length (4), type name length (1) = 6
         /// </summary>
         /// <remarks>
         ///     The header size field is not included in the actual header count as it always have to be read to
@@ -85,6 +85,8 @@ namespace Griffin.Net.Protocols.MicroMsg
             if (_bodyStream is MemoryStream ms)
             {
                 await channel.SendMoreAsync(_buffer);
+                var bytesLeft = (int)ms.Length;
+                var bytesRead = await ms.ReadAsync(_buffer.Buffer, _buffer.StartOffset, _buffer.Capacity);
                 await channel.SendAsync(new StandAloneBuffer(ms.GetBuffer(), 0, (int)ms.Length));
             }
             else
