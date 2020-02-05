@@ -62,7 +62,7 @@ namespace Griffin.Cqs.Tests.Http
             var client = new HttpClient();
             var content = new StringContent(@"{ ""Reason"": ""Jonas"" }", Encoding.UTF8, "application/json");
             content.Headers.Add("X-Cqs-Name", "RaiseHands");
-            await client.PutAsync("http://localhost:" + server.LocalPort, content, new CancellationTokenSource(5000).Token);
+            await client.PutAsync("http://localhost:" + server.LocalPort, content, cancellationToken: new CancellationTokenSource(5000).Token);
 
             await server.StopAsync();
         }

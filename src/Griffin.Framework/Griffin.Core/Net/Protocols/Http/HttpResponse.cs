@@ -27,11 +27,8 @@ namespace Griffin.Net.Protocols.Http
         /// <exception cref="System.ArgumentNullException">reasonPhrase</exception>
         internal HttpResponse(int statusCode, string reasonPhrase, string httpVersion) : base(httpVersion)
         {
-            if (reasonPhrase == null) throw new ArgumentNullException("reasonPhrase");
             StatusCode = statusCode;
-            ReasonPhrase = reasonPhrase;
-            Headers["Server"] = "griffinframework.net";
-            Headers["Date"] = DateTime.UtcNow.ToString("R");
+            ReasonPhrase = reasonPhrase ?? throw new ArgumentNullException(nameof(reasonPhrase));
         }
 
         /// <summary>

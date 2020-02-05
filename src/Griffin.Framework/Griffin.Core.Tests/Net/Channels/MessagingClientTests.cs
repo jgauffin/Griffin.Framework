@@ -34,6 +34,7 @@ namespace Griffin.Core.Tests.Net.Channels
         /// </summary>
         public void Dispose()
         {
+            _certificate.Dispose();
             _helper.Dispose();
         }
 

@@ -40,10 +40,10 @@ namespace Griffin.Net
             Task completedTask = Task.CompletedTask;
 #endif
 
-            if (index == _middlewares.Count - 1)
-                await _middlewares[index].Process(context, () => completedTask);
-            else
+            if (index < _middlewares.Count - 1)
                 await _middlewares[index].Process(context, async () => await ExecuteMiddleware(index + 1, context));
+            else
+                await _middlewares[index].Process(context, () => completedTask);
         }
     }
 }

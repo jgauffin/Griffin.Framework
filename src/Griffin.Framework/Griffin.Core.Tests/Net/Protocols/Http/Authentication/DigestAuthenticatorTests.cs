@@ -16,10 +16,10 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.Authentication
 {
     public class DigestAuthenticatorTests
     {
-        ClaimsPrincipal _principal = new ClaimsPrincipal(new ClaimsIdentity(new []
+        ClaimsPrincipal _principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "Mufasa"),
-            new Claim(ClaimTypes.Thumbprint, "Circle Of Life"), 
+            new Claim(ClaimTypes.Thumbprint, "Circle Of Life"),
         }));
 
         /// <summary>
@@ -37,12 +37,10 @@ namespace Griffin.Core.Tests.Net.Protocols.Http.Authentication
             var realmRepos = Substitute.For<IRealmRepository>();
             realmRepos.GetRealm(Arg.Any<HttpRequest>()).Returns("testrealm@host.com");
             var auth = new DigestAuthenticator(realmRepos, accountService);
-            var request = Substitute.For<HttpRequest>();
-            request.Headers["Authorization"].Returns(headerValue);
-            request.Uri.Returns(uri);
-            request.HttpMethod.Returns("GET");
-            var context = new HttpContext(new ChannelData());
-            context.Request = request;
+            var request = new HttpRequest("GET", "/", "HTTP/1.1");
+            request.Headers["Authorization"] = headerValue;
+            request.Uri = new Uri("http://localhost/");
+            var context = new HttpContext(new ChannelData()) { Request = request };
 
             var user = auth.Process(context, () => Task.CompletedTask);
 

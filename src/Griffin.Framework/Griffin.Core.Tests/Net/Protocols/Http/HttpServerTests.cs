@@ -25,10 +25,14 @@ namespace Griffin.Core.Tests.Net.Protocols.Http
         public void work_with_custom_header()
         {
             var config = new HttpConfiguration {Port = 0};
+            config.ContentSerializers.Clear();
+            config.Pipeline.Register(this);
+
             var sut = new HttpServer(config);
             sut.RunAsync(IPAddress.Loopback,CancellationToken.None);
+
             var request = WebRequest.CreateHttp("http://localhost:" + sut.LocalPort);
-            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => { return true; };
+            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
             request.Headers.Add("SOAPAction", "urn:BVTAFService:PostMessages");
             request.ContentType = "text/xml; charset=utf-8";
             request.Method = "POST";

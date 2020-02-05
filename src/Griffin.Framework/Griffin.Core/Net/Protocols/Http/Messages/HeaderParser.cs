@@ -52,7 +52,11 @@ namespace Griffin.Net.Protocols.Http.Messages
                 var ch = (char)Read(buffer);
                 _parserMethod(ch);
                 if (_isCompleted)
+                {
+                    Reset();
                     return;
+                }
+                    
 
                 await EnsureData(buffer, channel);
             }
@@ -212,6 +216,7 @@ namespace Griffin.Net.Protocols.Http.Messages
         /// </summary>
         public void Reset()
         {
+            _isCompleted = false;
             ResetLineParsing();
             _parserMethod = FirstLine;
         }

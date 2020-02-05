@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,9 @@ namespace Griffin.Net.Protocols.Http
 
         public async Task RunAsync(IPAddress address, CancellationToken token)
         {
+            if (_configuration.Pipeline.Count == 0)
+                throw new InvalidOperationException("No middleware have been registered. Cannot run HTTP server.");
+
             var tasks = new List<Task>();
             
             if (_configuration.Certificate != null)

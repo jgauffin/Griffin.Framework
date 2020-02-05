@@ -51,6 +51,8 @@ namespace Griffin.Net.Protocols.Http
             _httpContext = new HttpContext(_channel.ChannelData);
         }
 
+        public string ServerName { get; set; }
+
         public IChannelData ChannelData => _channel.ChannelData;
 
         public virtual async Task ProcessAsync(MessagingServerPipeline<HttpContext> pipline)
@@ -62,6 +64,11 @@ namespace Griffin.Net.Protocols.Http
                     var msg = await _messageDecoder.DecodeAsync(_channel, _receiveBuffer);
                     _httpContext.Request = (HttpRequest) msg;
                     _httpContext.Response = _httpContext.Request.CreateResponse();
+
+                    if (!string.IsNullOrEmpty(ServerName))
+                        _httpContext.Response.Headers["Server"] = ServerName;
+                    _httpContext.Response.Headers["Date"] = DateTime.UtcNow.ToString("R");
+
                     await ExecutePipelineAsync(_httpContext);
                     await _messageEncoder.EncodeAsync(_httpContext.Response, _channel);
                 }

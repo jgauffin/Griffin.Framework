@@ -98,20 +98,20 @@ host: www.onetrueerror.com
 content-length:14
 
 hello queue aa");
-            var buffer = new StandAloneBuffer(buf, 00, buf.Length);
+            var buffer = new StandAloneBuffer(buf, 0, buf.Length);
 
             var sut = new HttpMessageDecoder();
             var actual1 = (HttpRequest)await sut.DecodeAsync(channel, buffer);
             var actual2 = (HttpRequest)await sut.DecodeAsync(channel, buffer);
 
-            actual1.HttpMethod.Should().Be("GET");
-            actual1.HttpVersion.Should().Be("HTTP/1.1");
-            actual1.Uri.ToString().Should().Be("http://www.onetrueerror.com/?query");
-            actual1.Body.Should().NotBeNull();
-            actual1.Body.Length.Should().Be(14);
-            actual1.Headers["host"].Should().Be("www.onetrueerror.com");
-            actual1.Headers["content-length"].Should().Be("14");
-            var sw = new StreamReader(actual1.Body);
+            actual2.HttpMethod.Should().Be("GET");
+            actual2.HttpVersion.Should().Be("HTTP/1.1");
+            actual2.Uri.ToString().Should().Be("http://www.onetrueerror.com/?query");
+            actual2.Body.Should().NotBeNull();
+            actual2.Body.Length.Should().Be(14);
+            actual2.Headers["host"].Should().Be("www.onetrueerror.com");
+            actual2.Headers["content-length"].Should().Be("14");
+            var sw = new StreamReader(actual2.Body);
             sw.ReadToEnd().Should().Be("hello queue aa");
         }
 
@@ -131,10 +131,8 @@ hello queue a");
                 .Do(x =>
                 {
                     x.Arg<IBufferSegment>().Offset = buf.Length - 20;
-                    x.Arg<IBufferSegment>().Count = 20;
+                    x.Arg<IBufferSegment>().Count = buf.Length;
                 });
-            channel.ReceiveAsync(Arg.Any<IBufferSegment>())
-                .Returns(20);
 
             var sut = new HttpMessageDecoder();
             var actual = (HttpRequest)await sut.DecodeAsync(channel, buffer);

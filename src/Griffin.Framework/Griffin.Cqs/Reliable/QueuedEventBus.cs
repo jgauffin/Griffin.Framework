@@ -194,6 +194,8 @@ namespace Griffin.Cqs.Reliable
         /// </summary>
         public void Dispose()
         {
+            _semaphore.Dispose();
+            _jobEvent.Dispose();
             Stop();
         }
     }
