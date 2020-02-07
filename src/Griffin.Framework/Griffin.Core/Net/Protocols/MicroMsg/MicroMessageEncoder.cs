@@ -130,8 +130,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             else if (message is byte[] buffer1)
             {
                 //TODO: Send it directly using sendMore
-                _bodyStream = new MemoryStream(buffer1);
-                _bodyStream.SetLength(buffer1.Length);
+                _bodyStream = new MemoryStream(buffer1, 0, buffer1.Length, true, true);
                 contentType = "byte[]";
             }
             else

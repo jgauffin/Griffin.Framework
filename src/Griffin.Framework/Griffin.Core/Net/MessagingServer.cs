@@ -26,7 +26,6 @@ namespace Griffin.Net
 
         private TcpListener _listener;
         private MessagingServerPipeline<TContext> _pipeline;
-
         private readonly LinkedList<IClientHandler<TContext>>
             _usedHandlers = new LinkedList<IClientHandler<TContext>>();
 

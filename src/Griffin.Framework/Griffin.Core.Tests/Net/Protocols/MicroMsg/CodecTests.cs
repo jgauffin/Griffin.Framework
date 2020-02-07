@@ -1,12 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Griffin.Net.Buffers;
-using Griffin.Net.Channels;
 using Griffin.Net.Protocols.MicroMsg;
 using Griffin.Net.Protocols.Serializers;
-using NSubstitute;
 using Xunit;
 
 namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
@@ -21,13 +20,13 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         {
             var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var encoder = new MicroMessageEncoder(serializer);
             var decoder = new MicroMessageDecoder(serializer);
             var expected = "Hello world";
-            var channel = Substitute.For<IBinaryChannel>();
+            var channel = new FakeChannel();
 
             await encoder.EncodeAsync(expected, channel);
-            buffer.Offset = 0;
+            channel.ResetPosition();
             var actual = await decoder.DecodeAsync(channel, buffer);
 
             actual.Should().Be(expected);
@@ -38,15 +37,16 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         {
             var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var encoder = new MicroMessageEncoder(serializer);
             var decoder = new MicroMessageDecoder(serializer);
             var expected = "Hello world";
-            var stream = new MemoryStream(Encoding.ASCII.GetBytes(expected));
+            var buf = Encoding.ASCII.GetBytes(expected);
+            var stream = new MemoryStream(buf, 0, buf.Length, true, true);
             stream.SetLength(expected.Length);
-            var channel = Substitute.For<IBinaryChannel>();
+            var channel = new FakeChannel();
 
-            await encoder.EncodeAsync(expected, channel);
-            buffer.Offset = 0;
+            await encoder.EncodeAsync(stream, channel);
+            channel.ResetPosition();
             var actual = await decoder.DecodeAsync(channel, buffer);
 
             var reader = new StreamReader((Stream) actual);
@@ -57,16 +57,16 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         [Fact]
         public async Task codec_a_byte_buffer()
         {
-            var buffer = new StandAloneBuffer(65535);
+            var receiveBuffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var encoder = new MicroMessageEncoder(serializer);
             var decoder = new MicroMessageDecoder(serializer);
             var expected = new byte[] {1, 2, 3, 4, 5, 6, 7};
-            var channel = Substitute.For<IBinaryChannel>();
+            var channel = new FakeChannel();
 
             await encoder.EncodeAsync(expected, channel);
-            buffer.Offset = 0;
-            var actual = await decoder.DecodeAsync(channel, buffer);
+            channel.ResetPosition();
+            var actual = await decoder.DecodeAsync(channel, receiveBuffer);
 
             var ms = (MemoryStream) actual;
             var buf = ms.GetBuffer();
@@ -79,13 +79,13 @@ namespace Griffin.Core.Tests.Net.Protocols.MicroMsg
         {
             var buffer = new StandAloneBuffer(65535);
             var serializer = new DataContractMessageSerializer();
-            var encoder = new MicroMessageEncoder(serializer, buffer);
+            var encoder = new MicroMessageEncoder(serializer);
             var decoder = new MicroMessageDecoder(serializer);
             var expected = new CustomType {Name = "Arne"};
-            var channel = Substitute.For<IBinaryChannel>();
+            var channel = new FakeChannel();
 
             await encoder.EncodeAsync(expected, channel);
-            buffer.Offset = 0;
+            channel.ResetPosition();
             var actual = await decoder.DecodeAsync(channel, buffer);
 
             actual.Should().BeOfType<CustomType>();

@@ -5,7 +5,7 @@
     <Authors>jgauffin</Authors>
     <Description>Command/Query library for inter process communication.</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Copyright>© Copyright 2019 1TCompany AB. All rights reserved.</Copyright>
+    <Copyright>© Copyright 2020 1TCompany AB. All rights reserved.</Copyright>
     <PackageTags>logger exceptions data-mapper dependency-injection tcp sockets</PackageTags>
     <RepositoryUrl>https://github.com/jgauffin/griffin.framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

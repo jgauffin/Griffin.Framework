@@ -9,8 +9,6 @@ namespace Griffin.Logging.Loggers
     /// </summary>
     public class SystemDebugLogger : BaseLogger
     {
-        private int _frameSkipCount;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemDebugLogger"/> class.
         /// </summary>

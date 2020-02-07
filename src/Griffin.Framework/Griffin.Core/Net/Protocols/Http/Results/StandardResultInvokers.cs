@@ -18,7 +18,7 @@ namespace Griffin.Net.Protocols.Http.Results
             if (result.StringContent != null)
             {
                 var buf = Encoding.GetBytes(result.StringContent);
-                stream = new MemoryStream(buf, 0, buf.Length);
+                stream = new MemoryStream(buf, 0, buf.Length, true, true);
             }
             else
             {

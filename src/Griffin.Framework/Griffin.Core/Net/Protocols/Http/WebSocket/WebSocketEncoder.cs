@@ -45,7 +45,7 @@ namespace Griffin.Net.Protocols.Http.WebSocket
 
             var buff = new byte[frameLength];
             message.Payload.Read(buff, 0, buff.Length);
-            var payload = new MemoryStream(buff);
+            var payload = new MemoryStream(buff, true);
 
             var frame = new WebSocketFrame(fin, opcode, (_handshake is HttpRequest) ? WebSocketMask.Mask : WebSocketMask.Unmask, payload);
             using (var stream = new MemoryStream())

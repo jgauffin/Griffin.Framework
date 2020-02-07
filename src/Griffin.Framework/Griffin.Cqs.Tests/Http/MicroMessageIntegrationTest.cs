@@ -77,15 +77,22 @@ namespace Griffin.Cqs.Tests.Http
                 SecurePort = 0,
                 Certificate = new X509Certificate2("GriffinNetworkingTemp.pfx", "mamma")
             };
+            config.ContentSerializers.Clear();
             var server = CreateServer(config);
             _commandBus.Register<RaiseHandsHandler, RaiseHands>();
             server.RunAsync(IPAddress.Loopback, CancellationToken.None);
 
             //Regular HTTP
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.ServerCertificateValidationCallback +=
+                (sender, cert, chain, sslPolicyErrors) => true;
+
             var client = new HttpClient();
             var content = new StringContent(@"{ ""Reason"": ""Arne"" }", Encoding.UTF8, "application/json");
             content.Headers.Add("X-Cqs-Name", "RaiseHands");
-            await client.PostAsync("https://localhost:" + server.SecurePort, content);
+            await client.PostAsync("https://localhost:" + server.SecurePort, content, cancellationToken: new CancellationTokenSource(5000).Token);
+
+            await server.StopAsync();
         }
 
         private void Send(int port)

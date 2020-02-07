@@ -78,6 +78,7 @@ namespace Griffin.Net.Channels
             _socket.Close();
             _ioStream = null;
             _socket = null;
+            ChannelClosed?.Invoke(this, EventArgs.Empty);
             return Task.FromResult<object>(null);
         }
 
@@ -206,7 +207,13 @@ namespace Griffin.Net.Channels
         {
             RemoteEndpoint = EmptyEndpoint.Instance;
             _state = ChannelState.Closed;
-            _socket = null;
+            if (_socket != null)
+            {
+                ChannelClosed?.Invoke(this, EventArgs.Empty);
+                _socket.Dispose();
+                _socket = null;
+            }
+
             _ioStream.Close();
             _queuedOutboundPackets.Clear();
             foreach (var writeBuffer in _pooledWriteBuffers) writeBuffer.ReturnToPool();

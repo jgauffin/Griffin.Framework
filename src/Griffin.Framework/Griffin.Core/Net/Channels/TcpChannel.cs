@@ -75,6 +75,7 @@ namespace Griffin.Net.Channels
         public async Task CloseAsync()
         {
             await _socket.CloseAsync();
+            ChannelClosed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <inheritdoc />

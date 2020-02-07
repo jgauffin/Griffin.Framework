@@ -56,7 +56,7 @@ namespace Griffin.Net.Protocols.Http.Messages
                     Reset();
                     return;
                 }
-                    
+
 
                 await EnsureData(buffer, channel);
             }
@@ -71,14 +71,14 @@ namespace Griffin.Net.Protocols.Http.Messages
 
             buffer.Count = 0;
             buffer.Offset = 0;
-            await channel.ReceiveAsync(buffer);
+            var read = await channel.ReceiveAsync(buffer);
             if (buffer.Count == 0)
                 throw new ParseException("Channel got disconnected");
         }
 
         private int Read(IBufferSegment buffer)
         {
-            if (_lookAhead == -1) 
+            if (_lookAhead == -1)
                 return buffer.Buffer[buffer.Offset++];
 
             var tmp = _lookAhead;

@@ -61,7 +61,7 @@ namespace Griffin.Net.Protocols.MicroMsg
         public MicroMessageDecoder(IMessageSerializer serializer)
         {
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            _stateMethod = ReadHeaderLength;
+            _stateMethod = ProcessFixedHeader;
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             _contentLength = 0;
             _contentName = "";
             _contentStream.SetLength(0);
-            _stateMethod = ReadHeaderLength;
+            _stateMethod = ProcessFixedHeader;
         }
 
         private void CopyBytes(IBufferSegment e)
@@ -136,10 +136,13 @@ namespace Griffin.Net.Protocols.MicroMsg
             if (buffer.UnallocatedBytes() < byteCount)
                 CopyBytes(buffer);
 
-            var safeguard = byteCount;
+            var safeguard = Math.Min(30, byteCount);
             var before = buffer.Count;
-            while (buffer.BytesLeft() < byteCount && safeguard-- > 0) 
+            while (buffer.BytesLeft() < byteCount && --safeguard > 0)
+            {
                 await channel.ReceiveAsync(buffer);
+            }
+
             if (safeguard == 0 && before == buffer.Count)
                 throw new DecoderFailureException("Failed to receive required bytes (did several attempts).");
         }
@@ -149,7 +152,7 @@ namespace Griffin.Net.Protocols.MicroMsg
             var bytesLeft = _contentLength;
             while (bytesLeft > 0)
             {
-                await EnsureBytes(channel, buffer, 1);
+                await EnsureBytes(channel, buffer, bytesLeft);
 
                 var bytesToWrite = Math.Min(bytesLeft, buffer.BytesLeft());
                 _contentStream.Write(buffer.Buffer, buffer.Offset, bytesToWrite);
@@ -157,7 +160,7 @@ namespace Griffin.Net.Protocols.MicroMsg
                 bytesLeft -= bytesToWrite;
             }
 
-            _stateMethod = ReadHeaderLength;
+            _stateMethod = ProcessFixedHeader;
             _contentStream.Position = 0;
 
             _completed = true;
@@ -171,30 +174,21 @@ namespace Griffin.Net.Protocols.MicroMsg
 
         private async Task ProcessFixedHeader(IInboundBinaryChannel channel, IBufferSegment buffer)
         {
-            await EnsureBytes(channel, buffer, FixedHeaderLength);
+            await EnsureBytes(channel, buffer, FixedHeaderLength + 2);
 
-            _protocolVersion = buffer.Buffer[buffer.Offset];
-            _contentLength = BitConverter.ToInt32(buffer.Buffer, buffer.Offset + 1);
-            _typeLength = buffer.Buffer[buffer.Offset + 5];
-            buffer.Offset += 6;
+            _headerSize = BitConverter.ToInt16(buffer.Buffer, buffer.Offset);
+            _protocolVersion = buffer.Buffer[buffer.Offset + 2];
+            _contentLength = BitConverter.ToInt32(buffer.Buffer, buffer.Offset + 3);
+            _typeLength = buffer.Buffer[buffer.Offset + 7];
+            buffer.Offset += 8;
 
-            await EnsureBytes(channel, buffer, FixedHeaderLength);
-            _contentName = Encoding.ASCII.GetString(buffer.Buffer, buffer.Offset + 6, _typeLength);
+            await EnsureBytes(channel, buffer, 4);
+            _contentName = Encoding.ASCII.GetString(buffer.Buffer, buffer.Offset, _typeLength);
             buffer.Offset += _typeLength;
 
             _stateMethod = ProcessContent;
             _contentStream.Position = 0;
             _contentStream.SetLength(0);
-        }
-
-        private async Task ReadHeaderLength(IInboundBinaryChannel channel, IBufferSegment buffer)
-        {
-            await EnsureBytes(channel, buffer, FixedHeaderLength);
-
-            _headerSize = BitConverter.ToInt16(buffer.Buffer, buffer.Offset);
-            buffer.Offset += 2;
-
-            _stateMethod = ProcessFixedHeader;
         }
     }
 }

@@ -78,7 +78,7 @@ namespace Griffin.Data.Mapper.Values
         ///     Get the property value (converted to a column value, i.e. run through the adapter and the null replacement check).
         /// </summary>
         /// <param name="entity">Entity to retrieve value from</param>
-        /// <returns>Property value, adepted for insertion into the database row.</returns>
+        /// <returns>Property value, adapted for insertion into the database row.</returns>
         object GetValue(object entity);
 
         /// <summary>

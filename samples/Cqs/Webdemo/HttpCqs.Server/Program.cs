@@ -30,7 +30,7 @@ namespace HttpCqs.Server
             return adapter;
         }
 
-        private static async Task Main(string[] args)
+        static async Task Main(string[] args)
         {
             // tell library to authorize the usage of command/queries
             GlobalConfiguration.AuthorizationFilter = new RoleAuthorizer();
