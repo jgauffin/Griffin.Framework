@@ -34,8 +34,8 @@ namespace Griffin.Net.Protocols.Http
         public int Port { get; set; } = 8080;
 
         /// <summary>
-        ///     Port when using a certificate. Default = 443443
+        ///     Port when using a certificate. Default = 44343
         /// </summary>
-        public int SecurePort { get; set; } = 443443;
+        public int SecurePort { get; set; } = 44343;
     }
 }

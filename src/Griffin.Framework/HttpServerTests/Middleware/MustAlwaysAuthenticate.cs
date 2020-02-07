@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Griffin.Net;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Middleware;
 
-namespace HttpServerTests
+namespace HttpServerTests.Middleware
 {
     internal class MustAlwaysAuthenticate : HttpMiddleware
     {

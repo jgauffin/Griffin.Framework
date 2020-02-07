@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29424.173
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Core", "Griffin.Core\Griffin.Core.csproj", "{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}"
 EndProject
@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpServerTests", "HttpServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Autofac", "Griffin.Core.Autofac\Griffin.Core.Autofac.csproj", "{5A84711B-AD28-4314-9CDF-0AF8E6E5FC8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Cqs", "Griffin.Cqs\Griffin.Cqs.csproj", "{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Cqs", "Griffin.Cqs\Griffin.Cqs.csproj", "{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Json", "Griffin.Core.Json\Griffin.Core.Json.csproj", "{B529EF99-44BC-4A4F-A28A-08888BD4F6A0}"
 EndProject
@@ -50,6 +50,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpCqs.Contracts", "..\..\samples\Cqs\Webdemo\HttpCqs.Contracts\HttpCqs.Contracts.csproj", "{706683DF-9DE6-4BE6-A3F7-463E487737D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Core.Microsoft.Extensions.DependencyInjection", "Griffin.Core.Microsoft.Extensions.DependencyInjection\Griffin.Core.Microsoft.Extensions.DependencyInjection.csproj", "{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroMsg.Cqs", "..\..\samples\Cqs\MicroMsg.Cqs\MicroMsg.Cqs.csproj", "{C0703683-903D-4375-8419-6E3601D3BDAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,13 +127,19 @@ Global
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3ECDB7-C463-4FB9-BDEC-1D53B01676FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0703683-903D-4375-8419-6E3601D3BDAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0703683-903D-4375-8419-6E3601D3BDAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0703683-903D-4375-8419-6E3601D3BDAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0703683-903D-4375-8419-6E3601D3BDAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C592F67E-72EA-4BB8-899A-CEA86BEAF1CA} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
 		{546D46CF-920A-41CB-B99B-422174A414DE} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
 		{706683DF-9DE6-4BE6-A3F7-463E487737D8} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
+		{C0703683-903D-4375-8419-6E3601D3BDAB} = {EB389127-7F92-43E4-AC48-B0F7D8CE4750}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {165A4BCB-17FC-479F-8933-C037B95F4154}

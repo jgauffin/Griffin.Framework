@@ -1,6 +1,6 @@
 ﻿using Griffin.Security.Authentication;
 
-namespace HttpServerTests
+namespace MicroMsg.Cqs.Messages
 {
     internal class FakeUser : UserAccount
     {

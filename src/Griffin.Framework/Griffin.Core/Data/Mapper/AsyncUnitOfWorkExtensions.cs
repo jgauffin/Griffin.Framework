@@ -348,9 +348,9 @@ namespace Griffin.Data.Mapper
         /// </example>
         public static async Task<object> InsertAsync<TEntity>(this IAdoNetUnitOfWork unitOfWork, TEntity entity)
         {
-            if (unitOfWork == null) throw new ArgumentNullException("unitOfWork");
-            if (EqualityComparer<TEntity>.Default.Equals(default(TEntity), entity))
-                throw new ArgumentNullException("entity");
+            if (unitOfWork == null) throw new ArgumentNullException(nameof(unitOfWork));
+            if (EqualityComparer<TEntity>.Default.Equals(x: default, entity))
+                throw new ArgumentNullException(nameof(entity));
 
             var mapper = EntityMappingProvider.GetCrudMapper<TEntity>();
             using (var cmd = (DbCommand) unitOfWork.CreateCommand())

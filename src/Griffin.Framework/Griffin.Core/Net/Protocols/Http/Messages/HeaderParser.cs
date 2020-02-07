@@ -70,7 +70,7 @@ namespace Griffin.Net.Protocols.Http.Messages
             }
 
             buffer.Count = 0;
-            buffer.Offset = 0;
+            buffer.Offset = buffer.StartOffset;
             var read = await channel.ReceiveAsync(buffer);
             if (buffer.Count == 0)
                 throw new ParseException("Channel got disconnected");

@@ -97,7 +97,7 @@ namespace Griffin.Net.Channels
                     "This channel already have an connected socket. Cleanup before assigning a new one.");
 
             _socket = socket;
-            _ioStream = _sslStreamBuilder.Build(this, _socket);
+            _ioStream = _sslStreamBuilder.BuildAsync(this, _socket).GetAwaiter().GetResult();
         }
 
         public async Task OpenAsync()
@@ -109,7 +109,7 @@ namespace Griffin.Net.Channels
             var awaitable = new SocketAwaitable(new SocketAsyncEventArgs());
             await awaitable.ConnectAsync(_socket, RemoteEndpoint);
             RemoteEndpoint = _socket.RemoteEndPoint;
-            _ioStream = _sslStreamBuilder.Build(this, _socket);
+            _ioStream = await _sslStreamBuilder.BuildAsync(this, _socket);
         }
 
         public async Task OpenAsync(EndPoint endpoint)

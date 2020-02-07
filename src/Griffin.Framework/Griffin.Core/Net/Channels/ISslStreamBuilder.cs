@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Griffin.Net.Channels
 {
@@ -15,7 +16,7 @@ namespace Griffin.Net.Channels
         /// <param name="channel">Channel which will use the stream</param>
         /// <param name="socket">Socket to wrap</param>
         /// <returns>Stream which is ready to be used (must have been validated)</returns>
-        SslStream Build(IBinaryChannel channel, Socket socket);
+        Task<SslStream> BuildAsync(IBinaryChannel channel, Socket socket);
 
     }
 }

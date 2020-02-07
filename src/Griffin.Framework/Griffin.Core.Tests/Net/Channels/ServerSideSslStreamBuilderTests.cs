@@ -27,10 +27,10 @@ namespace Griffin.Core.Tests.Net.Channels
             {
                 var builder = new ClientSideSslStreamBuilder("GriffinNetworking");
                 builder.Protocols = SslProtocols.Tls12;
-                var chan = builder.Build(clientChannel, clientServer.Client);
+                var chan = builder.BuildAsync(clientChannel, clientServer.Client);
 
             });
-            var stream = sut.Build(serverChannel, clientServer.Server);
+            var stream = sut.BuildAsync(serverChannel, clientServer.Server);
 
 
         }
@@ -46,7 +46,7 @@ namespace Griffin.Core.Tests.Net.Channels
 
             var sut = new ServerSideSslStreamBuilder(certificate);
             sut.HandshakeTimeout = TimeSpan.FromMilliseconds(100);
-            Action actual = () => sut.Build(serverChannel, clientServer.Server);
+            Action actual = () => sut.BuildAsync(serverChannel, clientServer.Server);
 
             actual.Should().Throw<InvalidOperationException>();
         }
@@ -63,7 +63,7 @@ namespace Griffin.Core.Tests.Net.Channels
             var sut = new ServerSideSslStreamBuilder(certificate);
             sut.HandshakeTimeout = TimeSpan.FromMilliseconds(500);
             var sw = Stopwatch.StartNew();
-            Action actual = () => sut.Build(serverChannel, clientServer.Server);
+            Action actual = () => sut.BuildAsync(serverChannel, clientServer.Server);
 
             actual.Should().Throw<InvalidOperationException>();
             sw.Stop();

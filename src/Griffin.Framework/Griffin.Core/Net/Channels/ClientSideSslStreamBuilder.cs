@@ -4,6 +4,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Griffin.Net.Channels
 {
@@ -37,9 +38,9 @@ namespace Griffin.Net.Channels
         public SslProtocols Protocols { get; set; }
 
 
-        public SslStream Build(IBinaryChannel channel, Socket socket)
+        public async Task<SslStream> BuildAsync(IBinaryChannel channel, Socket socket)
         {
-            return Build(socket);
+            return await Build(socket);
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace Griffin.Net.Channels
             return Certificate != null && certificate == null || Certificate == null && certificate != null;
         }
 
-        private SslStream Build(Socket socket)
+        private async Task<SslStream> Build(Socket socket)
         {
             var ns = new NetworkStream(socket);
             var stream = new SslStream(ns, true, OnRemoteCertifiateValidation);
@@ -66,7 +67,7 @@ namespace Griffin.Net.Channels
                 X509CertificateCollection certificates = null;
                 if (Certificate != null) certificates = new X509CertificateCollection(new[] {Certificate});
 
-                stream.AuthenticateAsClient(CommonName, certificates, Protocols, false);
+                await stream.AuthenticateAsClientAsync(CommonName, certificates, Protocols, false);
             }
             catch (IOException err)
             {

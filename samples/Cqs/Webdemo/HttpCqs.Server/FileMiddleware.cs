@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using ApacheMimeTypes;
 using Griffin.Net.Protocols.Http;
 using Griffin.Net.Protocols.Http.Middleware;
+using HttpCqs.Server.Helpers;
 
 namespace HttpCqs.Server
 {

@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Griffin.Security;
 using Griffin.Security.Authentication;
+using MicroMsg.Cqs.Messages;
 
-namespace HttpServerTests
+namespace MicroMsg.Cqs.Services
 {
     internal class FakeFetcher : IAccountRepository
     {

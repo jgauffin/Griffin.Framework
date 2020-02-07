@@ -240,12 +240,12 @@ namespace Griffin.Data.Mapper
         /// </example>
         public static TEntity First<TEntity>(this IDbCommand cmd)
         {
-            if (cmd == null) throw new ArgumentNullException("cmd");
+            if (cmd == null) throw new ArgumentNullException(nameof(cmd));
 
             var result = cmd.FirstOrDefault<TEntity>();
-            if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
+            if (EqualityComparer<TEntity>.Default.Equals(result, default))
             {
-                throw new EntityNotFoundException("Failed to find entity of type '" + typeof(TEntity).FullName + "'.",
+                throw new EntityNotFoundException($"Failed to find entity of type '{typeof(TEntity).FullName}'.",
                     cmd);
             }
 
@@ -284,7 +284,7 @@ namespace Griffin.Data.Mapper
             if (mapper == null) throw new ArgumentNullException("mapper");
 
             var result = cmd.FirstOrDefault(mapper);
-            if (EqualityComparer<TEntity>.Default.Equals(result, default(TEntity)))
+            if (EqualityComparer<TEntity>.Default.Equals(result, default))
             {
                 throw new EntityNotFoundException("Failed to find entity of type '" + typeof(TEntity).FullName + "'.",
                     cmd);
@@ -316,14 +316,14 @@ namespace Griffin.Data.Mapper
         /// </example>
         public static TEntity FirstOrDefault<TEntity>(this IDbCommand cmd)
         {
-            if (cmd == null) throw new ArgumentNullException("cmd");
+            if (cmd == null) throw new ArgumentNullException(nameof(cmd));
 
             try
             {
                 using (var reader = cmd.ExecuteReader())
                 {
                     if (!reader.Read())
-                        return default(TEntity);
+                        return default;
 
 
                     var mapping = EntityMappingProvider.GetBaseMapper<TEntity>();

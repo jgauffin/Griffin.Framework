@@ -33,17 +33,14 @@ namespace Griffin.Net.Channels
         /// <param name="channel">Channel which will use the stream</param>
         /// <param name="socket">Socket to wrap</param>
         /// <returns>Stream which is ready to be used (must have been validated)</returns>
-        public SslStream Build(IBinaryChannel channel, Socket socket)
+        public async Task<SslStream> BuildAsync(IBinaryChannel channel, Socket socket)
         {
             var ns = new NetworkStream(socket);
             var stream = new SslStream(ns, true, OnRemoteCertifiateValidation);
 
             try
             {
-                var t = stream.AuthenticateAsServerAsync(Certificate, UseClientCertificate, Protocols, CheckCertificateRevocation);
-                t.Wait(HandshakeTimeout);
-                if (t.Status == TaskStatus.WaitingForActivation)
-                    throw new InvalidOperationException("Handshake was not completed within the given interval '" + HandshakeTimeout + "'.");
+                await stream.AuthenticateAsServerAsync(Certificate, UseClientCertificate, Protocols, CheckCertificateRevocation);
             }
             catch (IOException err)
             {

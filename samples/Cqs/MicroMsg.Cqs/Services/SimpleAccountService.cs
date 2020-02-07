@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Griffin.Net.Protocols.Http.Authentication;
 
-namespace HttpServerTests
+namespace MicroMsg.Cqs.Services
 {
     public class SimpleAccountService : IAccountService
     {

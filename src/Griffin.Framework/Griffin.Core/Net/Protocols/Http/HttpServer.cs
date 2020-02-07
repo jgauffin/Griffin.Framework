@@ -36,7 +36,7 @@ namespace Griffin.Net.Protocols.Http
 
             var tasks = new List<Task>();
             
-            if (_configuration.Certificate != null)
+            if (_configuration.Certificate != null && _configuration.SecurePort != -1)
             {
                 var secureConfig = new MessagingServerConfiguration<HttpContext>
                 {

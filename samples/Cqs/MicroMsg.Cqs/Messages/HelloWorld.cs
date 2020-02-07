@@ -1,6 +1,6 @@
 ﻿using DotNetCqs;
 
-namespace HttpServerTests
+namespace MicroMsg.Cqs.Messages
 {
     public class HelloWorld : Command
     {
