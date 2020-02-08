@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Griffin.Cqs.Net;
 using Griffin.Net;
 using Griffin.Net.Authentication.HashAuthenticator;
@@ -13,18 +15,35 @@ namespace MicroMsg.Cqs
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            var microConfig = new MessagingServerConfiguration<MicroMessageContext>();
-            microConfig.HandlerFactory = x => new MicroMessageHandler(new DataContractMessageSerializer(), new TcpChannel());
-            var microServer = new MessagingServer<MicroMessageContext>(microConfig);
+            var microServer = CreateServer();
+            microServer.RunAsync(IPAddress.Loopback, 0, CancellationToken.None);
 
-            var client = new CqsClient(() => new DataContractMessageSerializer());
-            client.Authenticator = new HashClientAuthenticator(new NetworkCredential("jonas", "mamma"));
-            client.StartAsync(IPAddress.Loopback, microServer.LocalPort).Wait();
+            var client = await CreateClient(microServer.LocalPort);
             client.ExecuteAsync(new HelloWorld()).Wait();
 
             Console.WriteLine("Hello World!");
+        }
+
+        private static MessagingServer<MicroMessageContext> CreateServer()
+        {
+            var microConfig = new MessagingServerConfiguration<MicroMessageContext>
+            {
+                HandlerFactory = x => new MicroMessageHandler(new DataContractMessageSerializer(), new TcpChannel())
+            };
+            var microServer = new MessagingServer<MicroMessageContext>(microConfig);
+            return microServer;
+        }
+
+        private static async Task<CqsClient> CreateClient(int port)
+        {
+            var client = new CqsClient(() => new DataContractMessageSerializer())
+            {
+                Authenticator = new HashClientAuthenticator(new NetworkCredential("jonas", "mamma"))
+            };
+            await client.StartAsync(IPAddress.Loopback, port);
+            return client;
         }
     }
 }

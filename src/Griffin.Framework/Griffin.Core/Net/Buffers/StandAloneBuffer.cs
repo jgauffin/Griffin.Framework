@@ -2,7 +2,7 @@
 
 namespace Griffin.Net.Buffers
 {
-    internal class StandAloneBuffer : IBufferSegment
+    public class StandAloneBuffer : IBufferSegment
     {
         private int _count;
         private int _offset;

@@ -41,6 +41,9 @@ namespace Griffin.Net.Channels
 
         public SocketAwaitable ConnectAsync(Socket socket, EndPoint remoteEndPoint)
         {
+            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (remoteEndPoint == null) throw new ArgumentNullException(nameof(remoteEndPoint));
+
             Pending = true;
             Reset();
             _eventArgs.RemoteEndPoint = remoteEndPoint;

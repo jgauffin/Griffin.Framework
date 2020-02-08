@@ -93,6 +93,7 @@ namespace Griffin.Net.Channels
             if (RemoteEndpoint == EmptyEndpoint.Instance)
                 throw new InvalidOperationException("No remote endpoint have been specified.");
 
+            _socket = new AsyncSocket();
             await _socket.ConnectAsync(RemoteEndpoint);
         }
 

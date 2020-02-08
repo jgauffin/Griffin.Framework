@@ -21,6 +21,7 @@ namespace Griffin.Net.LiteServer.Modules
             _encoder = new MicroMessageEncoder(messageSerializer);
             _decoder = new MicroMessageDecoder(messageSerializer);
             _context = new MicroMessageContext();
+            _receiveBuffer = new StandAloneBuffer(65535);
             ChannelData = _context.ChannelData;
         }
 

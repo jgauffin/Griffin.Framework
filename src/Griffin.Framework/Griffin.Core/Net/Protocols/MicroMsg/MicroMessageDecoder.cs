@@ -174,6 +174,7 @@ namespace Griffin.Net.Protocols.MicroMsg
 
         private async Task ProcessFixedHeader(IInboundBinaryChannel channel, IBufferSegment buffer)
         {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
             await EnsureBytes(channel, buffer, FixedHeaderLength + 2);
 
             _headerSize = BitConverter.ToInt16(buffer.Buffer, buffer.Offset);

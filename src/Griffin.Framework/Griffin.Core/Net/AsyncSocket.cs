@@ -66,7 +66,7 @@ namespace Griffin.Net
                 throw new InvalidOperationException(
                     "Expected socket to be NULL (i.e. this AsyncSocket have been reset).");
             }
-
+            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             await _writeAwaitable.ConnectAsync(_socket, remoteEndPoint);
         }
 
