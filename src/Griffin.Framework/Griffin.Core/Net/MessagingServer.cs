@@ -145,7 +145,6 @@ namespace Griffin.Net
                         Socket = socket
                     };
                     var client = _configuration.HandlerFactory(factoryContext);
-
 #pragma warning disable 4014
                     client.ProcessAsync(_pipeline)
                         .ContinueWith(async x =>

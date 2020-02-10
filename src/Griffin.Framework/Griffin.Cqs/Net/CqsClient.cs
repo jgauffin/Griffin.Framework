@@ -31,6 +31,7 @@ namespace Griffin.Cqs.Net
         private IPEndPoint _endPoint;
         private object _lastSentItem;
         BufferManager _bufferManager = new BufferManager(10);
+        private Func<object, Task<bool>> _receiveFilter;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CqsClient" /> class.
@@ -39,6 +40,7 @@ namespace Griffin.Cqs.Net
         {
             _microMessageClient = new MicroMessageClient(new DataContractMessageSerializer(), _bufferManager);
             _cleanuptimer = new Timer(OnCleanup, 0, 10000, 10000);
+            _receiveFilter = ReadAuthenticationMessages;
         }
 
         /// <summary>
@@ -228,36 +230,55 @@ namespace Griffin.Cqs.Net
 #pragma warning restore 4014
         }
 
-        private void OnResponse(Task<object> obj)
+        private async Task OnResponse(object message)
         {
-            var msg = obj.Result;
+            var canExecute = true;
             try
             {
-                ProcessInboundMessage(obj, msg);
+                if (_receiveFilter != null)
+                {
+                    canExecute = await _receiveFilter(message);
+                }
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
+            }
+
+            try
+            {
+                if (canExecute)
+                {
+                    ProcessInboundMessage(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
 
             }
 
             try
             {
+#pragma warning disable 4014
                 _microMessageClient.ReceiveAsync().ContinueWith(OnResponse);
+#pragma warning restore 4014
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
 
             }
         }
 
-        private void ProcessInboundMessage(Task<object> obj, object msg)
+        private void ProcessInboundMessage(object msg)
         {
             var result = msg as ClientResponse;
             if (result == null)
             {
                 if (_response.Count != 1)
                     throw new InvalidOperationException(
-                        "More than one pending message and we received an unwrapped object: " + obj.Result);
+                        "More than one pending message and we received an unwrapped object: " + msg);
 
                 var key = _response.Keys.First();
                 if (!_response.TryRemove(key, out var waiter))
@@ -266,7 +287,7 @@ namespace Griffin.Cqs.Net
                     return;
                 }
 
-                waiter.Trigger(obj.Result);
+                waiter.Trigger(msg);
             }
 
             else
@@ -305,7 +326,7 @@ namespace Griffin.Cqs.Net
         ///     Always revoke since we do not want incoming messages to be queued up for receive operations.
         /// </summary>
         /// <param name="message"></param>
-        /// <returns></returns>
+        /// <returns><c>true</c> if message can be processed; <c>false</c> if the filter consumed the message.</returns>
         private async Task<bool> ReadAuthenticationMessages(object message)
         {
             if (!(message is AuthenticationRequiredException) && !_continueAuthenticate)
@@ -321,6 +342,7 @@ namespace Griffin.Cqs.Net
             if (_lastSentItem != null)
                 await _microMessageClient.SendAsync(_lastSentItem);
 
+            _receiveFilter = null;
             return false;
         }
 

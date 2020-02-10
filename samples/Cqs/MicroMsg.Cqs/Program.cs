@@ -30,10 +30,17 @@ namespace MicroMsg.Cqs
         {
             var microConfig = new MessagingServerConfiguration<MicroMessageContext>
             {
-                HandlerFactory = x => new MicroMessageHandler(new DataContractMessageSerializer(), new TcpChannel())
+                HandlerFactory = CreateHandler
             };
             var microServer = new MessagingServer<MicroMessageContext>(microConfig);
             return microServer;
+        }
+
+        private static IClientHandler<MicroMessageContext> CreateHandler(MessagingServerHandlerFactoryContext arg)
+        {
+            var channel = new TcpChannel();
+            channel.Assign(arg.Socket);
+            return new MicroMessageHandler(new DataContractMessageSerializer(), channel);
         }
 
         private static async Task<CqsClient> CreateClient(int port)

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Griffin.Net.Buffers;
 using Griffin.Net.Channels;
 using Griffin.Net.LiteServer.Modules.Authentication;
@@ -18,6 +19,9 @@ namespace Griffin.Net.LiteServer.Modules
         public MicroMessageHandler(IMessageSerializer messageSerializer, IBinaryChannel channel)
         {
             _channel = channel;
+            if (!channel.IsConnected)
+                throw new ChannelException("Channel is not connected.");
+
             _encoder = new MicroMessageEncoder(messageSerializer);
             _decoder = new MicroMessageDecoder(messageSerializer);
             _context = new MicroMessageContext();

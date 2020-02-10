@@ -73,7 +73,7 @@ namespace Griffin.Net.Protocols.Strings
                 if (bytesLeft > 0)
                     break;
 
-                buffer.Offset = 0;
+                buffer.Offset = buffer.StartOffset;
                 buffer.Count = 0;
                 await channel.ReceiveAsync(buffer);
             }
