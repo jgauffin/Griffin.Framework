@@ -85,9 +85,9 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.CreateParameter().Returns(Substitute.For<DbParameter>());
             uow.CreateCommand().Returns(cmd);
 
-            Func<Task> actual = async ()=> await uow.DeleteAsync(new MyMapper2(), myEntity);
+            var actual = ()=> uow.DeleteAsync(new MyMapper2(), myEntity);
 
-            actual.Should().Throw<MappingException>();
+            actual.Should().ThrowAsync<MappingException>();
         }
 
         public ICrudEntityMapper Get<TEntity>()

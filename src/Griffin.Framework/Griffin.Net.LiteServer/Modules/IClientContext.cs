@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Security.Principal;
+using DotNetCqs;
 using Griffin.Net.Channels;
 
 namespace Griffin.Net.LiteServer.Modules
@@ -18,12 +19,12 @@ namespace Griffin.Net.LiteServer.Modules
         /// <summary>
         /// Inbound message
         /// </summary>
-        object RequestMessage { get; set; }
+        Message RequestMessage { get; set; }
 
         /// <summary>
         /// Message to send to the client
         /// </summary>
-        object ResponseMessage { get; set; }
+        Message ResponseMessage { get; set; }
 
         /// <summary>
         /// Can be compared with a session in a web server.

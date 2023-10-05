@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Griffin.Data.Sqlite</RootNamespace>
     <AssemblyName>Griffin.Data.Sqlite</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -53,10 +53,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqliteCommandBuilder.cs" />
     <Compile Include="UnitOfWorkExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">

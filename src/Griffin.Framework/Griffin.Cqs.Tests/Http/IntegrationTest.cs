@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -53,7 +51,7 @@ namespace Griffin.Cqs.Tests.Http
 
             //Our cqs HTTP client.
             var client = new CqsHttpClient("http://localhost:" + server.LocalPort);
-            var result = await client.QueryAsync(new GetUsers { FirstName = "Jonas" });
+            var result = await client.QueryAsync<GetUsersResult>(new GetUsers { FirstName = "Jonas" });
         }
 
         [Fact]
@@ -103,17 +101,16 @@ namespace Griffin.Cqs.Tests.Http
         }
     }
 
-
-    public class RaiseHands : Command
+    public class RaiseHands
     {
         public string Reason { get; set; }
     }
 
-    public class RaiseHandsHandler : ICommandHandler<RaiseHands>
+    public class RaiseHandsHandler : IMessageHandler<RaiseHands>
     {
-        public async Task ExecuteAsync(RaiseHands command)
+        public Task HandleAsync(IMessageContext context, RaiseHands message)
         {
-
+            throw new NotImplementedException();
         }
     }
 
@@ -129,9 +126,9 @@ namespace Griffin.Cqs.Tests.Http
 
     public class GetUsersHandler : IQueryHandler<GetUsers, GetUsersResult>
     {
-        public async Task<GetUsersResult> ExecuteAsync(GetUsers command)
+        public Task<GetUsersResult> HandleAsync(IMessageContext context, GetUsers query)
         {
-            return new GetUsersResult() { Count = 10 };
+            return Task.FromResult(new GetUsersResult() { Count = 10 });
         }
     }
 }

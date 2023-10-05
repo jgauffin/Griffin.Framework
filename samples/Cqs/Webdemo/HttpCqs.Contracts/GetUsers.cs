@@ -1,5 +1,4 @@
 ﻿using DotNetCqs;
-using Griffin.Cqs.Authorization;
 
 namespace HttpCqs.Contracts
 {

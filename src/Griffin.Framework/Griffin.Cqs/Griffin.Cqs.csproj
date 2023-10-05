@@ -1,142 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9FEBAD0A-CC01-4105-AC0C-C382E64164E6}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Griffin.Cqs</RootNamespace>
-    <AssemblyName>Griffin.Cqs</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <PackageId>Griffin.Cqs</PackageId>
+    <Authors>jgauffin</Authors>
+    <Description>Command/Query library for inter process communication.</Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>© Copyright 2023 Jonas Gauffin. All rights reserved.</Copyright>
+    <PackageTags>messaging networking command/query</PackageTags>
+    <RepositoryUrl>https://github.com/jgauffin/griffin.framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseUrl>https://github.com/jgauffin/griffin.framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://griffinframework.net</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+
+  <PropertyGroup>
+    <Version>1.0</Version>
+    <PackageReleaseNotes>Bumped to .NET 6.0.</PackageReleaseNotes>
+    <NoWarn>NU1701;NU1702;NU1705;NU4019</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Griffin.Cqs.XML</DocumentationFile>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\net6.0\Griffin.Cqs.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetCqs, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetCqs.1.0.1\lib\net452\DotNetCqs.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Content Include="README.txt">
+      <Pack>true</Pack>
+      <PackagePath>README.txt</PackagePath>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Authorization\AuthorizationException.cs" />
-    <Compile Include="Authorization\AuthorizationFilterContext.cs" />
-    <Compile Include="Authorization\AuthorizeAttribute.cs" />
-    <Compile Include="Authorization\IAuthorizationFilter.cs" />
-    <Compile Include="Authorization\IEntityWithRoles.cs" />
-    <Compile Include="Authorization\RoleAuthorizer.cs" />
-    <Compile Include="BusFailedEventArgs.cs" />
-    <Compile Include="CommandHandlerFailedEventArgs.cs" />
-    <Compile Include="GlobalConfiguration.cs" />
-    <Compile Include="Http\CqsHttpClient.cs" />
-    <Compile Include="Http\CqsHttpListener.cs" />
-    <Compile Include="Http\CqsObjectMapper.cs" />
-    <Compile Include="Http\ICqsDeserializer.cs" />
-    <Compile Include="Http\WebSocketServer.cs" />
-    <Compile Include="InversionOfControl\CommandInvokedEventArgs.cs" />
-    <Compile Include="InversionOfControl\EventHandlerInfo.cs" />
-    <Compile Include="InversionOfControl\EventHandlerRegistry.cs" />
-    <Compile Include="InversionOfControl\IEventHandlerRegistry.cs" />
-    <Compile Include="InversionOfControl\IocBusBuilder.cs" />
-    <Compile Include="InversionOfControl\QueryExecutedEventArgs.cs" />
-    <Compile Include="InversionOfControl\EventPublishedEventArgs.cs" />
-    <Compile Include="InversionOfControl\IocCommandBus.cs" />
-    <Compile Include="InversionOfControl\IocEventBus.cs" />
-    <Compile Include="InversionOfControl\IocRequestReplyBus.cs" />
-    <Compile Include="InversionOfControl\ScopeClosingEventArgs.cs" />
-    <Compile Include="InversionOfControl\ScopeCreatedEventArgs.cs" />
-    <Compile Include="InversionOfControl\SeparateScopesIocEventBus.cs" />
-    <Compile Include="Reliable\QueuedCommandBus.cs" />
-    <Compile Include="Reliable\QueuedEventBus.cs" />
-    <Compile Include="InversionOfControl\IocQueryBus.cs" />
-    <Compile Include="CqsHandlerMissingException.cs" />
-    <Compile Include="EventHandlerFailedEventArgs.cs" />
-    <Compile Include="HandlerFailure.cs" />
-    <Compile Include="InversionOfControl\MemoryQueue.cs" />
-    <Compile Include="InversionOfControl\RequestInvokedEventArgs.cs" />
-    <Compile Include="Net\ClientResponse.cs" />
-    <Compile Include="Net\CqsClient.cs" />
-    <Compile Include="Net\CqsExtensions.cs" />
-    <Compile Include="Net\ServerSideException.cs" />
-    <Compile Include="OnlyOneHandlerAllowedException.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CqsMessageProcessor.cs" />
-    <Compile Include="Routing\AssemblyRule.cs" />
-    <Compile Include="Routing\IRoutedBus.cs" />
-    <Compile Include="Routing\IRoutingRule.cs" />
-    <Compile Include="Routing\RoutedCommandBus.cs" />
-    <Compile Include="Routing\RoutedEventBus.cs" />
-    <Compile Include="Routing\RoutedQueryBus.cs" />
-    <Compile Include="Routing\RoutedRequestReplyBus.cs" />
-    <Compile Include="Routing\RoutedCqsService.cs" />
-    <Compile Include="Simple\SimpleRequestReplyBus.cs" />
-    <Compile Include="Simple\SimpleQueryBus.cs" />
-    <Compile Include="Simple\SimpleEventBus.cs" />
-    <Compile Include="Simple\SimpleCommandBus.cs" />
+    <PackageReference Include="DotNetCqs" Version="2.1.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj">
-      <Project>{744709D5-D4D5-4551-9EBD-CBD7BDF58F5F}</Project>
-      <Name>Griffin.Core</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="InversionOfControl\ReadMe.md" />
-    <None Include="Net\ReadMe.md" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="ReadMe.md" />
-    <None Include="Reliable\ReadMe.md" />
-    <None Include="Simple\ReadMe.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Handler\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

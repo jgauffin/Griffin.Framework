@@ -14,48 +14,20 @@ namespace Griffin.Cqs.Server
     /// </summary>
     public class CqsModule : IServerModule
     {
-        private readonly MethodInfo _commandMethod;
+        private readonly MethodInfo _messageMethod;
         private readonly MethodInfo _queryMethod;
-        private readonly MethodInfo _requestMethod;
-        private ICommandBus _commandBus;
-        private IEventBus _eventBus;
-        private IQueryBus _queryBus;
-        private IRequestReplyBus _requestReplyBus;
 
         public CqsModule()
         {
-            CommandBus = new SimpleCommandBus();
+            MessageBus = new SimpleMessageBus();
             QueryBus = new SimpleQueryBus();
-            EventBus = new SimpleEventBus();
-            RequestReplyBus = new SimpleRequestReplyBus();
-            _requestMethod = GetType().GetMethod("ExecuteRequest", BindingFlags.NonPublic | BindingFlags.Instance);
-            _commandMethod = GetType().GetMethod("ExecuteCommand", BindingFlags.NonPublic | BindingFlags.Instance);
+            _messageMethod = GetType().GetMethod("SendAsync", BindingFlags.NonPublic | BindingFlags.Instance);
             _queryMethod = GetType().GetMethod("ExecuteQuery", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        public ICommandBus CommandBus
-        {
-            get { return _commandBus; }
-            set { _commandBus = value; }
-        }
+        public IMessageBus MessageBus { get; set; }
 
-        public IQueryBus QueryBus
-        {
-            get { return _queryBus; }
-            set { _queryBus = value; }
-        }
-
-        public IEventBus EventBus
-        {
-            get { return _eventBus; }
-            set { _eventBus = value; }
-        }
-
-        public IRequestReplyBus RequestReplyBus
-        {
-            get { return _requestReplyBus; }
-            set { _requestReplyBus = value; }
-        }
+        public IQueryBus QueryBus { get; set; }
 
         /// <summary>
         ///     Begin request is always called for all modules.
@@ -76,7 +48,7 @@ namespace Griffin.Cqs.Server
         public async Task EndRequest(IClientContext context)
 #pragma warning restore 1998
         {
-            if (context.ResponseMessage is ClientResponse)
+            if (context.ResponseMessage.Body is ClientResponse)
                 return;
 
             if (context.ResponseMessage == null && context.Error != null)
@@ -88,7 +60,7 @@ namespace Griffin.Cqs.Server
                 id = CqsExtensions.GetId(context.RequestMessage);
             }
 
-            context.ResponseMessage = new ClientResponse((Guid)id, context.ResponseMessage);
+            context.ResponseMessage = new ClientResponse((Guid)id, context.ResponseMessage.Body);
         }
 
         /// <summary>
@@ -105,34 +77,34 @@ namespace Griffin.Cqs.Server
         public async Task<ModuleResult> ProcessAsync(IClientContext context)
         {
             var message = context.RequestMessage;
-
-            if (message is IQuery)
+            var messageType = message.Properties["Message-Type"];
+            if (messageType ==  "QUERY")
             {
-                var dto = (IQuery)message;
+                var dto = message.Body;
                 var type = message.GetType();
                 var replyType = type.BaseType.GetGenericArguments()[0];
                 var method = _queryMethod.MakeGenericMethod(type, replyType);
-                context.RequestData["Id"] = dto.QueryId;
+                context.RequestData["Id"] = message.MessageId;
                 try
                 {
                     var task = (Task)method.Invoke(this, new[] { message });
                     await task;
-                    context.ResponseMessage = new ClientResponse(dto.QueryId, ((dynamic)task).Result);
+                    context.ResponseMessage = new ClientResponse(message.MessageId, ((dynamic)task).Result);
                 }
                 catch (TargetInvocationException exception)
                 {
-                    context.ResponseMessage = new ClientResponse(dto.QueryId, exception.InnerException);
+                    context.ResponseMessage = new ClientResponse(message.MessageId, exception.InnerException);
                 }
 
                 return ModuleResult.SendResponse;
             }
 
-            if (message is Command)
+            if (messageType == "MESSAGE")
             {
-                var dto = (Command)message;
+                var dto = message;
                 var type = message.GetType();
-                var method = _commandMethod.MakeGenericMethod(type);
-                context.RequestData["Id"] = dto.CommandId;
+                var method = _messageMethod.MakeGenericMethod(type);
+                context.RequestData["Id"] = message.MessageId;
                 try
                 {
                     var task = (Task)method.Invoke(this, new[] { message });
@@ -147,42 +119,9 @@ namespace Griffin.Cqs.Server
                 return ModuleResult.SendResponse;
             }
 
-            if (message is IRequest)
+            if (messageType == "REPLY")
             {
-                var dto = (IRequest)message;
-                context.RequestData["Id"] = dto.RequestId;
-                var type = message.GetType();
-                var replyType = type.BaseType.GetGenericArguments()[0];
-                var method = _requestMethod.MakeGenericMethod(type, replyType);
-                try
-                {
-                    var task = (Task)method.Invoke(this, new[] { message });
-                    await task;
-                    context.ResponseMessage = new ClientResponse(dto.RequestId, ((dynamic)task).Result);
-                }
-                catch (TargetInvocationException exception)
-                {
-                    context.ResponseMessage = new ClientResponse(dto.RequestId, exception.InnerException);
-                }
-
-                return ModuleResult.SendResponse;
-            }
-
-            if (message is ApplicationEvent)
-            {
-                var dto = (ApplicationEvent)message;
-                context.RequestData["Id"] = dto.EventId;
-                try
-                {
-                    var task = _eventBus.PublishAsync(dto);
-                    await task;
-                    context.ResponseMessage = new ClientResponse(dto.EventId, null);
-                }
-                catch (TargetInvocationException exception)
-                {
-                    context.ResponseMessage = new ClientResponse(dto.EventId, exception.InnerException);
-                }
-
+                //TODO
                 return ModuleResult.SendResponse;
             }
 
@@ -190,19 +129,10 @@ namespace Griffin.Cqs.Server
         }
 
 
-        private Task ExecuteCommand<T>(T command) where T : Command
-        {
-            return _commandBus.ExecuteAsync(command);
-        }
-
         private Task ExecuteQuery<T, TResult>(T query) where T : Query<TResult>
         {
-            return _queryBus.QueryAsync(query);
+            return QueryBus.QueryAsync(query);
         }
 
-        private Task ExecuteRequest<T, TResult>(T query) where T : Request<TResult>
-        {
-            return _requestReplyBus.ExecuteAsync(query);
-        }
     }
 }

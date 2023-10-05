@@ -62,13 +62,12 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         [Fact]
         public void First_without_rows_should_throw_exception()
         {
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "SELECT * FROM Users WHERE Id = 8338";
-                Action actual = () => cmd.FirstAsync<User>().Wait();
+            using var cmd = _connection.CreateCommand();
+            cmd.CommandText = "SELECT * FROM Users WHERE Id = 8338";
+            
+            var actual = () => cmd.FirstAsync<User>();
 
-                actual.Should().Throw<EntityNotFoundException>();
-            }
+            actual.Should().ThrowAsync<EntityNotFoundException>();
         }
 
         [Fact]

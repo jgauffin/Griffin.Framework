@@ -26,9 +26,9 @@ namespace Griffin.Core.Tests.Data.Mapper
             cmd.ExecuteReaderAsync().Returns(task);
             cmd.Parameters.Returns(Substitute.For<DbParameterCollection>());
 
-            Action actual = () => cmd.FirstAsync(new CrudMapper()).Wait();
+            var actual = () => cmd.FirstAsync(new CrudMapper());
 
-            actual.Should().Throw<EntityNotFoundException>();
+            actual.Should().ThrowAsync<EntityNotFoundException>();
         }
 
         [Fact]

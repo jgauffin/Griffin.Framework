@@ -9,15 +9,15 @@ namespace Griffin.Cqs.InversionOfControl
     ///     An event have been published.
     /// </summary>
     /// <remarks>
-    ///     <para>Wether all handlers succeeded or not is specified by the <see cref="Successful" /> property.</para>
+    ///     <para>Whether all handlers succeeded or not is specified by the <see cref="Successful" /> property.</para>
     /// </remarks>
-    public class EventPublishedEventArgs : EventArgs
+    public class MessagePublishedEventArgs : EventArgs
     {
         /// <summary>
-        ///     Initializes a new instance of the <see cref="EventPublishedEventArgs" /> class.
+        ///     Initializes a new instance of the <see cref="MessagePublishedEventArgs" /> class.
         /// </summary>
         /// <param name="scope">Scope used to resolve subscribers.</param>
-        /// <param name="applicationEvent">Published event.</param>
+        /// <param name="message">Published event.</param>
         /// <param name="successful">All handlers processed the event successfully.</param>
         /// <param name="eventInfo"></param>
         /// <exception cref="System.ArgumentNullException">
@@ -25,13 +25,11 @@ namespace Griffin.Cqs.InversionOfControl
         ///     or
         ///     applicationEvent
         /// </exception>
-        public EventPublishedEventArgs(IContainerScope scope, ApplicationEvent applicationEvent, bool successful,
-            IReadOnlyCollection<EventHandlerInfo> eventInfo)
+        public MessagePublishedEventArgs(IContainerScope scope, object message, bool successful,
+            IReadOnlyCollection<MessageHandlerInfo> eventInfo)
         {
-            if (applicationEvent == null) throw new ArgumentNullException("applicationEvent");
-
             Scope = scope;
-            ApplicationEvent = applicationEvent;
+            Message = message ?? throw new ArgumentNullException(nameof(message));
             Successful = successful;
             Handlers = eventInfo;
         }
@@ -49,7 +47,7 @@ namespace Griffin.Cqs.InversionOfControl
         /// <summary>
         ///     Published event
         /// </summary>
-        public ApplicationEvent ApplicationEvent { get; private set; }
+        public object Message { get; private set; }
 
         /// <summary>
         ///     <c>true</c> = None of the subscribers failed.
@@ -62,6 +60,6 @@ namespace Griffin.Cqs.InversionOfControl
         /// <remarks>
         ///     <para>Subscribers are added in the order that they complete.</para>
         /// </remarks>
-        public IReadOnlyCollection<EventHandlerInfo> Handlers { get; private set; }
+        public IReadOnlyCollection<MessageHandlerInfo> Handlers { get; private set; }
     }
 }

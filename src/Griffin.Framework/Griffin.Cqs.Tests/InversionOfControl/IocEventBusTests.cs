@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using DotNetCqs;
 using FluentAssertions;
 using Griffin.Container;
-using Griffin.Cqs.InversionOfControl;
 using NSubstitute;
 using Xunit;
 
@@ -18,7 +11,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
     {
 
         [Fact]
-        public void must_get_container_to_work_successfully()
+        public void Must_get_container_to_work_successfully()
         {
 
             Action x = () => new IocEventBus(null);
@@ -28,7 +21,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
 
 
         [Fact]
-        public async Task works_with_multiple_handlers()
+        public async Task Works_with_multiple_handlers()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -47,7 +40,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task one_failing_handler_should_not_abort_others()
+        public async Task One_failing_handler_should_not_abort_others()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -78,7 +71,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task works_without_subscribers_since_there_is_no_coupling_between_the_publisher_and_subscribers()
+        public async Task Works_without_subscribers_since_there_is_no_coupling_between_the_publisher_and_subscribers()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -92,7 +85,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task should_dispose_scope_when_done()
+        public async Task Should_dispose_scope_when_done()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -110,7 +103,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task should_trigger_event_upon_successful_completion()
+        public async Task Should_trigger_event_upon_successful_completion()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();
@@ -130,7 +123,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
         }
 
         [Fact]
-        public async Task event_should_report_Failure_if_one_handler_throws_an_exception()
+        public async Task Event_should_report_Failure_if_one_handler_throws_an_exception()
         {
             var container = Substitute.For<IContainer>();
             var scope = Substitute.For<IContainerScope>();

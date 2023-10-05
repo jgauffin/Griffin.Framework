@@ -20,7 +20,7 @@ namespace Griffin.Cqs.InversionOfControl
             _container = container;
             CommandBus = new IocCommandBus(_container);
             RequestBus = new IocRequestReplyBus(container);
-            EventBus = new IocEventBus(container);
+            MessageBus = new IocMessageBus(container);
             QueryBus = new IocQueryBus(container);
         }
 
@@ -32,7 +32,7 @@ namespace Griffin.Cqs.InversionOfControl
         /// <summary>
         ///     Same instance is shared between everything that this class builds.
         /// </summary>
-        public IocEventBus EventBus { get; set; }
+        public IocMessageBus MessageBus { get; set; }
 
         /// <summary>
         ///     Same instance is shared between everything that this class builds.
@@ -53,7 +53,7 @@ namespace Griffin.Cqs.InversionOfControl
             return new CqsMessageProcessor
             {
                 CommandBus = CommandBus,
-                EventBus = EventBus,
+                EventBus = MessageBus,
                 QueryBus = QueryBus,
                 RequestReplyBus = RequestBus
             };

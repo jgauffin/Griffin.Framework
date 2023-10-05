@@ -52,7 +52,7 @@ namespace Griffin.Core.Tests.Data.Mapper
 
 
         [Fact]
-        public void command_without_rows_throw_exception_for_First()
+        public void Command_without_rows_throw_exception_for_First()
         {
             var cmd = Substitute.For<IDbCommand>();
 
@@ -62,7 +62,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         }
 
         [Fact]
-        public void command_without_rows_throw_exception_for_First_with_specified_mapper()
+        public void Command_without_rows_throw_exception_for_First_with_specified_mapper()
         {
             var cmd = Substitute.For<IDbCommand>();
 
@@ -72,9 +72,9 @@ namespace Griffin.Core.Tests.Data.Mapper
         }
 
         [Fact]
-        public void command_with_rows_should_return_first_row_with_First()
+        public void Command_with_rows_should_return_first_row_with_First()
         {
-            var table = new FakeTable(new[] {"Id"}, new[] {new object[] {"10"}});
+            var table = new FakeTable(new[] {new object[] {"10"}}, new [] { "Id" });
             var cmd = new FakeCommand(table);
             cmd.CommandText = "MustBespecifiedForFakeCmd";
 
@@ -84,9 +84,9 @@ namespace Griffin.Core.Tests.Data.Mapper
         }
 
         [Fact]
-        public void command_with_rows_should_return_first_row_with_FirstOrDefault()
+        public void Command_with_rows_should_return_first_row_with_FirstOrDefault()
         {
-            var table = new FakeTable(new[] { "Id" }, new[] { new object[] { "10" } });
+            var table = new FakeTable(new[] { new object[] { "10" } }, new[] { "Id" });
             var cmd = new FakeCommand(table);
             cmd.CommandText = "MustBespecifiedForFakeCmd";
 
@@ -96,7 +96,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         }
 
         [Fact]
-        public void command_without_rows_should_return_null_for_FirstOrDefault()
+        public void Command_without_rows_should_return_null_for_FirstOrDefault()
         {
             var cmd = Substitute.For<IDbCommand>();
 
@@ -125,7 +125,7 @@ namespace Griffin.Core.Tests.Data.Mapper
         public void ToList_should_fill_the_list()
         {
             var connection = new FakeConnection() {CurrentState = ConnectionState.Open};
-            var table = new FakeTable(new String[] {"Id"}, new object[][] {new object[] {1},});
+            var table = new FakeTable(new object[][] {new object[] {1},}, new String[] { "Id" });
             var result = new CommandResult[] {new ReaderCommandResult {Result = new FakeDataReader(table)}};
             var cmd = new FakeCommand(connection, result);
             cmd.CommandText = "Hello";

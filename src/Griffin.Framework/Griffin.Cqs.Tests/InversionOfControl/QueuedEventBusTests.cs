@@ -36,7 +36,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
             container.CreateScope().Returns(scope);
             scope.ResolveAll<IApplicationEventSubscriber<IocEventBusTests.TestEvent>>()
                 .Returns(new[] { subscriber1, subscriber2 });
-            var innerBus = new IocEventBus(container);
+            var innerBus = new IocMessageBus(container);
 
             var sut = new QueuedEventBus(innerBus, 1);
             await sut.PublishAsync(evt);
@@ -61,7 +61,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
                     new IocEventBusTests.FailingHandler(),
                     successHandler
                 });
-            var inner = new IocEventBus(container);
+            var inner = new IocMessageBus(container);
 
             var sut = new QueuedEventBus(inner, 1);
             try
@@ -91,7 +91,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
                 {
                     Substitute.For<IApplicationEventSubscriber<IocEventBusTests.TestEvent>>(),
                 });
-            var inner = new IocEventBus(container);
+            var inner = new IocMessageBus(container);
 
             var sut = new QueuedEventBus(inner, 1);
             sut.EventPublished += (sender, args) => actual = true;
@@ -114,7 +114,7 @@ namespace Griffin.Cqs.Tests.InversionOfControl
                     Substitute.For<IApplicationEventSubscriber<IocEventBusTests.TestEvent>>(),
                     new IocEventBusTests.FailingHandler(), 
                 });
-            var inner = new IocEventBus(container);
+            var inner = new IocMessageBus(container);
 
             var sut = new QueuedEventBus(inner, 1);
             sut.EventPublished += (sender, args) => actual = args.Successful;

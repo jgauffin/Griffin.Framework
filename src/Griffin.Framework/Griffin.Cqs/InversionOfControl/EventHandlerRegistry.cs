@@ -24,7 +24,7 @@ namespace Griffin.Cqs.InversionOfControl
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (!typeof (ApplicationEvent).IsAssignableFrom(type))
-                throw new ArgumentException("'" + type.FullName + "' is not an ApplicationEvent.");
+                throw new ArgumentException("'" + type.FullName + "' is not an Message.");
 
             List<Type> handlers;
             if (!_eventHandlers.TryGetValue(type, out handlers))

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using DotNetCqs;
 
 namespace Griffin.Cqs.Routing
@@ -12,7 +13,7 @@ namespace Griffin.Cqs.Routing
         private readonly IQueryBus _inner;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RoutedCommandBus"/> class.
+        /// Initializes a new instance of the <see cref="RoutedMessageBus"/> class.
         /// </summary>
         /// <param name="routingRule">The routing rule.</param>
         /// <param name="inner">Bus to invoke command on if the rule accepts the command.</param>
@@ -34,17 +35,16 @@ namespace Griffin.Cqs.Routing
             return _routingRule.Match(cqsObject);
         }
 
-        /// <summary>
-        /// Invoke a query and wait for the result
-        /// </summary>
-        /// <typeparam name="TResult">Type of result that the query will return</typeparam>
-        /// <param name="query">Query to execute.</param>
-        /// <returns>
-        /// Task which will complete once we've got the result (or something failed, like a query wait timeout).
-        /// </returns>
-        public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
+        /// <inheritdoc />
+        public Task<TResult> QueryAsync<TResult>(ClaimsPrincipal principal, Query<TResult> query)
         {
-            return await _inner.QueryAsync(query);
+            return _inner.QueryAsync(principal, query);
+        }
+
+        /// <inheritdoc />
+        public Task<TResult> QueryAsync<TResult>(Query<TResult> query)
+        {
+            return _inner.QueryAsync(query);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using DotNetCqs;
 using Griffin.Cqs.Authorization;
@@ -23,8 +24,13 @@ namespace Griffin.Cqs.Simple
     /// </remarks>
     public class SimpleQueryBus : IQueryBus
     {
-        private readonly Dictionary<Type, Func<IQuery, Task>> _handlers =
-            new Dictionary<Type, Func<IQuery, Task>>();
+        private readonly Dictionary<Type, Func<object, Task>> _handlers =
+            new Dictionary<Type, Func<object, Task>>();
+
+        public Task<TResult> QueryAsync<TResult>(ClaimsPrincipal principal, Query<TResult> query)
+        {
+            return QueryAsync(query);
+        }
 
         /// <summary>
         ///     Request that a query should be executed.
@@ -37,7 +43,7 @@ namespace Griffin.Cqs.Simple
         /// <exception cref="T:System.ArgumentNullException">query</exception>
         public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
         {
-            Func<IQuery, Task> handler;
+            Func<object, Task> handler;
             if (!_handlers.TryGetValue(query.GetType(), out handler))
                 throw new CqsHandlerMissingException(query.GetType());
 
@@ -63,7 +69,7 @@ namespace Griffin.Cqs.Simple
 
                 var handlerMethod = handlerType.GetMethod("ExecuteAsync");//.MakeGenericMethod(intfc.GetGenericArguments()[1]);
                 var deleg = handlerMethod.ToFastDelegate();
-                Func<IQuery, Task> action = query =>
+                Func<object, Task> action = query =>
                 {
                     var handler = factory(handlerType);
 
@@ -106,7 +112,7 @@ namespace Griffin.Cqs.Simple
             var factory = constructor.CreateFactory();
             var handlerMethod = handlerType.GetMethod("ExecuteAsync", new[] {typeof (TQuery)});
             var deleg = handlerMethod.ToFastDelegate();
-            Func<IQuery, Task> action = query =>
+            Func<object, Task> action = query =>
             {
                 var handler = factory(handlerType);
 

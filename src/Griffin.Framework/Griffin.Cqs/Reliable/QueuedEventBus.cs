@@ -46,7 +46,7 @@ namespace Griffin.Cqs.Reliable
 
             _queue = queue;
             _innerBus = innerBus;
-            if (_innerBus is IocEventBus iocBus)
+            if (_innerBus is IocMessageBus iocBus)
             {
                 iocBus.EventPublished += OnDelegateEventPublished;
                 iocBus.HandlerFailed += OnDelegateHandlerFailed;
@@ -55,7 +55,7 @@ namespace Griffin.Cqs.Reliable
             _semaphore = new SemaphoreSlim(workerCount);
         }
 
-        private void OnDelegateHandlerFailed(object sender, EventHandlerFailedEventArgs e)
+        private void OnDelegateHandlerFailed(object sender, MessageHandlerFailedEventArgs e)
         {
             HandlerFailed(this, e);
         }
@@ -148,7 +148,7 @@ namespace Griffin.Cqs.Reliable
         ///         We will not try to invoke the event again as one or more handlers may have consumed the event successfully.
         ///     </para>
         /// </remarks>
-        public event EventHandler<EventHandlerFailedEventArgs> HandlerFailed = delegate { };
+        public event EventHandler<MessageHandlerFailedEventArgs> HandlerFailed = delegate { };
 
         /// <summary>
         ///     Bus failed to invoke an event.

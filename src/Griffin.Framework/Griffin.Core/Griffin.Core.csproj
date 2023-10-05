@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net451;netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <PackageId>Griffin.Framework</PackageId>
     <Authors>jgauffin</Authors>
     <Description>Business application library - get rid of a lot of boilerplate code.</Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Copyright>© Copyright 2019 1TCompany AB. All rights reserved.</Copyright>
+    <Copyright>© Copyright 2023 Jonas Gauffin. All rights reserved.</Copyright>
     <PackageTags>logger exceptions data-mapper dependency-injection tcp sockets</PackageTags>
     <RepositoryUrl>https://github.com/jgauffin/griffin.framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -16,35 +16,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>2.1.3</Version>
-    <PackageReleaseNotes>Will now throw a proper exception if there are no primary key in the data mapper.</PackageReleaseNotes>
+    <Version>2.1.4</Version>
+    <PackageReleaseNotes>Bumped to .NET 6.0.</PackageReleaseNotes>
+    <NoWarn>NU1701;NU1702;NU1705;NU4019</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\net451\Griffin.Core.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net451|AnyCPU'">
-    <NoWarn>1701;1702;1705;4019</NoWarn>
+    <DocumentationFile>bin\Release\net6.0\Griffin.Core.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="README.txt">
-      <Pack>true</Pack>
-      <PackagePath>README.txt</PackagePath>
-    </Content>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451'">
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
   </ItemGroup>
 </Project>

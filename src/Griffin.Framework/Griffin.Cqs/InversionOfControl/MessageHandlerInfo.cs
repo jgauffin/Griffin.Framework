@@ -3,19 +3,18 @@ using System;
 namespace Griffin.Cqs.InversionOfControl
 {
     /// <summary>
-    /// Contains information about all publishers
+    /// Contains information about all message handlers.
     /// </summary>
-    public class EventHandlerInfo
+    public class MessageHandlerInfo
     {
         /// <summary>
-        /// Create a new instance of <see cref="EventHandlerInfo"/>.
+        /// Create a new instance of <see cref="MessageHandlerInfo"/>.
         /// </summary>
         /// <param name="subscriberType">Type of class that received the event.</param>
         /// <param name="processingTime">How many milliseconds it too to invoke the handler.</param>
-        public EventHandlerInfo(Type subscriberType, long processingTime)
+        public MessageHandlerInfo(Type subscriberType, long processingTime)
         {
-            if (subscriberType == null) throw new ArgumentNullException("subscriberType");
-            SubscriberType = subscriberType;
+            SubscriberType = subscriberType ?? throw new ArgumentNullException(nameof(subscriberType));
             InvocationTime = processingTime;
         }
 

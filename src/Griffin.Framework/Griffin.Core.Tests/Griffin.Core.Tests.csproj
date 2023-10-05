@@ -1,30 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
-    <RootNamespace>Griffin.Core.Tests</RootNamespace>
-    <AssemblyName>Griffin.Core.Tests</AssemblyName>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Griffin.AdoNetFakes" Version="2.0.7" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
-    <PackageReference Include="NCrunch.Framework" Version="3.17.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="FluentAssertions" Version="5.6.0" />
-    <PackageReference Include="NSubstitute" Version="4.0.0" />
-
+    <PackageReference Include="Griffin.AdoNetFakes" Version="3.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="NCrunch.Framework" Version="4.17.0.5" />
+    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Griffin.Core\Griffin.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}"></Service>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Net\cert\GriffinNetworkingTemp.pfx">

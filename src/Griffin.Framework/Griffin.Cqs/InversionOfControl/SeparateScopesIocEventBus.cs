@@ -21,7 +21,7 @@ namespace Griffin.Cqs.InversionOfControl
         private readonly IEventHandlerRegistry _registry;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="IocEventBus" /> class.
+        ///     Initializes a new instance of the <see cref="IocMessageBus" /> class.
         /// </summary>
         /// <param name="container">Used to resolve <c><![CDATA[IApplicationEventSubscriber<TApplicationEvent>]]></c>.</param>
         /// <param name="registry">
@@ -56,7 +56,7 @@ namespace Griffin.Cqs.InversionOfControl
                 GlobalConfiguration.AuthorizationFilter.Authorize(ctx);
             }
 
-            var eventInfo = new List<EventHandlerInfo>();
+            var eventInfo = new List<MessageHandlerInfo>();
             var tasks = handlers
                 .Select(handler => InvokeHandlerAsync(handler, e, eventInfo))
                 .ToList();
@@ -72,13 +72,13 @@ namespace Griffin.Cqs.InversionOfControl
             {
                 EventPublished(this, new EventPublishedEventArgs(null, e, false, eventInfo));
                 var failures = eventInfo.Where(x => x.Failure != null).Select(x => x.Failure).ToList();
-                HandlerFailed(this, new EventHandlerFailedEventArgs(e, failures, eventInfo.Count));
+                HandlerFailed(this, new MessageHandlerFailedEventArgs(e, failures, eventInfo.Count));
                 throw task.Exception;
             }
         }
 
         private async Task InvokeHandlerAsync<TEventType>(Type eventHandlerType, TEventType e,
-            ICollection<EventHandlerInfo> eventInfo) where TEventType : ApplicationEvent
+            ICollection<MessageHandlerInfo> eventInfo) where TEventType : ApplicationEvent
         {
             using (var scope = _container.CreateScope())
             {
@@ -96,13 +96,13 @@ namespace Griffin.Cqs.InversionOfControl
                 try
                 {
                     await ((IApplicationEventSubscriber<TEventType>)subscriber).HandleAsync(e);
-                    eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
+                    eventInfo.Add(new MessageHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds));
                     if (ScopeClosing != null)
                         ScopeClosing(this, new ScopeClosingEventArgs(scope) { HandlersWasSuccessful = true });
                 }
                 catch (Exception ex)
                 {
-                    eventInfo.Add(new EventHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds)
+                    eventInfo.Add(new MessageHandlerInfo(subscriber.GetType(), sw.ElapsedMilliseconds)
                     {
                         Failure = new HandlerFailure(subscriber, ex)
                     });
@@ -136,7 +136,7 @@ namespace Griffin.Cqs.InversionOfControl
         ///         We will not try to invoke the event again as one or more handlers may have consumed the event successfully.
         ///     </para>
         /// </remarks>
-        public event EventHandler<EventHandlerFailedEventArgs> HandlerFailed = delegate { };
+        public event EventHandler<MessageHandlerFailedEventArgs> HandlerFailed = delegate { };
 
         /// <summary>
         ///     A new IoC container scope have been created (a new scope is created every time a command is about to executed).

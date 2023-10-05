@@ -20,7 +20,7 @@ namespace Griffin.Cqs.InversionOfControl
         /// or
         /// query
         /// </exception>
-        public QueryExecutedEventArgs(IContainerScope scope, IQuery query, object handler)
+        public QueryExecutedEventArgs(IContainerScope scope, object query, object handler)
         {
             if (scope == null) throw new ArgumentNullException("scope");
             if (query == null) throw new ArgumentNullException("query");
@@ -38,7 +38,7 @@ namespace Griffin.Cqs.InversionOfControl
         /// <summary>
         /// Query to execute
         /// </summary>
-        public IQuery Query { get; private set; }
+        public object Query { get; private set; }
 
         /// <summary>
         /// Query handler that executed the query (implements <see cref="IQueryHandler{TQuery,TResult}"/>).

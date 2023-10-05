@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using DotNetCqs;
@@ -23,7 +24,7 @@ namespace Griffin.Cqs.Net
     ///         Uses TCP and the MicroMsg protocol to transport messages to server side.
     ///     </para>
     /// </remarks>
-    public class CqsClient : ICommandBus, IEventBus, IQueryBus, IRequestReplyBus, IDisposable
+    public class CqsClient : IMessageBus, IQueryBus, IDisposable
     {
         private readonly Timer _cleanuptimer;
         private readonly ChannelTcpClient _client;
@@ -61,8 +62,8 @@ namespace Griffin.Cqs.Net
         /// </summary>
         public ISslStreamBuilder Certificate
         {
-            get { return _client.Certificate; }
-            set { _client.Certificate = value; }
+            get => _client.Certificate;
+            set => _client.Certificate = value;
         }
 
         /// <summary>
@@ -70,24 +71,8 @@ namespace Griffin.Cqs.Net
         /// </summary>
         public IClientAuthenticator Authenticator
         {
-            get { return _client.Authenticator; }
-            set { _client.Authenticator = value; }
-        }
-
-
-        /// <summary>
-        ///     Execute a command and wait for result (i.e. exception for failure or just return for success)
-        /// </summary>
-        /// <typeparam name="T">Type of command</typeparam>
-        /// <param name="command">command object</param>
-        /// <returns>completion task</returns>
-        public async Task ExecuteAsync<T>(T command) where T : Command
-        {
-            await EnsureConnected();
-            var waiter = new Waiter<T>(command.CommandId);
-            _response[command.CommandId] = waiter;
-            await SendItem(command);
-            await waiter.Task;
+            get => _client.Authenticator;
+            set => _client.Authenticator = value;
         }
 
         /// <summary>
@@ -97,21 +82,19 @@ namespace Griffin.Cqs.Net
         {
             _cleanuptimer.Dispose();
         }
-
-        /// <summary>
-        ///     Publishes an application event (at server side)
-        /// </summary>
-        /// <typeparam name="TApplicationEvent">The type of the application event.</typeparam>
-        /// <param name="e">event to publish.</param>
-        /// <returns>completion task</returns>
-        public async Task PublishAsync<TApplicationEvent>(TApplicationEvent e)
-            where TApplicationEvent : ApplicationEvent
+        
+        public async Task<TResult> QueryAsync<TResult>(ClaimsPrincipal principal, Query<TResult> query)
         {
+            var msg = new Message(query);
+            msg.Properties["MessageType"] = "QUERY";
+            //todo: Add JWT token
+
             await EnsureConnected();
-            var waiter = new Waiter<TApplicationEvent>(e.EventId);
-            _response[e.EventId] = waiter;
-            await SendItem(e);
+            var waiter = new Waiter<TResult>(msg.MessageId);
+            _response[msg.MessageId] = waiter;
+            await SendItem(query);
             await waiter.Task;
+            return ((dynamic)waiter.Task).Result;
         }
 
         /// <summary>
@@ -122,26 +105,13 @@ namespace Griffin.Cqs.Net
         /// <returns>completion task</returns>
         public async Task<TResult> QueryAsync<TResult>(Query<TResult> query)
         {
-            await EnsureConnected();
-            var waiter = new Waiter<TResult>(query.QueryId);
-            _response[query.QueryId] = waiter;
-            await SendItem(query);
-            await waiter.Task;
-            return ((dynamic) waiter.Task).Result;
-        }
+            var msg = new Message(query);
+            msg.Properties["MessageType"] = "QUERY";
 
-        /// <summary>
-        ///     Execute a request and wait for the reply
-        /// </summary>
-        /// <typeparam name="TReply">The type of the reply.</typeparam>
-        /// <param name="request">Request to get a reply for.</param>
-        /// <returns>completion task</returns>
-        public async Task<TReply> ExecuteAsync<TReply>(Request<TReply> request)
-        {
             await EnsureConnected();
-            var waiter = new Waiter<TReply>(request.RequestId);
-            _response[request.RequestId] = waiter;
-            await SendItem(request);
+            var waiter = new Waiter<TResult>(msg.MessageId);
+            _response[msg.MessageId] = waiter;
+            await SendItem(query);
             await waiter.Task;
             return ((dynamic) waiter.Task).Result;
         }
@@ -178,20 +148,17 @@ namespace Griffin.Cqs.Net
             {
             }
 
-            public override Task Task
-            {
-                get { return _completionSource.Task; }
-            }
+            public override Task Task => _completionSource.Task;
 
             public override void Trigger(object result)
             {
-                if (result is Exception)
+                if (result is Exception exception)
                 {
-                    if (result is AggregateException)
+                    if (exception is AggregateException)
                         _completionSource.SetException(new ServerSideException("Server failed to execute.",
-                            ((AggregateException) result).InnerException));
+                            ((AggregateException) exception).InnerException));
                     else
-                        _completionSource.SetException((Exception) result);
+                        _completionSource.SetException(exception);
                 }
 
                 else
@@ -205,7 +172,7 @@ namespace Griffin.Cqs.Net
         }
 
         /// <summary>
-        ///     Start client (will autoconnect if getting disconnected)
+        ///     Start client (will auto connect if getting disconnected)
         /// </summary>
         /// <param name="address">The address for the CQS server.</param>
         /// <param name="port">The port that the CQS server is listening on.</param>
@@ -218,8 +185,7 @@ namespace Griffin.Cqs.Net
 
         private int AuthenticateBytes(ITcpChannel channel, ISocketBuffer buffer)
         {
-            bool completed;
-            var bytesProcessed = Authenticator.Process(channel, buffer, out completed);
+            var bytesProcessed = Authenticator.Process(channel, buffer, out var completed);
             if (completed)
                 channel.BufferPreProcessor = null;
             return bytesProcessed;
@@ -268,36 +234,38 @@ namespace Griffin.Cqs.Net
             if (message is AuthenticationRequiredException || _continueAuthenticate)
             {
                 var authenticator = Authenticator;
-                if (authenticator != null)
+                if (authenticator is { AuthenticationFailed: false })
                 {
-                    if (!authenticator.AuthenticationFailed)
+                    if (authenticator.RequiresRawData)
+                        channel.BufferPreProcessor = AuthenticateBytes;
+                    else
                     {
-                        if (authenticator.RequiresRawData)
-                            channel.BufferPreProcessor = AuthenticateBytes;
-                        else
+                        _continueAuthenticate = authenticator.Process(channel, message);
+                        if (!_continueAuthenticate)
                         {
-                            _continueAuthenticate = authenticator.Process(channel, message);
-                            if (!_continueAuthenticate)
-                            {
-                                if (_lastSentItem != null)
-                                    channel.Send(_lastSentItem);
-                            }
+                            if (_lastSentItem != null)
+                                channel.Send(_lastSentItem);
                         }
                     }
                 }
             }
 
-            //currently authentication etc are not wrapped, so we need to do it like this.
-            var result = message as ClientResponse;
-            if (result == null)
+            if (_response.TryRemove(message., out var waiter))
             {
-                Waiter waiter;
+                //TODO: LOG
+                return ClientFilterResult.Revoke;
+            }
+            waiter.Trigger(result.Body);
+
+            //currently authentication etc are not wrapped, so we need to do it like this.
+            if (message is not ClientResponse)
+            {
                 if (_response.Count != 1)
                     throw new InvalidOperationException(
                         "More than one pending message and we received an unwrapped object: " + message);
 
                 var key = _response.Keys.First();
-                if (!_response.TryRemove(key, out waiter))
+                if (!_response.TryRemove(key, out var waiter))
                 {
                     //TODO: LOG
                     return ClientFilterResult.Revoke;
@@ -307,13 +275,7 @@ namespace Griffin.Cqs.Net
 
             else
             {
-                Waiter waiter;
-                if (!_response.TryRemove(result.Identifier, out waiter))
-                {
-                    //TODO: LOG
-                    return ClientFilterResult.Revoke;
-                }
-                waiter.Trigger(result.Body);
+
             }
 
 
@@ -324,6 +286,33 @@ namespace Griffin.Cqs.Net
         {
             _lastSentItem = item;
             return _client.SendAsync(item);
+        }
+
+        public async Task SendAsync(ClaimsPrincipal principal, object message)
+        {
+            var msg = new Message(message);
+            msg.Properties["MessageType"] = "MESSAGE";
+            await EnsureConnected();
+            await SendItem(msg);
+        }
+
+        public async Task SendAsync(ClaimsPrincipal principal, Message message)
+        {
+            await EnsureConnected();
+            await SendItem(message);
+        }
+
+        public async Task SendAsync(Message message)
+        {
+            await EnsureConnected();
+            await SendItem(message);
+        }
+
+        public async Task SendAsync(object message)
+        {
+            var msg = new Message(message);
+            msg.Properties["MessageType"] = "MESSAGE";
+            await SendAsync(msg);
         }
     }
 }

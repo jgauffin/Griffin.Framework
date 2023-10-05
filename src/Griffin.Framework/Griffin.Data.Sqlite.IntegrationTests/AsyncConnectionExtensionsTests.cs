@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -267,7 +266,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
 
         [Fact]
-        public async Task Insert_row_with_auto_incremet()
+        public async Task Insert_row_with_auto_increment()
         {
             var table = new SimpleUserTable();
             table.Create(_connection);
@@ -283,7 +282,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
 
         [Fact]
-        public async Task first_user()
+        public async Task First_user()
         {
             _userTable.Insert(_connection, 50);
             var expected = _userTable.Users[10];
@@ -297,7 +296,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
 
         [Fact]
-        public async Task delete_user()
+        public async Task Delete_user()
         {
             _userTable.Insert(_connection, 50);
             var expected = _userTable.Users[0];
@@ -309,7 +308,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
         }
 
         [Fact]
-        public async Task delete_user_using_constraints()
+        public async Task Delete_user_using_constraints()
         {
             _userTable.Insert(_connection, 50);
             var expected = _userTable.Users[0];
@@ -322,7 +321,7 @@ namespace Griffin.Data.Sqlite.IntegrationTests
 
 
         [Fact]
-        public async Task update_user()
+        public async Task Update_user()
         {
             _userTable.Insert(_connection, 50);
             var expected = _userTable.Users[0];

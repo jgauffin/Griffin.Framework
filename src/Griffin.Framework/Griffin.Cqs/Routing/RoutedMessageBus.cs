@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Claims;
+using System.Threading.Tasks;
 using DotNetCqs;
 
 namespace Griffin.Cqs.Routing
@@ -6,17 +7,17 @@ namespace Griffin.Cqs.Routing
     /// <summary>
     /// Uses a routing rule to determine if this bus can handle the specified command
     /// </summary>
-    public class RoutedEventBus : IEventBus, IRoutedBus
+    public class RoutedMessageBus : IMessageBus, IRoutedBus
     {
         private readonly IRoutingRule _routingRule;
-        private readonly IEventBus _inner;
+        private readonly IMessageBus _inner;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RoutedCommandBus"/> class.
+        /// Initializes a new instance of the <see cref="RoutedMessageBus"/> class.
         /// </summary>
         /// <param name="routingRule">The routing rule.</param>
         /// <param name="inner">Bus to invoke command on if the rule accepts the command.</param>
-        public RoutedEventBus(IRoutingRule routingRule, IEventBus inner)
+        public RoutedMessageBus(IRoutingRule routingRule, IMessageBus inner)
         {
             _routingRule = routingRule;
             _inner = inner;
@@ -34,18 +35,28 @@ namespace Griffin.Cqs.Routing
             return _routingRule.Match(cqsObject);
         }
 
-
-        /// <summary>
-        /// Publish a new application event.
-        /// </summary>
-        /// <typeparam name="TApplicationEvent">Type of event to publish.</typeparam>
-        /// <param name="e">Event to publish, must be serializable.</param>
-        /// <returns>
-        /// Task triggered once the event has been delivered.
-        /// </returns>
-        public async Task PublishAsync<TApplicationEvent>(TApplicationEvent e) where TApplicationEvent : ApplicationEvent
+        /// <inheritdoc />
+        public Task SendAsync(ClaimsPrincipal principal, object message)
         {
-            await _inner.PublishAsync(e);
+            return _inner.SendAsync(principal, message);
+        }
+
+        /// <inheritdoc />
+        public Task SendAsync(ClaimsPrincipal principal, Message message)
+        {
+            return _inner.SendAsync(principal, message);
+        }
+
+        /// <inheritdoc />
+        public Task SendAsync(Message message)
+        {
+            return _inner.SendAsync(message);
+        }
+
+        /// <inheritdoc />
+        public Task SendAsync(object message)
+        {
+            return _inner.SendAsync(message);
         }
     }
 }
